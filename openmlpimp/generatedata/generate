@@ -1,0 +1,24 @@
+import openml
+import openmlpimp
+import autosklearn.constants
+
+from autosklearn.util.pipeline import get_configuration_space
+
+all_classifiers = ['adaboost', 'bernoulli_nb', 'decision_tree', 'extra_trees', 'gaussian_nb', 'gradient_boosting',
+                   'k_nearest_neighbors', 'lda', 'liblinear_svc', 'libsvm_svc', 'multinomial_nb', 'passive_aggressive',
+                   'qda', 'random_forest', 'sgd']
+
+task = openml.tasks.get_task(24)
+
+cs = get_configuration_space(
+    info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
+    include_estimators=['decision_tree'],
+    include_preprocessors=['no_preprocessing'])
+
+while True:
+    configuration = cs.sample_configuration(1)
+    print(configuration)
+    classifier = openmlpimp.utils.config_to_decision_tree(configuration)
+    run = openml.runs.run_model_on_task(task, classifier)
+    run_prime = run.publish()
+    print(run_prime.run_id)
