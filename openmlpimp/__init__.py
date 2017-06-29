@@ -1,1 +1,1 @@
-from .utils import config_to_decision_tree
+from .utils import config_to_classifier

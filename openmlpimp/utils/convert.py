@@ -1,32 +1,57 @@
 import sklearn
 
+from sklearn.svm import SVC
+
 from ConfigSpace.configuration_space import ConfigurationSpace
 from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
     UniformIntegerHyperparameter, CategoricalHyperparameter
 
-def config_to_decision_tree(config):
+
+def config_to_classifier(config):
     parameter_settings = config.get_dictionary()
-    if parameter_settings['classifier:__choice__'] != 'decision_tree':
-        raise ValueError('Can only instantiate Decision Trees')
 
-    classifier = sklearn.pipeline.Pipeline(steps=[('imputation', sklearn.preprocessing.Imputer()),
-                                                  ('classifier', sklearn.tree.DecisionTreeClassifier())])
-
+    model_type = None
     pipeline_parameters = {}
     for param, value in parameter_settings.items():
 
         splitted = param.split(':')
         if splitted[0] not in ['imputation', 'classifier']:
             continue
-        if splitted[1] == '__choice__':
+        elif splitted[1] == '__choice__':
+            if splitted[0] == 'classifier':
+                model_type = value
             continue
-        param_name = splitted[0] + '__' + splitted[-1]
+        elif param == 'classifier:adaboost:max_depth':
+            # exception ..
+            param_name = 'classifier__base_estimator__max_depth'
+        else:
+            # normal case
+            param_name = splitted[0] + '__' + splitted[-1]
 
         # TODO: hack
         if isinstance(value, str) and value == 'None':
             value = None
 
         pipeline_parameters[param_name] = value
+
+    classifier = None
+    if model_type == 'adaboost':
+        classifier = sklearn.ensemble.AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier())
+    elif model_type == 'decision_tree':
+        classifier = sklearn.tree.DecisionTreeClassifier()
+    elif model_type == 'libsvm_svc':
+        classifier = SVC()
+    elif model_type == 'sgd':
+        classifier = sklearn.linear_model.SGDClassifier()
+    elif model_type == 'random_forest':
+        classifier = sklearn.ensemble.RandomForestClassifier()
+    else:
+        raise ValueError('Unknown classifier: %s' %classifier)
+
+
+    classifier = sklearn.pipeline.Pipeline(steps=[('imputation', sklearn.preprocessing.Imputer()),
+                                                  ('classifier', classifier)])
+    print(pipeline_parameters)
     classifier.set_params(**pipeline_parameters)
     return classifier
 
