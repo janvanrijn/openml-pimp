@@ -33,6 +33,7 @@ def obtain_classifier(configuration_space):
             pass
 
 args = parse_args()
+openml.config.apikey = args.openml_apikey
 
 all_tasks = openml.tasks.list_tasks(tag=args.openml_tag)
 all_task_ids = set(all_tasks.keys())
@@ -42,7 +43,6 @@ configuration_space = get_configuration_space(
     include_estimators=[args.classifier],
     include_preprocessors=['no_preprocessing'])
 
-openml.config.apikey = args.openml_apikey
 
 for i in range(args.n_executions):
     try:
