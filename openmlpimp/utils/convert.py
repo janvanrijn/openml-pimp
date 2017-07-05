@@ -1,10 +1,22 @@
 import sklearn
+import openmlpimp
 
 from sklearn.svm import SVC
 
 from ConfigSpace.configuration_space import ConfigurationSpace
 from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
     UniformIntegerHyperparameter, CategoricalHyperparameter
+
+
+def obtain_classifier(configuration_space, max_attempts=5):
+    for i in range(max_attempts):
+        try:
+            configuration = configuration_space.sample_configuration(1)
+            classifier = openmlpimp.utils.config_to_classifier(configuration)
+            return classifier
+        except ValueError:
+            # sometimes a classifier is not valid. TODO, check this
+            pass
 
 
 def config_to_classifier(config):
@@ -51,7 +63,6 @@ def config_to_classifier(config):
 
     classifier = sklearn.pipeline.Pipeline(steps=[('imputation', sklearn.preprocessing.Imputer()),
                                                   ('classifier', classifier)])
-    print(pipeline_parameters)
     classifier.set_params(**pipeline_parameters)
     return classifier
 
