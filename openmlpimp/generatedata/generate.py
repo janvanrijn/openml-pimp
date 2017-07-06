@@ -95,5 +95,3 @@ for i in range(args.n_executions):
         traceback.print_exc()
     except Exception as e:
         traceback.print_exc()
-    except:
-        print('Unexpected error! ')
