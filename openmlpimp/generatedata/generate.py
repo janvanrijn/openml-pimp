@@ -4,6 +4,7 @@ import openml
 import openmlpimp
 import random
 
+from openml.exceptions import OpenMLServerException
 from collections import OrderedDict
 
 import autosklearn.constants
@@ -18,6 +19,7 @@ def parse_args():
   all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
   parser.add_argument('--n_executions', type=int,  default=100, help='number of runs to be executed. ')
   parser.add_argument('--openml_tag', type=str, required=True, default=None, help='the tag to obtain the tasks from')
+  parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
   parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
   parser.add_argument('--classifier', type=str, choices=all_classifiers, default='decision_tree', help='the classifier to execute')
 
@@ -50,6 +52,8 @@ def get_probability_fn(configuration_space, all_task_ids):
 
 args = parse_args()
 openml.config.apikey = args.openml_apikey
+if args.openml_server:
+    openml.config.server = args.openml_server
 
 all_tasks = openml.tasks.list_tasks(tag=args.openml_tag)
 all_task_ids = set(all_tasks.keys())
@@ -71,7 +75,7 @@ for i in range(args.n_executions):
         task_id = random.choice([val for val, cnt in weighted_probabilities.items() for i in range(cnt)])
         # download task
         task = openml.tasks.get_task(task_id)
-        
+
         # invoke OpenML run
         run = openml.runs.run_model_on_task(task, classifier)
         run.tags.append('openml-pimp')
@@ -79,6 +83,9 @@ for i in range(args.n_executions):
         # and publish it
         run.publish()
         print(run.run_id)
-    except ValueError:
-        # anything can go wrong. prevent this
-        pass
+    except ValueError as e:
+        print(e)
+    except OpenMLServerException as e:
+        print(e)
+    except:
+        print('Unexpected error! ')

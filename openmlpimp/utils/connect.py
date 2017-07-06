@@ -1,6 +1,8 @@
 import openml
 import openmlpimp
 
+from openml.exceptions import OpenMLServerException
+
 
 def get_flow_id(configuration_space):
     # for getting the flow id of the appropriate model
@@ -14,7 +16,11 @@ def task_counts(flow_id):
     offset = 0
     limit = 10000
     while True:
-        runs = openml.runs.list_runs(flow=[flow_id], size=limit, offset=offset)
+        try:
+            runs = openml.runs.list_runs(flow=[flow_id], size=limit, offset=offset)
+        except OpenMLServerException:
+            runs = {}
+
         for run_id, run in runs.items():
             task_id = run['task_id']
             if task_id not in task_ids:
