@@ -1,6 +1,28 @@
 import openml
 
 from openml.exceptions import OpenMLServerException
+from openml.tasks.functions import _list_tasks
+
+
+def list_tasks(task_type_id=None, offset=None, size=None, tag=None, nr_instances=None):
+    api_call = "task/list"
+    if task_type_id is not None:
+        api_call += "/type/%d" % int(task_type_id)
+
+    if offset is not None:
+        api_call += "/offset/%d" % int(offset)
+
+    if size is not None:
+        api_call += "/limit/%d" % int(size)
+
+    if tag is not None:
+        api_call += "/tag/%s" % tag
+
+    if nr_instances is not None:
+        api_call += "/number_instances/%s" %nr_instances
+
+    return _list_tasks(api_call)
+
 
 def task_counts(flow_id):
     task_ids = {}

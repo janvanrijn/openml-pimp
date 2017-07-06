@@ -23,6 +23,7 @@ def parse_args():
   parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
   parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
   parser.add_argument('--classifier', type=str, choices=all_classifiers, default='decision_tree', help='the classifier to execute')
+  parser.add_argument('--n_instances', type=str, default=None, help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
 
   return parser.parse_args()
 
@@ -57,8 +58,9 @@ openml.config.apikey = args.openml_apikey
 if args.openml_server:
     openml.config.server = args.openml_server
 
-all_tasks = openml.tasks.list_tasks(tag=args.openml_tag)
+all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)
 all_task_ids = set(all_tasks.keys())
+print("Obtained %d tasks: %s" %(len(all_task_ids), all_task_ids))
 
 
 configuration_space = get_configuration_space(
@@ -71,14 +73,21 @@ weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
 
 for i in range(args.n_executions):
     try:
-
         # sample a weighted random task
         task_id = random.choice([val for val, cnt in weighted_probabilities.items() for i in range(cnt)])
         # download task
         task = openml.tasks.get_task(task_id)
+
+        data_name = task.get_dataset().name
+        data_qualities = task.get_dataset().qualities
+        print("Obtained dataset '%s'; %s attributes; %s observations" %(data_name,
+                                                                      data_qualities['NumberOfFeatures'],
+                                                                      data_qualities['NumberOfInstances']))
+
         indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
 
         classifier = openmlpimp.utils.obtain_classifier(configuration_space, indices)
+        print(classifier)
 
         # invoke OpenML run
         run = openml.runs.run_model_on_task(task, classifier)
@@ -86,7 +95,7 @@ for i in range(args.n_executions):
 
         # and publish it
         run.publish()
-        print(run.run_id)
+        print("Uplaoded with run id %d" %run.run_id)
     except ValueError as e:
         traceback.print_exc()
     except TypeError as e:
