@@ -1,25 +1,27 @@
 import sklearn
 import openmlpimp
 
+from openmlstudy14.preprocessing import ConditionalImputer
 from sklearn.svm import SVC
+
 
 from ConfigSpace.configuration_space import ConfigurationSpace
 from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
     UniformIntegerHyperparameter, CategoricalHyperparameter
 
 
-def obtain_classifier(configuration_space, max_attempts=5):
+def obtain_classifier(configuration_space, indices, max_attempts=5):
     for i in range(max_attempts):
         try:
             configuration = configuration_space.sample_configuration(1)
-            classifier = openmlpimp.utils.config_to_classifier(configuration)
+            classifier = openmlpimp.utils.config_to_classifier(configuration, indices)
             return classifier
         except ValueError:
             # sometimes a classifier is not valid. TODO, check this
             pass
 
 
-def config_to_classifier(config):
+def config_to_classifier(config, indices):
     parameter_settings = config.get_dictionary()
 
     model_type = None
@@ -40,9 +42,13 @@ def config_to_classifier(config):
             # normal case
             param_name = splitted[0] + '__' + splitted[-1]
 
-        # TODO: hack
         if isinstance(value, str) and value == 'None':
             value = None
+
+        if value == 'True':
+            value = True
+        elif value == 'False':
+            value = False
 
         pipeline_parameters[param_name] = value
 
@@ -53,6 +59,7 @@ def config_to_classifier(config):
         classifier = sklearn.tree.DecisionTreeClassifier()
     elif model_type == 'libsvm_svc':
         classifier = SVC()
+        pipeline_parameters['classifier__probability'] = True
     elif model_type == 'sgd':
         classifier = sklearn.linear_model.SGDClassifier()
     elif model_type == 'random_forest':
@@ -60,9 +67,16 @@ def config_to_classifier(config):
     else:
         raise ValueError('Unknown classifier: %s' %classifier)
 
-
-    classifier = sklearn.pipeline.Pipeline(steps=[('imputation', sklearn.preprocessing.Imputer()),
-                                                  ('classifier', classifier)])
+    steps = [('imputation', ConditionalImputer(strategy='median',
+                                               fill_empty=0,
+                                               categorical_features=indices,
+                                               strategy_nominal='most_frequent')),
+             ('hotencoding', sklearn.preprocessing.OneHotEncoder(sparse=False,
+                                                                 handle_unknown='ignore',
+                                                                 categorical_features=indices)),
+             ('variencethreshold', sklearn.feature_selection.VarianceThreshold()),
+             ('classifier', classifier)]
+    classifier = sklearn.pipeline.Pipeline(steps=steps)
     classifier.set_params(**pipeline_parameters)
     return classifier
 

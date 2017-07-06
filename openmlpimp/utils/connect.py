@@ -1,15 +1,6 @@
 import openml
-import openmlpimp
 
 from openml.exceptions import OpenMLServerException
-
-
-def get_flow_id(configuration_space):
-    # for getting the flow id of the appropriate model
-    classifier = openmlpimp.utils.obtain_classifier(configuration_space)
-    flow = openml.flows.sklearn_to_flow(classifier)
-    return openml.flows.flow_exists(flow.name, flow.external_version)
-
 
 def task_counts(flow_id):
     task_ids = {}

@@ -3,6 +3,7 @@ import argparse
 import openml
 import openmlpimp
 import random
+import traceback
 
 from openml.exceptions import OpenMLServerException
 from collections import OrderedDict
@@ -27,8 +28,9 @@ def parse_args():
 
 
 def get_probability_fn(configuration_space, all_task_ids):
-    # determine how many classifiers have been ran already
-    flow_id = openmlpimp.utils.get_flow_id(configuration_space)
+    classifier = openmlpimp.utils.obtain_classifier(configuration_space, None)
+    flow = openml.flows.sklearn_to_flow(classifier)
+    flow_id = openml.flows.flow_exists(flow.name, flow.external_version)
 
     # obtain task counts
     task_counts = {}
@@ -69,12 +71,14 @@ weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
 
 for i in range(args.n_executions):
     try:
-        classifier = openmlpimp.utils.obtain_classifier(configuration_space)
 
         # sample a weighted random task
         task_id = random.choice([val for val, cnt in weighted_probabilities.items() for i in range(cnt)])
         # download task
         task = openml.tasks.get_task(task_id)
+        indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
+
+        classifier = openmlpimp.utils.obtain_classifier(configuration_space, indices)
 
         # invoke OpenML run
         run = openml.runs.run_model_on_task(task, classifier)
@@ -84,8 +88,12 @@ for i in range(args.n_executions):
         run.publish()
         print(run.run_id)
     except ValueError as e:
-        print(e)
+        traceback.print_exc()
+    except TypeError as e:
+        traceback.print_exc()
     except OpenMLServerException as e:
-        print(e)
+        traceback.print_exc()
+    except Exception as e:
+        traceback.print_exc()
     except:
         print('Unexpected error! ')
