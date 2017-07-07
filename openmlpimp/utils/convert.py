@@ -1,5 +1,6 @@
 import sklearn
 import openmlpimp
+import random
 
 from openmlstudy14.preprocessing import ConditionalImputer
 from sklearn.svm import SVC
@@ -38,6 +39,9 @@ def config_to_classifier(config, indices):
         elif param == 'classifier:adaboost:max_depth':
             # exception ..
             param_name = 'classifier__base_estimator__max_depth'
+        elif param == 'classifier:random_forest:max_features':
+            # exception ..
+            value = random.uniform(0.1, 0.9)
         else:
             # normal case
             param_name = splitted[0] + '__' + splitted[-1]
