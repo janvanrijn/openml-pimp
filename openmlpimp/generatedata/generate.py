@@ -5,6 +5,7 @@ import openmlpimp
 import random
 import traceback
 
+from time import gmtime, strftime
 from openml.exceptions import OpenMLServerException
 from collections import OrderedDict
 
@@ -26,6 +27,10 @@ def parse_args():
   parser.add_argument('--n_instances', type=str, default=None, help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
 
   return parser.parse_args()
+
+
+def get_time():
+    return strftime("[%Y-%m-%d %H:%M:%S]", gmtime())
 
 
 def get_probability_fn(configuration_space, all_task_ids):
@@ -53,54 +58,56 @@ def get_probability_fn(configuration_space, all_task_ids):
      # sort (because why not)
     return OrderedDict(sorted(probability_fn.items()))
 
-args = parse_args()
-openml.config.apikey = args.openml_apikey
-if args.openml_server:
-    openml.config.server = args.openml_server
 
-all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)
-all_task_ids = set(all_tasks.keys())
-print("Obtained %d tasks: %s" %(len(all_task_ids), all_task_ids))
+if __name__ == '__main__':
+    args = parse_args()
+    openml.config.apikey = args.openml_apikey
+    if args.openml_server:
+        openml.config.server = args.openml_server
 
-
-configuration_space = get_configuration_space(
-    info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
-    include_estimators=[args.classifier],
-    include_preprocessors=['no_preprocessing'])
+    all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)
+    all_task_ids = set(all_tasks.keys())
+    print("%s Obtained %d tasks: %s" %(get_time(), len(all_task_ids), all_task_ids))
 
 
-weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
+    configuration_space = get_configuration_space(
+        info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
+        include_estimators=[args.classifier],
+        include_preprocessors=['no_preprocessing'])
 
-for i in range(args.n_executions):
-    try:
-        # sample a weighted random task
-        task_id = random.choice([val for val, cnt in weighted_probabilities.items() for i in range(cnt)])
-        # download task
-        task = openml.tasks.get_task(task_id)
 
-        data_name = task.get_dataset().name
-        data_qualities = task.get_dataset().qualities
-        print("Obtained dataset '%s'; %s attributes; %s observations" %(data_name,
-                                                                      data_qualities['NumberOfFeatures'],
-                                                                      data_qualities['NumberOfInstances']))
+    weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
 
-        indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
+    for i in range(args.n_executions):
+        try:
+            # sample a weighted random task
+            task_id = random.choice([val for val, cnt in weighted_probabilities.items() for i in range(cnt)])
+            # download task
+            task = openml.tasks.get_task(task_id)
 
-        classifier = openmlpimp.utils.obtain_classifier(configuration_space, indices)
-        print(classifier)
+            data_name = task.get_dataset().name
+            data_qualities = task.get_dataset().qualities
+            print("%s Obtained dataset '%s'; %s attributes; %s observations" %(get_time(), data_name,
+                                                                               data_qualities['NumberOfFeatures'],
+                                                                               data_qualities['NumberOfInstances']))
 
-        # invoke OpenML run
-        run = openml.runs.run_model_on_task(task, classifier)
-        run.tags.append('openml-pimp')
+            indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
 
-        # and publish it
-        run.publish()
-        print("Uplaoded with run id %d" %run.run_id)
-    except ValueError as e:
-        traceback.print_exc()
-    except TypeError as e:
-        traceback.print_exc()
-    except OpenMLServerException as e:
-        traceback.print_exc()
-    except Exception as e:
-        traceback.print_exc()
+            classifier = openmlpimp.utils.obtain_classifier(configuration_space, indices)
+            print(get_time(), classifier)
+
+            # invoke OpenML run
+            run = openml.runs.run_model_on_task(task, classifier)
+            run.tags.append('openml-pimp')
+
+            # and publish it
+            run.publish()
+            print("%s Uploaded with run id %d" %(get_time(), run.run_id))
+        except ValueError as e:
+            traceback.print_exc()
+        except TypeError as e:
+            traceback.print_exc()
+        except OpenMLServerException as e:
+            traceback.print_exc()
+        except Exception as e:
+            traceback.print_exc()
