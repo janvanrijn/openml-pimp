@@ -1,7 +1,10 @@
 import openml
+import openmlpimp
 
 from openml.exceptions import OpenMLServerException
 from openml.tasks.functions import _list_tasks
+
+from smac.tae.execute_ta_run import StatusType
 
 
 def list_tasks(task_type_id=None, offset=None, size=None, tag=None, nr_instances=None):
@@ -44,3 +47,40 @@ def task_counts(flow_id):
         else:
             offset += limit
     return task_ids
+
+
+def obtain_runhistory_and_configspace(flow_id, task_id):
+    evaluations = openml.evaluations.list_evaluations("predictive_accuracy", flow=[flow_id], task=[task_id])
+    setups = openml.setups.list_setups(flow=flow_id)
+
+    data = []
+    configs = {}
+    applicable_setups = set()
+    for run_id in evaluations.keys():
+        cost = 1.0 - evaluations[run_id].value
+        runtime = 0.0 # not easily accessible
+        status = {"__enum__": str(StatusType.SUCCESS) }
+        additional = {}
+        performance = [cost, runtime, status, additional]
+
+        config_id = evaluations[run_id].setup_id
+        applicable_setups.add(evaluations[run_id].setup_id)
+        instance = openml.config.server + "task/" + str(task_id)
+        seed = 1 # not relevant
+        run = [config_id, instance, seed]
+
+        data.append([run, performance])
+
+    for setup_id in applicable_setups:
+        config = {}
+        for param_id in setups[setup_id].parameters:
+            name = setups[setup_id].parameters[param_id].full_name
+            value = setups[setup_id].parameters[param_id].value
+            config[name] = value
+        configs[setup_id] = config
+
+    run_history = {"data": data, "configs": configs}
+
+    relevant_setups = {k: setups[k] for k in applicable_setups}
+    config_space = openmlpimp.utils.setups_to_configspace(relevant_setups)
+    return run_history, config_space

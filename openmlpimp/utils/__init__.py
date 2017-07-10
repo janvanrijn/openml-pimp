@@ -1,2 +1,2 @@
-from .convert import config_to_classifier, obtain_classifier
-from .connect import task_counts, list_tasks
+from .convert import config_to_classifier, obtain_classifier, runhistory_to_trajectory, setups_to_configspace
+from .connect import task_counts, list_tasks, obtain_runhistory_and_configspace

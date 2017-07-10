@@ -86,6 +86,7 @@ def config_to_classifier(config, indices):
 
 
 def setups_to_configspace(setups):
+    # setups is result from openml.setups.list_setups call
     # note that this config space is not equal to the one
     # obtained from auto-sklearn; but useful for creating
     # the pcs file
@@ -93,27 +94,26 @@ def setups_to_configspace(setups):
     flow_id = None
     for setup_id in setups:
         current = setups[setup_id]
-        if flow_id is not None:
+        if flow_id is None:
             flow_id = current.flow_id
         else:
             if current.flow_id != flow_id:
-                raise ValueError('flow ids are expected to be equal')
+                raise ValueError('flow ids are expected to be equal. Expected %d, saw %s' %(flow_id, current.flow_id))
 
-        name = current.parameter_name
-        value = current.value
-        if name not in parameter_values.keys():
-            parameter_values[name] = set()
-        parameter_values[name].add(value)
+        for param_id in current.parameters.keys():
+            name = current.parameters[param_id].parameter_name
+            value = current.parameters[param_id].value
+            if name not in parameter_values.keys():
+                parameter_values[name] = set()
+            parameter_values[name].add(value)
 
     cs = ConfigurationSpace()
     for name in parameter_values.keys():
         all_values = parameter_values[name]
         lower = min(all_values)
         upper = max(all_values)
-        if len(all_values) <= 1:
-            # constant
-            continue
-        elif all(isinstance(item, int) for item in all_values):
+        # TODO: handle constants
+        if all(isinstance(item, int) for item in all_values):
             hyper = UniformIntegerHyperparameter(name=name,
                                                  lower=lower,
                                                  upper=upper,
@@ -134,3 +134,44 @@ def setups_to_configspace(setups):
                                               default=values[0]) # TODO don't know
             cs.add_hyperparameter(hyper)
     return cs
+
+
+def runhistory_to_trajectory(runhistory, default_setup_id):
+    trajectory = []
+    lowest_cost = 1.0
+    lowest_cost_idx = None
+    default_cost = None
+
+    for run in runhistory['data']:
+        config_id = run[0][0] # magic index
+        cost = run[1][0] # magic index
+
+        if cost < lowest_cost:
+            lowest_cost = cost
+            lowest_cost_idx = config_id
+
+        if config_id == default_setup_id:
+            if default_cost is not None:
+                raise ValueError('default setup id should be encountered once')
+            default_cost = run[1][0] # magic index
+
+    if default_cost is None:
+        raise ValueError('could not find default setup')
+
+    if lowest_cost_idx == default_setup_id:
+        raise ValueError('default setup id should not be best performing algorithm')
+
+    def _default_trajectory_line():
+        return {"cpu_time": 0.0, "evaluations": 0, "total_cpu_time": 0.0, "wallclock_time": 0.0 }
+
+    initial = _default_trajectory_line()
+    initial['cost'] = default_cost
+    initial['encumbment'] = runhistory['configs'][default_setup_id]
+    trajectory.append(initial)
+
+    final = _default_trajectory_line()
+    final['cost'] = lowest_cost
+    final['encumbment'] = runhistory['configs'][lowest_cost_idx]
+    trajectory.append(final)
+
+    return trajectory
