@@ -29,7 +29,8 @@ def config_to_classifier(config, indices):
     model_type = None
     pipeline_parameters = {}
     for param, value in parameter_settings.items():
-
+        param_name = None
+        value = None
         splitted = param.split(':')
         if splitted[0] not in ['imputation', 'classifier']:
             continue
@@ -42,6 +43,7 @@ def config_to_classifier(config, indices):
             param_name = 'classifier__base_estimator__max_depth'
         elif param == 'classifier:random_forest:max_features':
             # exception ..
+            param_name = 'classifier__max_features'
             value = random.uniform(0.1, 0.9)
         else:
             # normal case
@@ -161,9 +163,11 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
     default_cost = -1.0
     default_cost_idx = None
 
+    all_costs = set()
     for run in runhistory['data']:
         config_id = run[0][0] # magic index
         cost = run[1][0] # magic index
+        all_costs.add(cost)
         if cost < lowest_cost:
             lowest_cost = cost
             lowest_cost_idx = config_id
@@ -184,7 +188,7 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
         raise ValueError('could not find default setup')
 
     if default_cost == lowest_cost:
-        raise ValueError('no improvement over default param settings')
+        raise ValueError('no improvement over default param settings (tried %d setups)' %len(runhistory['data']))
 
     if lowest_cost_idx == default_setup_id:
         raise ValueError('default setup id should not be best performing algorithm')

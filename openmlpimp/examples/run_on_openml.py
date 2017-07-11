@@ -1,4 +1,4 @@
-import random
+import traceback
 import openmlpimp
 import datetime
 import inspect
@@ -37,6 +37,10 @@ def read_cmd():
                         help="Minimum number of setups needed to use a task")
     parser.add_argument("-F", "--flow_id", default=6969,
                         help="The OpenML flow id to use")
+    parser.add_argument("-T", "--openml_tag", default="study_14",
+                        help="The OpenML tag for obtaining tasks")
+    parser.add_argument('-N', '--n_instances', type=str, default='1..1000',
+                        help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
 
     args_, misc = parser.parse_known_args()
 
@@ -95,8 +99,15 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.verbose_level)
     ts = time.time()
     ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
-    save_folder = 'PIMP_flow%d_%s_%s' % (args.flow_id, args.modus, ts)
+    save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s_%s' % (args.flow_id, args.modus, ts)
 
-    execute(save_folder, args.flow_id, 11, args)
+    all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)
 
+    for task_id in [3022]:
+        try:
+            task_folder = save_folder + "/" + str(task_id)
+            execute(task_folder, args.flow_id, task_id, args)
+        except Exception as e:
+            print('error while executing task %d' %(task_id))
+            traceback.print_exc()
 
