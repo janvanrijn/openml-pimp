@@ -44,6 +44,7 @@ while True:
     else:
         offset += limit
 print(task_ids)
+print("tasks", len(task_ids))
 print("sum", sum(task_ids.values()))
 print("min", min(task_ids.values()))
 print("max", max(task_ids.values()))

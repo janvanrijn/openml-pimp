@@ -22,7 +22,7 @@ def read_cmd():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("-M", "--modus",
-                        help='Analysis method to use', default="ablation",
+                        help='Analysis method to use', default="fanova",
                         choices=['ablation', 'forward-selection', 'influence-model', 'fanova'])
     parser.add_argument("--seed", default=12345, type=int,
                         help="random seed")
@@ -33,47 +33,49 @@ def read_cmd():
                         help="Impute censored data")
     parser.add_argument("-C", "--table", action='store_true',
                         help="Save result table")
+    parser.add_argument("-R", "--required_setups", default=30,
+                        help="Minimum number of setups needed to use a task")
+    parser.add_argument("-F", "--flow_id", default=6969,
+                        help="The OpenML flow id to use")
 
     args_, misc = parser.parse_known_args()
 
     return args_
 
 
-def generate_required_files(folder, flow_id, task_id):
-    runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id)
+def generate_required_files(folder, flow_id, task_id, required_setups):
+    try:
+      os.makedirs(folder)
+    except FileExistsError:
+      pass
+    runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id, required_setups=required_setups)
 
-    default_setup_id = random.sample((runhistory['configs'].keys()), 1)[0] # TODO
-    trajectory_lines = openmlpimp.utils.runhistory_to_trajectory(runhistory, default_setup_id)
+    trajectory_lines = openmlpimp.utils.runhistory_to_trajectory(runhistory, None)
 
-    with open('runhistory.json', 'w') as outfile:
+    with open(folder + 'runhistory.json', 'w') as outfile:
         json.dump(runhistory, outfile)
         runhistory_location = os.path.realpath(outfile.name)
 
-    with open('traj_aclib2.json', 'w') as outfile:
+    with open(folder + 'traj_aclib2.json', 'w') as outfile:
         for line in trajectory_lines:
             json.dump(line, outfile)
             outfile.write("\n")
         traj_location = os.path.realpath(outfile.name)
 
-    with open('config_space.pcs', 'w') as outfile:
+    with open(folder + 'config_space.pcs', 'w') as outfile:
         outfile.write(write(configspace))
         pcs_location = os.path.realpath(outfile.name)
 
-    with open('scenario.txt', 'w') as outfile:
+    with open(folder + 'scenario.txt', 'w') as outfile:
         outfile.write("run_obj = quality\ndeterministic = 1\nparamfile = " + pcs_location)
         scenario_location = os.path.realpath(outfile.name)
 
     return scenario_location, runhistory_location, traj_location
 
-if __name__ == '__main__':
-    scenario, runhistory, trajectory = generate_required_files('input/', 6969, 11)
 
-    args = read_cmd()
-    logging.basicConfig(level=args.verbose_level)
-    ts = time.time()
-    ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
-    save_folder = 'PIMP_%s_%s' % (args.modus, ts)
+def execute(save_folder, flow_id, task_id, args):
 
+    scenario, runhistory, trajectory = generate_required_files(save_folder + '/inputs', flow_id, task_id, required_setups=args.required_setups)
     importance = Importance(scenario, runhistory,
                             traj_file=trajectory,
                             seed=args.seed,
@@ -87,3 +89,14 @@ if __name__ == '__main__':
     with open(os.path.join(save_folder, 'pimp_values_%s.json' % args.modus), 'w') as out_file:
         json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
     importance.plot_results(name=os.path.join(save_folder, args.modus))
+
+if __name__ == '__main__':
+    args = read_cmd()
+    logging.basicConfig(level=args.verbose_level)
+    ts = time.time()
+    ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
+    save_folder = 'PIMP_flow%d_%s_%s' % (args.flow_id, args.modus, ts)
+
+    execute(save_folder, args.flow_id, 11, args)
+
+

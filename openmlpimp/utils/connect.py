@@ -49,9 +49,25 @@ def task_counts(flow_id):
     return task_ids
 
 
-def obtain_runhistory_and_configspace(flow_id, task_id, keyfield='parameter_name'):
+def obtain_runhistory_and_configspace(flow_id, task_id, keyfield='parameter_name', required_setups=None):
     evaluations = openml.evaluations.list_evaluations("predictive_accuracy", flow=[flow_id], task=[task_id])
-    setups = openml.setups.list_setups(flow=flow_id)
+    setup_ids = set()
+    for run_id in evaluations.keys():
+        setup_ids.add(evaluations[run_id].setup_id)
+
+    if required_setups is not None:
+        if len(setup_ids) < required_setups:
+            raise ValueError('Not enough (evaluated) setups found on OpenML. Found %d; required: %d' %(len(setup_ids), required_setups))
+
+    setups = {}
+    limit = 1000
+    offset = 0
+    while True:
+        results = openml.setups.list_setups(flow=flow_id, setup=list(setup_ids), size=limit, offset=offset)
+        setups.update(results)
+        offset += limit
+        if len(results) < limit:
+            break
 
     data = []
     configs = {}

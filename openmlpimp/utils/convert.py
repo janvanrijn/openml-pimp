@@ -158,22 +158,29 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
     trajectory_lines = []
     lowest_cost = 1.0
     lowest_cost_idx = None
-    default_cost = None
+    default_cost = -1.0
+    default_cost_idx = None
 
     for run in runhistory['data']:
         config_id = run[0][0] # magic index
         cost = run[1][0] # magic index
-        print(cost)
         if cost < lowest_cost:
             lowest_cost = cost
             lowest_cost_idx = config_id
 
-        if config_id == default_setup_id:
+        if default_setup_id == None:
+            # pick highest cost in case of unset default idx
+            if cost > default_cost:
+                default_cost_idx = config_id
+                default_cost = cost
+        elif config_id == default_setup_id:
             if default_cost is not None:
                 raise ValueError('default setup id should be encountered once')
             default_cost = run[1][0] # magic index
+            default_cost_idx = config_id
 
-    if default_cost is None:
+
+    if default_cost < 0.0:
         raise ValueError('could not find default setup')
 
     if default_cost == lowest_cost:
@@ -181,6 +188,9 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
 
     if lowest_cost_idx == default_setup_id:
         raise ValueError('default setup id should not be best performing algorithm')
+
+    if lowest_cost == default_cost:
+        raise ValueError('there should be improvement over default cost value')
 
     def _default_trajectory_line():
         return {"cpu_time": 0.0, "evaluations": 0, "total_cpu_time": 0.0, "wallclock_time": 0.0 }
@@ -193,7 +203,7 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
 
     initial = _default_trajectory_line()
     initial['cost'] = default_cost
-    initial['incumbent'] = paramdict_to_incumbent(runhistory['configs'][default_setup_id])
+    initial['incumbent'] = paramdict_to_incumbent(runhistory['configs'][default_cost_idx])
     trajectory_lines.append(initial)
 
     final = _default_trajectory_line()
