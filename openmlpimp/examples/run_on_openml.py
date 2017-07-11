@@ -15,7 +15,7 @@ if cmd_folder not in sys.path:
 
 from argparse import  ArgumentDefaultsHelpFormatter, ArgumentParser
 from pimp.importance.importance import Importance
-from ConfigSpace.io.pcs import write
+from ConfigSpace.io.pcs_new import write
 
 
 def read_cmd():
@@ -43,14 +43,16 @@ def generate_required_files(folder, flow_id, task_id):
     runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id)
 
     default_setup_id = random.sample((runhistory['configs'].keys()), 1)[0] # TODO
-    trajectory = openmlpimp.utils.runhistory_to_trajectory(runhistory, default_setup_id)
+    trajectory_lines = openmlpimp.utils.runhistory_to_trajectory(runhistory, default_setup_id)
 
     with open('runhistory.json', 'w') as outfile:
         json.dump(runhistory, outfile)
         runhistory_location = os.path.realpath(outfile.name)
 
     with open('traj_aclib2.json', 'w') as outfile:
-        json.dump(trajectory, outfile)
+        for line in trajectory_lines:
+            json.dump(line, outfile)
+            outfile.write("\n")
         traj_location = os.path.realpath(outfile.name)
 
     with open('config_space.pcs', 'w') as outfile:
@@ -64,7 +66,7 @@ def generate_required_files(folder, flow_id, task_id):
     return scenario_location, runhistory_location, traj_location
 
 if __name__ == '__main__':
-    scenario, runhistory, trajectory = generate_required_files('input/', 6969, 2)
+    scenario, runhistory, trajectory = generate_required_files('input/', 6969, 11)
 
     args = read_cmd()
     logging.basicConfig(level=args.verbose_level)

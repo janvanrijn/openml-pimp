@@ -2,6 +2,7 @@ import sklearn
 import openmlpimp
 import random
 
+from openml.flows import flow_to_sklearn
 from openmlstudy14.preprocessing import ConditionalImputer
 from sklearn.svm import SVC
 
@@ -85,7 +86,7 @@ def config_to_classifier(config, indices):
     return classifier
 
 
-def setups_to_configspace(setups):
+def setups_to_configspace(setups, keyfield='parameter_name', ignore_constants=True):
     # setups is result from openml.setups.list_setups call
     # note that this config space is not equal to the one
     # obtained from auto-sklearn; but useful for creating
@@ -101,43 +102,60 @@ def setups_to_configspace(setups):
                 raise ValueError('flow ids are expected to be equal. Expected %d, saw %s' %(flow_id, current.flow_id))
 
         for param_id in current.parameters.keys():
-            name = current.parameters[param_id].parameter_name
+            name = getattr(current.parameters[param_id], keyfield)
             value = current.parameters[param_id].value
             if name not in parameter_values.keys():
                 parameter_values[name] = set()
             parameter_values[name].add(value)
 
+    def is_castable_to(value, type):
+        try:
+            type(value)
+            return True
+        except ValueError:
+            return False
+
+
     cs = ConfigurationSpace()
+    constants = set()
     for name in parameter_values.keys():
         all_values = parameter_values[name]
-        lower = min(all_values)
-        upper = max(all_values)
-        # TODO: handle constants
-        if all(isinstance(item, int) for item in all_values):
+        if len(all_values) <= 1:
+            constants.add(name)
+            if ignore_constants:
+                continue
+
+        if all(is_castable_to(item, int) for item in all_values):
+            all_values = [int(item) for item in all_values]
+            lower = min(all_values)
+            upper = max(all_values)
             hyper = UniformIntegerHyperparameter(name=name,
                                                  lower=lower,
                                                  upper=upper,
-                                                 default=lower+(upper-lower)/2, # TODO don't know
-                                                 log=False)                     # TODO don't know
+                                                 default=int(lower+(upper-lower) / 2),  # TODO don't know
+                                                 log=False)                             # TODO don't know
             cs.add_hyperparameter(hyper)
-        elif all(isinstance(item, float) for item in all_values):
+        elif all(is_castable_to(item, float) for item in all_values):
+            all_values = [float(item) for item in all_values]
+            lower = min(all_values)
+            upper = max(all_values)
             hyper = UniformFloatHyperparameter(name=name,
-                                                 lower=lower,
-                                                 upper=upper,
-                                                 default=lower + (upper - lower) / 2,  # TODO don't know
-                                                 log=False)                            # TODO don't know
+                                               lower=lower,
+                                               upper=upper,
+                                               default=lower + (upper - lower) / 2,  # TODO don't know
+                                               log=False)                            # TODO don't know
             cs.add_hyperparameter(hyper)
         else:
-            values = list(all_values)
+            values = [flow_to_sklearn(item) for item in all_values]
             hyper = CategoricalHyperparameter(name=name,
                                               choices=values,
                                               default=values[0]) # TODO don't know
             cs.add_hyperparameter(hyper)
-    return cs
+    return cs, constants
 
 
 def runhistory_to_trajectory(runhistory, default_setup_id):
-    trajectory = []
+    trajectory_lines = []
     lowest_cost = 1.0
     lowest_cost_idx = None
     default_cost = None
@@ -145,7 +163,7 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
     for run in runhistory['data']:
         config_id = run[0][0] # magic index
         cost = run[1][0] # magic index
-
+        print(cost)
         if cost < lowest_cost:
             lowest_cost = cost
             lowest_cost_idx = config_id
@@ -158,20 +176,29 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
     if default_cost is None:
         raise ValueError('could not find default setup')
 
+    if default_cost == lowest_cost:
+        raise ValueError('no improvement over default param settings')
+
     if lowest_cost_idx == default_setup_id:
         raise ValueError('default setup id should not be best performing algorithm')
 
     def _default_trajectory_line():
         return {"cpu_time": 0.0, "evaluations": 0, "total_cpu_time": 0.0, "wallclock_time": 0.0 }
 
+    def paramdict_to_incumbent(param_dict):
+        res = []
+        for param in param_dict.keys():
+            res.append(param + "='" + str(param_dict[param]) + "'")
+        return res
+
     initial = _default_trajectory_line()
     initial['cost'] = default_cost
-    initial['encumbment'] = runhistory['configs'][default_setup_id]
-    trajectory.append(initial)
+    initial['incumbent'] = paramdict_to_incumbent(runhistory['configs'][default_setup_id])
+    trajectory_lines.append(initial)
 
     final = _default_trajectory_line()
     final['cost'] = lowest_cost
-    final['encumbment'] = runhistory['configs'][lowest_cost_idx]
-    trajectory.append(final)
+    final['incumbent'] = paramdict_to_incumbent(runhistory['configs'][lowest_cost_idx])
+    trajectory_lines.append(final)
 
-    return trajectory
+    return trajectory_lines

@@ -49,7 +49,7 @@ def task_counts(flow_id):
     return task_ids
 
 
-def obtain_runhistory_and_configspace(flow_id, task_id):
+def obtain_runhistory_and_configspace(flow_id, task_id, keyfield='parameter_name'):
     evaluations = openml.evaluations.list_evaluations("predictive_accuracy", flow=[flow_id], task=[task_id])
     setups = openml.setups.list_setups(flow=flow_id)
 
@@ -74,13 +74,21 @@ def obtain_runhistory_and_configspace(flow_id, task_id):
     for setup_id in applicable_setups:
         config = {}
         for param_id in setups[setup_id].parameters:
-            name = setups[setup_id].parameters[param_id].full_name
-            value = setups[setup_id].parameters[param_id].value
+            name = getattr(setups[setup_id].parameters[param_id], keyfield)
+            value = openml.flows.flow_to_sklearn(setups[setup_id].parameters[param_id].value)
+            # TODO: hack
+            if isinstance(value, bool):
+                value = str(value)
             config[name] = value
         configs[setup_id] = config
 
-    run_history = {"data": data, "configs": configs}
-
     relevant_setups = {k: setups[k] for k in applicable_setups}
-    config_space = openmlpimp.utils.setups_to_configspace(relevant_setups)
+    config_space, constants = openmlpimp.utils.setups_to_configspace(relevant_setups, keyfield=keyfield)
+
+    # remove the constants from runhistory TODO: make optional
+    for config_id in configs:
+        for constant in constants:
+            configs[config_id].pop(constant, None)
+
+    run_history = {"data": data, "configs": configs}
     return run_history, config_space
