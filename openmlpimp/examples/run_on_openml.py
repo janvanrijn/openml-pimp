@@ -13,7 +13,7 @@ cmd_folder = os.path.realpath(os.path.join(cmd_folder, ".."))
 if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
 
-from argparse import  ArgumentDefaultsHelpFormatter, ArgumentParser
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pimp.importance.importance import Importance
 from ConfigSpace.io.pcs_new import write
 
@@ -35,24 +35,26 @@ def read_cmd():
                         help="Save result table")
     parser.add_argument("-R", "--required_setups", default=30,
                         help="Minimum number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6970, # adaboost!
+    parser.add_argument("-F", "--flow_id", default=6952,
                         help="The OpenML flow id to use")
     parser.add_argument("-T", "--openml_tag", default="study_14",
                         help="The OpenML tag for obtaining tasks")
     parser.add_argument('-N', '--n_instances', type=str, default='1..2000',
                         help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
+    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default='{"kernel": "rbf"}',
+                        help='Will only use configurations that have these parameters fixed')
 
     args_, misc = parser.parse_known_args()
 
     return args_
 
 
-def generate_required_files(folder, flow_id, task_id, required_setups):
+def generate_required_files(folder, flow_id, task_id, required_setups=None, fixed_parameters=None):
     try:
       os.makedirs(folder)
     except FileExistsError:
       pass
-    runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id, required_setups=required_setups)
+    runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id, required_setups=required_setups, fixed_parameters=fixed_parameters)
 
     trajectory_lines = openmlpimp.utils.runhistory_to_trajectory(runhistory, None)
 
@@ -79,7 +81,10 @@ def generate_required_files(folder, flow_id, task_id, required_setups):
 
 def execute(save_folder, flow_id, task_id, args):
 
-    scenario, runhistory, trajectory = generate_required_files(save_folder + '/inputs', flow_id, task_id, required_setups=args.required_setups)
+    scenario, runhistory, trajectory = generate_required_files(save_folder + '/inputs/',
+                                                               flow_id, task_id,
+                                                               required_setups=args.required_setups,
+                                                               fixed_parameters=args.fixed_parameters)
     importance = Importance(scenario, runhistory,
                             traj_file=trajectory,
                             seed=args.seed,

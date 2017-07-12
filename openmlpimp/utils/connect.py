@@ -47,8 +47,20 @@ def task_counts(flow_id):
     return task_ids
 
 
-def obtain_runhistory_and_configspace(flow_id, task_id, keyfield='parameter_name', required_setups=None):
+def obtain_runhistory_and_configspace(flow_id, task_id, keyfield='parameter_name', required_setups=None, fixed_parameters=None):
     from smac.tae.execute_ta_run import StatusType
+
+    def setup_complies(setup):
+        # tests whether a setup has the right values that are requisted by fixed parameters
+        setup_parameters = {getattr(setup.parameters[param_id], keyfield): setup.parameters[param_id].value for param_id in setup.parameters}
+        for parameter in fixed_parameters.keys():
+            if parameter not in setup_parameters.keys():
+                raise ValueError('Required parameter %s not in setup parameter for setup %d' %(parameter, setup.setup_id))
+            value_online = openml.flows.flow_to_sklearn(setup_parameters[parameter])
+            value_request = fixed_parameters[parameter]
+            if value_online != value_request:
+                return False
+        return True
 
     evaluations = openml.evaluations.list_evaluations("predictive_accuracy", flow=[flow_id], task=[task_id])
     setup_ids = set()
@@ -63,11 +75,24 @@ def obtain_runhistory_and_configspace(flow_id, task_id, keyfield='parameter_name
     limit = 1000
     offset = 0
     while True:
-        results = openml.setups.list_setups(flow=flow_id, setup=list(setup_ids), size=limit, offset=offset)
-        setups.update(results)
+        setups_batch = openml.setups.list_setups(flow=flow_id, setup=list(setup_ids), size=limit, offset=offset)
+        if fixed_parameters is None:
+            setups.update(setups_batch)
+        else:
+            for setup_id in setups_batch.keys():
+                if setup_complies(setups_batch[setup_id]):
+                    setups[setup_id] = setups_batch[setup_id]
+
         offset += limit
-        if len(results) < limit:
+        if len(setups_batch) < limit:
             break
+    print('Setup count; before %d after %d' %(len(setup_ids), len(setups)))
+    setup_ids = set(setups.keys())
+
+    # filter again ..
+    if required_setups is not None:
+        if len(setup_ids) < required_setups:
+            raise ValueError('Not enough (evaluated) setups left after filtering. Got %d; required: %d' %(len(setup_ids), required_setups))
 
     data = []
     configs = {}
@@ -80,12 +105,13 @@ def obtain_runhistory_and_configspace(flow_id, task_id, keyfield='parameter_name
         performance = [cost, runtime, status, additional]
 
         config_id = evaluations[run_id].setup_id
-        applicable_setups.add(evaluations[run_id].setup_id)
         instance = openml.config.server + "task/" + str(task_id)
         seed = 1 # not relevant
         run = [config_id, instance, seed]
 
-        data.append([run, performance])
+        if config_id in setup_ids:
+            applicable_setups.add(config_id)
+            data.append([run, performance])
 
     for setup_id in applicable_setups:
         config = {}
