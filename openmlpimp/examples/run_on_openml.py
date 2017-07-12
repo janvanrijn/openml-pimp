@@ -35,11 +35,11 @@ def read_cmd():
                         help="Save result table")
     parser.add_argument("-R", "--required_setups", default=30,
                         help="Minimum number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6969,
+    parser.add_argument("-F", "--flow_id", default=6970, # adaboost!
                         help="The OpenML flow id to use")
     parser.add_argument("-T", "--openml_tag", default="study_14",
                         help="The OpenML tag for obtaining tasks")
-    parser.add_argument('-N', '--n_instances', type=str, default='1..1000',
+    parser.add_argument('-N', '--n_instances', type=str, default='1..2000',
                         help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
 
     args_, misc = parser.parse_known_args()
@@ -94,6 +94,7 @@ def execute(save_folder, flow_id, task_id, args):
         json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
     importance.plot_results(name=os.path.join(save_folder, args.modus))
 
+
 if __name__ == '__main__':
     args = read_cmd()
     logging.basicConfig(level=args.verbose_level)
@@ -101,13 +102,23 @@ if __name__ == '__main__':
     ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
     save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s_%s' % (args.flow_id, args.modus, ts)
 
-    all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)
+    all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)\
 
-    for task_id in [3022]:
+    total_ranks = None
+    for task_id in all_tasks:
         try:
             task_folder = save_folder + "/" + str(task_id)
             execute(task_folder, args.flow_id, task_id, args)
+            results_file = save_folder + '/' + str(task_id) + '_run1/' + 'pimp_values_fanova.json'
+            with open(results_file) as result_file:
+                data = json.load(result_file)
+                ranks = openmlpimp.utils.rank_dict(data['fanova'], True)
+                if total_ranks is None:
+                    total_ranks = ranks
+                else:
+                    total_ranks = openmlpimp.utils.sum_dict_values(total_ranks, ranks)
+                print("Task", task_id, ranks)
         except Exception as e:
             print('error while executing task %d' %(task_id))
             traceback.print_exc()
-
+    print("TOTAL RANKS:", total_ranks)

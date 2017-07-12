@@ -26,8 +26,9 @@ openml.config.apikey = args.openml_apikey
 
 
 #adaboost 6970
-#random forest 6969
-flow_id = [6969]
+#random forest 6969 [!] removed
+#scv 6952
+flow_id = [6952]
 
 task_ids = {}
 offset = 0

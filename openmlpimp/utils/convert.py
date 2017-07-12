@@ -1,6 +1,8 @@
 import sklearn
 import openmlpimp
 import random
+import collections
+import scipy
 
 from openml.flows import flow_to_sklearn
 from openmlstudy14.preprocessing import ConditionalImputer
@@ -18,19 +20,18 @@ def obtain_classifier(configuration_space, indices, max_attempts=5):
             configuration = configuration_space.sample_configuration(1)
             classifier = openmlpimp.utils.config_to_classifier(configuration, indices)
             return classifier
-        except ValueError:
-            # sometimes a classifier is not valid. TODO, check this
-            pass
+        except ValueError as e:
+            if i == max_attempts - 1:
+                raise e
 
 
 def config_to_classifier(config, indices):
     parameter_settings = config.get_dictionary()
-
+    print(parameter_settings)
     model_type = None
     pipeline_parameters = {}
     for param, value in parameter_settings.items():
         param_name = None
-        value = None
         splitted = param.split(':')
         if splitted[0] not in ['imputation', 'classifier']:
             continue
@@ -72,7 +73,7 @@ def config_to_classifier(config, indices):
     elif model_type == 'random_forest':
         classifier = sklearn.ensemble.RandomForestClassifier()
     else:
-        raise ValueError('Unknown classifier: %s' %classifier)
+        raise ValueError('Unknown classifier: %s' %model_type)
 
     steps = [('imputation', ConditionalImputer(strategy='median',
                                                fill_empty=0,
@@ -216,3 +217,24 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
     trajectory_lines.append(final)
 
     return trajectory_lines
+
+
+def rank_dict(dictionary, reverse=False):
+    if reverse:
+        for key in dictionary.keys():
+            dictionary[key] = 1 - dictionary[key]
+    sortdict = collections.OrderedDict(sorted(dictionary.items()))
+    ranks = scipy.stats.rankdata(list(sortdict.values()))
+    result = {}
+    for idx, (key, value) in enumerate(sortdict.items()):
+        result[key] = ranks[idx]
+    return result
+
+
+def sum_dict_values(a, b):
+    result = {}
+    if set(a.keys()) != set(b.keys()):
+        raise ValueError('keys not the same')
+    for idx in a.keys():
+        result[idx] = a[idx] + b[idx]
+    return result

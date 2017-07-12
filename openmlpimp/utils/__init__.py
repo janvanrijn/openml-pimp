@@ -1,2 +1,2 @@
-from .convert import config_to_classifier, obtain_classifier, runhistory_to_trajectory, setups_to_configspace
+from .convert import config_to_classifier, obtain_classifier, runhistory_to_trajectory, setups_to_configspace, rank_dict, sum_dict_values
 from .connect import task_counts, list_tasks, obtain_runhistory_and_configspace
