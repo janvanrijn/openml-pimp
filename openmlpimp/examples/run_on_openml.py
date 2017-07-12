@@ -43,6 +43,9 @@ def read_cmd():
                         help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
     parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
+    parser.add_argument('-L', '--logscale_parameters', type=json.loads,
+                        default="['learning_rate', 'n_estimators', 'C', 'gamma', 'tol']",
+                        help='Parameters that are on a logscale')
 
     args_, misc = parser.parse_known_args()
 

@@ -25,5 +25,5 @@ def sum_dict_values(a, b):
 def divide_dict_values(d, denominator):
     result = {}
     for idx in d.keys():
-        result[idx] = d[idx] + denominator
+        result[idx] = d[idx] / denominator
     return result
