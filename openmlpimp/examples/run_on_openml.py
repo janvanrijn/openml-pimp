@@ -35,13 +35,13 @@ def read_cmd():
                         help="Save result table")
     parser.add_argument("-R", "--required_setups", default=30,
                         help="Minimum number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6952,
+    parser.add_argument("-F", "--flow_id", default=6970,
                         help="The OpenML flow id to use")
     parser.add_argument("-T", "--openml_tag", default="study_14",
                         help="The OpenML tag for obtaining tasks")
     parser.add_argument('-N', '--n_instances', type=str, default='1..2000',
                         help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
-    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default='{"kernel": "rbf"}',
+    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
 
     args_, misc = parser.parse_known_args()
@@ -110,6 +110,7 @@ if __name__ == '__main__':
     all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)\
 
     total_ranks = None
+    nr_tasks = 0
     for task_id in all_tasks:
         try:
             task_folder = save_folder + "/" + str(task_id)
@@ -118,6 +119,7 @@ if __name__ == '__main__':
             with open(results_file) as result_file:
                 data = json.load(result_file)
                 ranks = openmlpimp.utils.rank_dict(data['fanova'], True)
+                nr_tasks += 1
                 if total_ranks is None:
                     total_ranks = ranks
                 else:
@@ -126,4 +128,5 @@ if __name__ == '__main__':
         except Exception as e:
             print('error while executing task %d' %(task_id))
             traceback.print_exc()
-    print("TOTAL RANKS:", total_ranks)
+    total_ranks = openmlpimp.utils.divide_dict_values(total_ranks, nr_tasks)
+    print("TOTAL RANKS:", total_ranks, "("+str(nr_tasks)+")")
