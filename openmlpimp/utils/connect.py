@@ -4,8 +4,6 @@ import openmlpimp
 from openml.exceptions import OpenMLServerException
 from openml.tasks.functions import _list_tasks
 
-from smac.tae.execute_ta_run import StatusType
-
 
 def list_tasks(task_type_id=None, offset=None, size=None, tag=None, nr_instances=None):
     api_call = "task/list"
@@ -50,6 +48,8 @@ def task_counts(flow_id):
 
 
 def obtain_runhistory_and_configspace(flow_id, task_id, keyfield='parameter_name', required_setups=None):
+    from smac.tae.execute_ta_run import StatusType
+
     evaluations = openml.evaluations.list_evaluations("predictive_accuracy", flow=[flow_id], task=[task_id])
     setup_ids = set()
     for run_id in evaluations.keys():
