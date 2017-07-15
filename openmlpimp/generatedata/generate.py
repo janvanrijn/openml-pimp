@@ -21,7 +21,7 @@ def parse_args():
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser.add_argument('--n_executions', type=int,  default=100, help='number of runs to be executed. ')
-    parser.add_argument('--openml_tag', type=str, default=None, help='the tag to obtain the tasks from')
+    parser.add_argument('--openml_tag', type=str, required=True, default=None, help='the tag to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_taskid', type=int, default=None, help='the openml task id to execute')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
@@ -33,7 +33,6 @@ def parse_args():
         raise ValueError('can only set openml_taskid XOR openml_tag')
     if args.openml_taskid is None and args.openml_tag is None:
         raise ValueError('set either openml_taskid or openml_tag')
-
     return args
 
 
@@ -84,6 +83,7 @@ if __name__ == '__main__':
         all_task_ids = set(all_tasks.keys())
         print("%s Obtained %d tasks: %s" %(get_time(), len(all_task_ids), all_task_ids))
         weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
+        print(weighted_probabilities)
 
     for i in range(args.n_executions):
         try:

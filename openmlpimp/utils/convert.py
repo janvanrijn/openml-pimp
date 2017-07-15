@@ -87,7 +87,11 @@ def config_to_classifier(config, indices):
     return classifier
 
 
-def setups_to_configspace(setups, keyfield='parameter_name', ignore_constants=True):
+def setups_to_configspace(setups,
+                          keyfield='parameter_name',
+                          logscale_parameters=None,
+                          ignore_parameters=None,
+                          ignore_constants=True):
     # setups is result from openml.setups.list_setups call
     # note that this config space is not equal to the one
     # obtained from auto-sklearn; but useful for creating
@@ -116,10 +120,19 @@ def setups_to_configspace(setups, keyfield='parameter_name', ignore_constants=Tr
         except ValueError:
             return False
 
-
     cs = ConfigurationSpace()
+    if logscale_parameters is None:
+        logscale_parameters = set()
+    # for parameter in logscale_parameters:
+    #     if parameter not in parameter_values.keys():
+    #         raise ValueError('(Logscale) Parameter not recognized: %s' %parameter)
+
+
     constants = set()
     for name in parameter_values.keys():
+        if ignore_parameters is not None and name in ignore_parameters:
+            continue
+
         all_values = parameter_values[name]
         if len(all_values) <= 1:
             constants.add(name)
@@ -134,7 +147,7 @@ def setups_to_configspace(setups, keyfield='parameter_name', ignore_constants=Tr
                                                  lower=lower,
                                                  upper=upper,
                                                  default=int(lower+(upper-lower) / 2),  # TODO don't know
-                                                 log=False)                             # TODO don't know
+                                                 log=name in logscale_parameters)
             cs.add_hyperparameter(hyper)
         elif all(is_castable_to(item, float) for item in all_values):
             all_values = [float(item) for item in all_values]
@@ -144,7 +157,7 @@ def setups_to_configspace(setups, keyfield='parameter_name', ignore_constants=Tr
                                                lower=lower,
                                                upper=upper,
                                                default=lower + (upper - lower) / 2,  # TODO don't know
-                                               log=False)                            # TODO don't know
+                                               log=name in logscale_parameters)
             cs.add_hyperparameter(hyper)
         else:
             values = [flow_to_sklearn(item) for item in all_values]

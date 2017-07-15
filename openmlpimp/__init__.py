@@ -1,1 +1,1 @@
-from .utils import config_to_classifier
+import openmlpimp.utils
