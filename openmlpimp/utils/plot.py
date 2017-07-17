@@ -29,6 +29,7 @@ def _critical_dist(numModels, numDatasets):
         raise ValueError('needs at least 2 models')
     return alpha005[numModels] * math.sqrt((numModels * (numModels + 1)) / (6 * numDatasets))
 
+
 def plot_nemenyi(algorithms, num_datasets, location):
     # and do the plotting
     matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{lmodern}"]
@@ -81,4 +82,20 @@ def to_csv_file(ranks_dict, location):
             result.update(param_values)
             result['task_id'] = 'Task %d' %task_id
             writer.writerow(result)
+    pass
+
+
+def to_csv_unpivot(ranks_dict, location):
+    with open(location, 'w') as csvfile:
+        fieldnames = ['task_id', 'param_id', 'param_name', 'variance_contribution']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for task_id, param_values in ranks_dict.items():
+
+            for param_name, variance_contribution in param_values.items():
+                result = {'task_id' : task_id,
+                          'param_id': param_name,
+                          'param_name': param_name,
+                          'variance_contribution': variance_contribution}
+                writer.writerow(result)
     pass

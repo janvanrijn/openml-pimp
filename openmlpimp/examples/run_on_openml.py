@@ -8,15 +8,14 @@ import os
 import sys
 import time
 
-cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
-cmd_folder = os.path.realpath(os.path.join(cmd_folder, ".."))
-if cmd_folder not in sys.path:
-    sys.path.insert(0, cmd_folder)
-
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pimp.importance.importance import Importance
 from ConfigSpace.io.pcs_new import write
 
+cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
+cmd_folder = os.path.realpath(os.path.join(cmd_folder, ".."))
+if cmd_folder not in sys.path:
+    sys.path.insert(0, cmd_folder)
 
 def read_cmd():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -31,15 +30,13 @@ def read_cmd():
                         help="verbosity")
     parser.add_argument("-C", "--table", action='store_true',
                         help="Save result table")
-    parser.add_argument("-R", "--required_setups", default=50,
+    parser.add_argument("-R", "--required_setups", default=200,
                         help="Minimum number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6952,
+    parser.add_argument("-F", "--flow_id", default=6970,
                         help="The OpenML flow id to use")
     parser.add_argument("-T", "--openml_tag", default="study_14",
                         help="The OpenML tag for obtaining tasks")
-    parser.add_argument('-N', '--n_instances', type=str, default='1..1000',
-                        help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
-    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default={'kernel': 'rbf'},
+    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
     parser.add_argument('-L', '--logscale_parameters', type=json.loads,
                         default={'learning_rate': ''},
@@ -123,7 +120,7 @@ if __name__ == '__main__':
     ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
     save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s_%s' % (args.flow_id, args.modus, ts)
 
-    all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)
+    all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag)
     print("Tasks: ", str(all_tasks.keys()), "(%d)" %len(all_tasks))
 
     total_ranks = None
@@ -149,5 +146,6 @@ if __name__ == '__main__':
             traceback.print_exc()
     total_ranks = openmlpimp.utils.divide_dict_values(total_ranks, nr_tasks)
     print("TOTAL RANKS:", total_ranks, "("+str(nr_tasks)+")")
+    openmlpimp.utils.to_csv_unpivot(all_ranks, save_folder + '/ranks_plain.csv')
     openmlpimp.utils.to_csv_file(all_ranks, save_folder + '/ranks.csv')
     openmlpimp.utils.plot_nemenyi(total_ranks, nr_tasks, save_folder + "/nemenyi.pdf")
