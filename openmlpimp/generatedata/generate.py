@@ -21,7 +21,7 @@ def parse_args():
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser.add_argument('--n_executions', type=int,  default=100, help='number of runs to be executed. ')
-    parser.add_argument('--openml_tag', type=str, required=True, default=None, help='the tag to obtain the tasks from')
+    parser.add_argument('--openml_tag', type=str, default=None, help='the tag to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_taskid', type=int, default=None, help='the openml task id to execute')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
@@ -64,6 +64,27 @@ def get_probability_fn(configuration_space, all_task_ids):
 
      # sort (because why not)
     return OrderedDict(sorted(probability_fn.items()))
+
+
+def check_classifier_equals(run_id, classifier):
+    params_orig = set(classifier.get_params().keys())
+    run_prime = openml.runs.get_run(run_id)
+    classif_prime = openml.setups.initialize_model(run_prime.setup_id)
+    params_prime = set(classif_prime.get_params().keys())
+    if params_prime != params_orig:
+        raise ValueError('params set not equal!')
+
+    for param, value_prime in classif_prime.get_params().items():
+        value_orig = classifier.get_params()[param]
+        if str(value_orig) != str(value_prime):
+            raise ValueError('param values not equal for param %s: %s vs %s' % (param, value_orig, value_prime))
+
+    task = openml.tasks.get_task(run.task_id)
+    run_check = openml.runs.run_model_on_task(task, classif_prime)
+    score = run_check.get_metric_score(sklearn.metrics.accuracy_score)
+    print('%s [CHECK] Data: %s; Accuracy: %0.2f' % (get_time(), task.get_dataset().name, score.mean()))
+
+    return True
 
 
 if __name__ == '__main__':
@@ -110,11 +131,14 @@ if __name__ == '__main__':
             run = openml.runs.run_model_on_task(task, classifier)
             run.tags.append('openml-pimp')
             score = run.get_metric_score(sklearn.metrics.accuracy_score)
-            print('%s Data: %s; Accuracy: %0.2f' % (get_time(), task.get_dataset().name, score.mean()))
+            print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (get_time(), task.get_dataset().name, score.mean()))
 
             # and publish it
             run.publish()
             print("%s Uploaded with run id %d" %(get_time(), run.run_id))
+
+            # now do a check!
+            # check_classifier_equals(run.run_id, classifier)
         except ValueError as e:
             traceback.print_exc()
         except TypeError as e:

@@ -28,13 +28,13 @@ openml.config.apikey = args.openml_apikey
 #adaboost 6970
 #random forest 6969 [!] removed
 #svc 6952
-flow_id = [6969]
+flow_id = 6969
 
 task_ids = {}
 offset = 0
 limit = 10000
 while True:
-    runs = openml.runs.list_runs(flow=flow_id, size=limit, offset=offset)
+    runs = openml.runs.list_runs(flow=[flow_id], size=limit, offset=offset)
     for run_id, run in runs.items():
         task_id = run['task_id']
         if task_id not in task_ids:
@@ -44,6 +44,7 @@ while True:
         break
     else:
         offset += limit
+print(flow_id)
 print(task_ids)
 print("tasks", len(task_ids))
 print("sum", sum(task_ids.values()))

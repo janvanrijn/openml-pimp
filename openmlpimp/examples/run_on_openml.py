@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 import time
+import numpy as np
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pimp.importance.importance import Importance
@@ -44,6 +45,9 @@ def read_cmd():
     parser.add_argument('-I', '--ignore_parameters', type=json.loads,
                         default={'random_state': ''},
                         help='Parameters to ignore')
+    parser.add_argument('-Q', '--use_quantiles', action="store_true",
+                        default=True,
+                        help='Use quantile information instead of full range')
 
     args_, misc = parser.parse_known_args()
 
@@ -104,12 +108,19 @@ def execute(save_folder, flow_id, task_id, args):
     importance = Importance(scenario, runhistory,
                             traj_file=trajectory,
                             seed=args.seed,
-                            save_folder=save_folder)
+                            save_folder=save_folder,
+                            cutoffs_rf=cutoffs_rf)
+    for i in range(5):
+        try:
+            result = importance.evaluate_scenario(args.modus)
 
-    result = importance.evaluate_scenario(args.modus)
-    with open(os.path.join(save_folder, 'pimp_values_%s.json' % args.modus), 'w') as out_file:
-        json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
-    importance.plot_results(name=os.path.join(save_folder, args.modus))
+            with open(os.path.join(save_folder, 'pimp_values_%s.json' % args.modus), 'w') as out_file:
+                json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
+            importance.plot_results(name=os.path.join(save_folder, args.modus))
+            return
+        except ZeroDivisionError as e:
+            pass
+    raise e
 
 
 if __name__ == '__main__':
