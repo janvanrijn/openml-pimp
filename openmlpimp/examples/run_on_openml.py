@@ -8,10 +8,14 @@ import os
 import sys
 import time
 import numpy as np
+from matplotlib import pyplot as plt
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-from pimp.importance.importance import Importance
+from ConfigSpace.hyperparameters import CategoricalHyperparameter
 from ConfigSpace.io.pcs_new import write
+
+from fanova.fanova import fANOVA as fanova_pyrfr
+from fanova.visualizer import Visualizer
 
 cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
 cmd_folder = os.path.realpath(os.path.join(cmd_folder, ".."))
@@ -21,9 +25,6 @@ if cmd_folder not in sys.path:
 def read_cmd():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument("-M", "--modus",
-                        help='Analysis method to use', default="fanova",
-                        choices=['ablation', 'forward-selection', 'influence-model', 'fanova'])
     parser.add_argument("--seed", default=12345, type=int,
                         help="random seed")
     parser.add_argument("-V", "--verbose_level", default=logging.INFO,
@@ -59,64 +60,78 @@ def read_cmd():
     return args_
 
 
-def generate_required_files(folder, flow_id, task_id,
-                            required_setups=None,
-                            fixed_parameters=None,
-                            logscale_parameters=None,
-                            ignore_parameters=None):
-    try:
-      os.makedirs(folder)
-    except FileExistsError:
-      pass
-    runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id,
-                                                                                 required_setups=required_setups,
-                                                                                 fixed_parameters=fixed_parameters,
-                                                                                 logscale_parameters=logscale_parameters,
-                                                                                 ignore_parameters=ignore_parameters)
+def plot_result(fANOVA, configspace, directory):
+    vis = Visualizer(fANOVA, configspace)
 
-    trajectory_lines = openmlpimp.utils.runhistory_to_trajectory(runhistory, None)
+    try: os.makedirs(directory)
+    except FileExistsError: pass
 
-    with open(folder + 'runhistory.json', 'w') as outfile:
-        json.dump(runhistory, outfile)
-        runhistory_location = os.path.realpath(outfile.name)
-
-    with open(folder + 'traj_aclib2.json', 'w') as outfile:
-        for line in trajectory_lines:
-            json.dump(line, outfile)
-            outfile.write("\n")
-        traj_location = os.path.realpath(outfile.name)
-
-    with open(folder + 'config_space.pcs', 'w') as outfile:
-        outfile.write(write(configspace))
-        pcs_location = os.path.realpath(outfile.name)
-
-    with open(folder + 'scenario.txt', 'w') as outfile:
-        outfile.write("run_obj = quality\ndeterministic = 1\nparamfile = " + pcs_location)
-        scenario_location = os.path.realpath(outfile.name)
-
-    return scenario_location, runhistory_location, traj_location
+    for hp in configspace.get_hyperparameters():
+        plt.close('all')
+        plt.clf()
+        param = hp.name
+        outfile_name = os.path.join(directory, param.replace(os.sep, "_") + ".png")
+        if isinstance(hp, (CategoricalHyperparameter)):
+            vis.plot_categorical_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False)
+        else:
+            vis.plot_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False)
+        plt.savefig(outfile_name)
+    pass
 
 
 def execute(save_folder, flow_id, task_id, args):
+    runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id,
+                                                                                 required_setups=args.required_setups,
+                                                                                 fixed_parameters=args.fixed_parameters,
+                                                                                 logscale_parameters=args.logscale_parameters,
+                                                                                 ignore_parameters=args.ignore_parameters)
+    try: os.makedirs(save_folder + '/inputs')
+    except FileExistsError: pass
 
-    scenario, runhistory, trajectory = generate_required_files(save_folder + '/inputs/',
-                                                               flow_id, task_id,
-                                                               required_setups=args.required_setups,
-                                                               fixed_parameters=args.fixed_parameters,
-                                                               logscale_parameters=args.logscale_parameters,
-                                                               ignore_parameters=args.ignore_parameters)
-    importance = Importance(scenario, runhistory,
-                            traj_file=trajectory,
-                            seed=args.seed,
-                            save_folder=save_folder,
-                            cutoffs_rf=cutoffs_rf)
-    for i in range(5):
+    with open(save_folder + '/inputs/runhistory.json', 'w') as outfile:
+        json.dump(runhistory, outfile)
+
+    with open(save_folder + '/inputs/config_space.pcs', 'w') as outfile:
+        outfile.write(write(configspace))
+
+    X = []
+    y = []
+
+    for item in runhistory['data']:
+        current = []
+        setup_id = item[0][0]
+        configuration = runhistory['configs'][setup_id]
+        for param in configspace.get_hyperparameters():
+            value = configuration[param.name]
+            if isinstance(param, CategoricalHyperparameter):
+                if value == 'True':
+                    value = True
+                elif value == 'False':
+                    value = False
+
+                value = param.choices.index(value)
+            current.append(value)
+        X.append(current)
+        y.append(item[1][0])
+    X = np.array(X)
+    y = np.array(y)
+
+    max_tries = 5
+    for i in range(max_tries):
         try:
-            result = importance.evaluate_scenario(args.modus)
-
-            with open(os.path.join(save_folder, 'pimp_values_%s.json' % args.modus), 'w') as out_file:
+            # start the evaluator
+            evaluator = fanova_pyrfr(X=X, Y=y, config_space=configspace, config_on_hypercube=False)
+            # obtain the results
+            params = configspace.get_hyperparameters()
+            result = {}
+            for idx, param in enumerate(params):
+                importance = evaluator.quantify_importance([idx])[(idx,)]['total importance']
+                result[param.name] = importance
+            # store to disk
+            with open(os.path.join(save_folder, 'pimp_values_fanova.json'), 'w') as out_file:
                 json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
-            importance.plot_results(name=os.path.join(save_folder, args.modus))
+            # call plotting fn
+            plot_result(evaluator, configspace, save_folder + "/fanova")
             return
         except ZeroDivisionError as e:
             pass
@@ -129,7 +144,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.verbose_level)
     ts = time.time()
     ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
-    save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s_%s' % (args.flow_id, args.modus, ts)
+    save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s' % (args.flow_id, ts)
 
     all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag)
     print("Tasks: ", str(all_tasks.keys()), "(%d)" %len(all_tasks))
@@ -141,11 +156,11 @@ if __name__ == '__main__':
         try:
             task_folder = save_folder + "/" + str(task_id)
             execute(task_folder, args.flow_id, task_id, args)
-            results_file = save_folder + '/' + str(task_id) + '/pimp_values_%s.json' %args.modus
+            results_file = task_folder + '/pimp_values_fanova.json'
             with open(results_file) as result_file:
                 data = json.load(result_file)
-                all_ranks[task_id] = data[args.modus]
-                ranks = openmlpimp.utils.rank_dict(data[args.modus], True)
+                all_ranks[task_id] = data
+                ranks = openmlpimp.utils.rank_dict(data, True)
                 nr_tasks += 1
                 if total_ranks is None:
                     total_ranks = ranks

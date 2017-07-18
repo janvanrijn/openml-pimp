@@ -109,7 +109,7 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     configs = {}
     applicable_setups = set()
     for run_id in evaluations.keys():
-        cost = 1.0 - evaluations[run_id].value
+        cost = evaluations[run_id].value
         runtime = 0.0 # not easily accessible
         status = {"__enum__": str(StatusType.SUCCESS) }
         additional = {}
