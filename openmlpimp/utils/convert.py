@@ -77,8 +77,7 @@ def config_to_classifier(config, indices):
                                                fill_empty=0,
                                                categorical_features=indices,
                                                strategy_nominal='most_frequent')),
-             ('hotencoding', sklearn.preprocessing.OneHotEncoder(sparse=False,
-                                                                 handle_unknown='ignore',
+             ('hotencoding', sklearn.preprocessing.OneHotEncoder(handle_unknown='ignore',
                                                                  categorical_features=indices)),
              ('variencethreshold', sklearn.feature_selection.VarianceThreshold()),
              ('classifier', classifier)]
