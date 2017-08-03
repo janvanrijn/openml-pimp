@@ -34,7 +34,7 @@ def read_cmd():
                         help="Save result table")
     parser.add_argument("-R", "--required_setups", default=200,
                         help="Minimum number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6970,
+    parser.add_argument("-F", "--flow_id", default=6969,
                         help="The OpenML flow id to use")
     parser.add_argument("-T", "--openml_tag", default="study_14",
                         help="The OpenML tag for obtaining tasks")
@@ -149,11 +149,11 @@ if __name__ == '__main__':
                 data = json.load(result_file)
                 all_ranks[task_id] = data
                 ranks = openmlpimp.utils.rank_dict(data, True)
-                nr_tasks += 1
                 if total_ranks is None:
                     total_ranks = ranks
                 else:
                     total_ranks = openmlpimp.utils.sum_dict_values(total_ranks, ranks)
+                nr_tasks += 1
                 print("Task", task_id, ranks)
         except Exception as e:
             print('error while executing task %d' %(task_id))

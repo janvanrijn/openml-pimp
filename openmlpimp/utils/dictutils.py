@@ -2,6 +2,7 @@ import collections
 import scipy
 import copy
 
+
 def rank_dict(dictionary, reverse=False):
     dictionary = copy.copy(dictionary)
     if reverse:
