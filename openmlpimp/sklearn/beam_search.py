@@ -34,8 +34,6 @@ class BeamSampler(object):
                 yield copy.deepcopy(params)
             # now obtain the value of params that performed best and fix it
             params[param] = max(self.recent_results, key=lambda i: np.mean(self.recent_results[i]))
-            print(param, params[param])
-            for val, res in self.recent_results.items(): print(val, np.mean(res))
             # flush the memory of collected results
             self.recent_results = dict()
 
