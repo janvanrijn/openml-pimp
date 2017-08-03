@@ -1,8 +1,13 @@
 import openml
 import openmlpimp
 
+import os
+import json
+
 from openml.exceptions import OpenMLServerException
 from openml.tasks.functions import _list_tasks
+
+from ConfigSpace.io.pcs_new import write, read
 
 
 def list_tasks(task_type_id=None, offset=None, size=None, tag=None, nr_instances=None):
@@ -150,3 +155,33 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
 
     run_history = {"data": data, "configs": configs}
     return run_history, config_space
+
+
+def cache_runhistory_configspace(save_folder, flow_id, task_id, args):
+    runhistory_path = save_folder + '/runhistory.json'
+    configspace_path = save_folder + '/config_space.pcs'
+
+    if not os.path.isfile(runhistory_path) or not os.path.isfile(configspace_path):
+        runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id,
+                                                                                     required_setups=args.required_setups,
+                                                                                     fixed_parameters=args.fixed_parameters,
+                                                                                     logscale_parameters=args.logscale_parameters,
+                                                                                     ignore_parameters=args.ignore_parameters)
+
+        try: os.makedirs(save_folder)
+        except FileExistsError: pass
+
+        with open(runhistory_path, 'w') as outfile:
+            json.dump(runhistory, outfile, indent=2)
+
+        with open(configspace_path, 'w') as outfile:
+            outfile.write(write(configspace))
+    else:
+        print('[Obtained from cache]')
+
+    # now the files are guaranteed to exists
+    with open(runhistory_path) as runhistory_file:
+        runhistory = json.load(runhistory_file)
+    with open(configspace_path) as configspace_file:
+        configspace = read(configspace_file)
+    return runhistory, configspace

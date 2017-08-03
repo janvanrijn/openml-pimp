@@ -12,15 +12,15 @@ from matplotlib import pyplot as plt
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from ConfigSpace.hyperparameters import CategoricalHyperparameter
-from ConfigSpace.io.pcs_new import write
 
 from fanova.fanova import fANOVA as fanova_pyrfr
 from fanova.visualizer import Visualizer
 
-cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
+cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
 cmd_folder = os.path.realpath(os.path.join(cmd_folder, ".."))
 if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
+
 
 def read_cmd():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -79,36 +79,20 @@ def plot_result(fANOVA, configspace, directory):
     pass
 
 
-def execute(save_folder, flow_id, task_id, args):
-    runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id,
-                                                                                 required_setups=args.required_setups,
-                                                                                 fixed_parameters=args.fixed_parameters,
-                                                                                 logscale_parameters=args.logscale_parameters,
-                                                                                 ignore_parameters=args.ignore_parameters)
-    try: os.makedirs(save_folder + '/inputs')
+def execute(save_folder, runhistory, configspace):
+    try: os.makedirs(save_folder)
     except FileExistsError: pass
-
-    with open(save_folder + '/inputs/runhistory.json', 'w') as outfile:
-        json.dump(runhistory, outfile)
-
-    with open(save_folder + '/inputs/config_space.pcs', 'w') as outfile:
-        outfile.write(write(configspace))
 
     X = []
     y = []
 
     for item in runhistory['data']:
         current = []
-        setup_id = item[0][0]
+        setup_id = str(item[0][0])
         configuration = runhistory['configs'][setup_id]
         for param in configspace.get_hyperparameters():
             value = configuration[param.name]
             if isinstance(param, CategoricalHyperparameter):
-                if value == 'True':
-                    value = True
-                elif value == 'False':
-                    value = False
-
                 value = param.choices.index(value)
             current.append(value)
         X.append(current)
@@ -144,19 +128,23 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.verbose_level)
     ts = time.time()
     ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
+    cache_folder = '/home/vanrijn/experiments/PIMP_flow%d_cache' %args.flow_id
     save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s' % (args.flow_id, ts)
 
     all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag)
-    print("Tasks: ", str(all_tasks.keys()), "(%d)" %len(all_tasks))
+    print("Tasks: ", list(all_tasks.keys()), "(%d)" %len(all_tasks))
 
     total_ranks = None
     all_ranks = {}
     nr_tasks = 0
     for task_id in all_tasks:
         try:
-            task_folder = save_folder + "/" + str(task_id)
-            execute(task_folder, args.flow_id, task_id, args)
-            results_file = task_folder + '/pimp_values_fanova.json'
+            task_save_folder = save_folder + "/" + str(task_id)
+            task_cache_folder = cache_folder + "/" + str(task_id)
+            runhistory, configspace = openmlpimp.utils.cache_runhistory_configspace(task_cache_folder, args.flow_id, task_id, args)
+
+            execute(task_save_folder, runhistory, configspace)
+            results_file = task_save_folder + '/pimp_values_fanova.json'
             with open(results_file) as result_file:
                 data = json.load(result_file)
                 all_ranks[task_id] = data
