@@ -1,5 +1,7 @@
 import numpy as np
 import copy
+import warnings
+import collections
 
 from sklearn.model_selection._search import BaseSearchCV
 from sklearn.metrics.scorer import check_scoring
@@ -11,10 +13,19 @@ class BeamSampler(object):
     def __init__(self, param_distributions, beam_width, defaults):
         self.param_distributions = param_distributions
         self.beam_width = beam_width
-        self.recent_results = dict()
+        self.recent_results = collections.defaultdict(dict)
         self.param_order = []
-        self.defaults = defaults
-        if set(defaults.keys()) != set(self.param_distributions.keys()):
+        self.defaults = dict()
+
+        for param, value in defaults.items():
+            if param in self.param_distributions:
+                if value in self.param_distributions[param]:
+                    self.defaults[param] = value
+                else:
+                    self.defaults[param] = self.param_distributions[param][0]
+                    warnings.warn('Parameter %s: Default value not on grid, picking instead %s' %(param, str(self.defaults[param])))
+
+        if set(self.defaults.keys()) != set(self.param_distributions.keys()):
             raise ValueError('Param distributions and defaults do not agree. ')
 
         all_lists = np.all([not hasattr(v, "rvs") for v in self.param_distributions.values()])
@@ -26,16 +37,22 @@ class BeamSampler(object):
             raise ValueError('Currently, only beam_width = 1 is supported. ')
 
     def __iter__(self):
-        params = self.defaults
+        params = copy.deepcopy(self.defaults)
         for param, values in self.param_distributions.items():
             self.param_order.append(param)
             for value in values:
+                if value == self.defaults[param] and len(self.param_order) > 1:
+                    # we can skip results that were already ran
+                    # (skip all params that match their default, unless we are optimizing param #1)
+                    # just put it in the recent results
+                    previous_param = self.param_order[-2]
+                    previous_value = params[previous_param]
+                    self.recent_results[param][self.defaults[param]] = self.recent_results[previous_param][previous_value]
+                    continue
                 params[param] = value
                 yield copy.deepcopy(params)
-            # now obtain the value of params that performed best and fix it
-            params[param] = max(self.recent_results, key=lambda i: np.mean(self.recent_results[i]))
-            # flush the memory of collected results
-            self.recent_results = dict()
+            # now obtain the value of params that performed best and fix it (priority on later keys)
+            params[param] = max(self.recent_results[param], key=lambda i: np.mean(self.recent_results[param][i]))
 
     def __len__(self):
         """Number of points that will be sampled."""
@@ -44,10 +61,13 @@ class BeamSampler(object):
     def update(self, params, score):
         if len(self.param_order) == 0:
             raise ValueError('param_order is None, call to update function unexpected. ')
-        current_value = params[self.param_order[-1]]
-        if current_value not in self.recent_results:
-            self.recent_results[current_value] = []
-        self.recent_results[current_value].append(score)
+        current_param = self.param_order[-1]
+        current_value = params[current_param]
+        if current_param not in self.recent_results:
+            self.recent_results[current_param] = dict()
+        if current_value not in self.recent_results[current_param]:
+            self.recent_results[current_param][current_value] = []
+        self.recent_results[current_param][current_value].append(score)
 
 
 class ObservableScorer(object):
@@ -87,9 +107,7 @@ class BeamSearchCV(BaseSearchCV):
             raise ValueError('Multiprocessing not supported yet (please fix n_jobs to 1). ')
         self.param_distributions = param_distributions
         self.beam_width = beam_width
-        self.defaults = {}
-        for param in param_distributions.keys():
-            self.defaults[param] = estimator.get_params()[param]
+        self.defaults = estimator.get_params()
 
         # trick to communicate scores back to param grid.
         original_scoring = check_scoring(estimator, scoring)
@@ -121,4 +139,6 @@ class BeamSearchCV(BaseSearchCV):
         """
         beamsampler = BeamSampler(self.param_distributions, self.beam_width, self.defaults)
         self.observable_scorer.register(beamsampler)
-        return self._fit(X, y, groups, beamsampler)
+        res = self._fit(X, y, groups, beamsampler)
+        self.defaults = beamsampler.defaults # for unit test
+        return res
