@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 from sklearn.model_selection._search import BaseSearchCV
 from sklearn.metrics.scorer import check_scoring
@@ -7,11 +8,14 @@ from sklearn.metrics.scorer import check_scoring
 class BeamSampler(object):
     """In accordance with the Observer pattern """
 
-    def __init__(self, param_distributions, beam_width):
+    def __init__(self, param_distributions, beam_width, defaults):
         self.param_distributions = param_distributions
         self.beam_width = beam_width
         self.recent_results = dict()
         self.param_order = []
+        self.defaults = defaults
+        if set(defaults.keys()) != set(self.param_distributions.keys()):
+            raise ValueError('Param distributions and defaults do not agree. ')
 
         all_lists = np.all([not hasattr(v, "rvs") for v in self.param_distributions.values()])
         if not all_lists:
@@ -22,14 +26,16 @@ class BeamSampler(object):
             raise ValueError('Currently, only beam_width = 1 is supported. ')
 
     def __iter__(self):
-        params = {}
+        params = self.defaults
         for param, values in self.param_distributions.items():
             self.param_order.append(param)
             for value in values:
                 params[param] = value
-                yield params
+                yield copy.deepcopy(params)
             # now obtain the value of params that performed best and fix it
             params[param] = max(self.recent_results, key=lambda i: np.mean(self.recent_results[i]))
+            print(param, params[param])
+            for val, res in self.recent_results.items(): print(val, np.mean(res))
             # flush the memory of collected results
             self.recent_results = dict()
 
@@ -78,12 +84,14 @@ class BeamSearchCV(BaseSearchCV):
 
     def __init__(self, estimator, param_distributions, beam_width=1, scoring=None,
                  fit_params=None, n_jobs=1, iid=True, refit=True, cv=None,
-                 verbose=0, pre_dispatch='2*n_jobs', error_score='raise',
-                 return_train_score=True):
+                 verbose=0, pre_dispatch='2*n_jobs', error_score='raise'):
         if n_jobs > 1:
             raise ValueError('Multiprocessing not supported yet (please fix n_jobs to 1). ')
         self.param_distributions = param_distributions
         self.beam_width = beam_width
+        self.defaults = {}
+        for param in param_distributions.keys():
+            self.defaults[param] = estimator.get_params()[param]
 
         # trick to communicate scores back to param grid.
         original_scoring = check_scoring(estimator, scoring)
@@ -94,7 +102,7 @@ class BeamSearchCV(BaseSearchCV):
              estimator=estimator, scoring=scoring, fit_params=fit_params,
              n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
              pre_dispatch=pre_dispatch, error_score=error_score,
-             return_train_score=return_train_score)
+             return_train_score=False) # return train score is always false, because the scorer gets confused otherwise
 
     def fit(self, X, y=None, groups=None):
         """Run fit on the estimator with randomly drawn parameters.
@@ -113,6 +121,6 @@ class BeamSearchCV(BaseSearchCV):
             Group labels for the samples used while splitting the dataset into
             train/test set.
         """
-        beamsampler = BeamSampler(self.param_distributions, self.beam_width)
+        beamsampler = BeamSampler(self.param_distributions, self.beam_width, self.defaults)
         self.observable_scorer.register(beamsampler)
         return self._fit(X, y, groups, beamsampler)
