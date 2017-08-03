@@ -27,7 +27,6 @@ class BeamSampler(object):
             self.param_order.append(param)
             for value in values:
                 params[param] = value
-                print(param, params)
                 yield params
             # now obtain the value of params that performed best and fix it
             params[param] = max(self.recent_results, key=lambda i: np.mean(self.recent_results[i]))
@@ -75,7 +74,7 @@ class ObservableScorer(object):
             observer.update(*args, **kwargs)
 
 
-class BeamSearch(BaseSearchCV):
+class BeamSearchCV(BaseSearchCV):
 
     def __init__(self, estimator, param_distributions, beam_width=1, scoring=None,
                  fit_params=None, n_jobs=1, iid=True, refit=True, cv=None,
@@ -91,7 +90,7 @@ class BeamSearch(BaseSearchCV):
         self.observable_scorer = ObservableScorer(original_scoring)
         scoring = self.observable_scorer.score
 
-        super(BeamSearch, self).__init__(
+        super(BeamSearchCV, self).__init__(
              estimator=estimator, scoring=scoring, fit_params=fit_params,
              n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
              pre_dispatch=pre_dispatch, error_score=error_score,
