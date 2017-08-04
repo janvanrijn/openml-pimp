@@ -26,7 +26,6 @@ def parse_args():
     parser.add_argument('--openml_taskid', type=int, default=None, help='the openml task id to execute')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='decision_tree', help='the classifier to execute')
-    parser.add_argument('--n_instances', type=str, default=None, help='restrict obtained tasks to certain nr of instances, e.g., 1..1000')
 
     args = parser.parse_args()
     if args.openml_taskid is not None and args.openml_tag is not None:

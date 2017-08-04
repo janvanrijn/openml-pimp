@@ -110,8 +110,8 @@ class BeamSearchCV(BaseSearchCV):
         self.defaults = estimator.get_params()
 
         # trick to communicate scores back to param grid.
-        original_scoring = check_scoring(estimator, scoring)
-        self.observable_scorer = ObservableScorer(original_scoring)
+        self.original_scoring = check_scoring(estimator, scoring)
+        self.observable_scorer = ObservableScorer(self.original_scoring)
         scoring = self.observable_scorer.score
 
         super(BeamSearchCV, self).__init__(
@@ -142,3 +142,8 @@ class BeamSearchCV(BaseSearchCV):
         res = self._fit(X, y, groups, beamsampler)
         self.defaults = beamsampler.defaults # for unit test
         return res
+
+    def get_params(self, deep=True):
+        params = super(BeamSearchCV, self).get_params(deep)
+        params['scoring'] = self.original_scoring
+        return params

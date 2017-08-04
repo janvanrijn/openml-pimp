@@ -23,6 +23,19 @@ def obtain_classifier(configuration_space, indices, max_attempts=5):
                 raise e
 
 
+def classifier_to_pipeline(classifier, indices):
+    steps = [('imputation', ConditionalImputer(strategy='median',
+                                               fill_empty=0,
+                                               categorical_features=indices,
+                                               strategy_nominal='most_frequent')),
+             ('hotencoding', sklearn.preprocessing.OneHotEncoder(handle_unknown='ignore',
+                                                                 categorical_features=indices)),
+             ('variencethreshold', sklearn.feature_selection.VarianceThreshold()),
+             ('classifier', classifier)]
+    pipeline = sklearn.pipeline.Pipeline(steps=steps)
+    return pipeline
+
+
 def config_to_classifier(config, indices):
     parameter_settings = config.get_dictionary()
     print(parameter_settings)
@@ -73,17 +86,9 @@ def config_to_classifier(config, indices):
     else:
         raise ValueError('Unknown classifier: %s' %model_type)
 
-    steps = [('imputation', ConditionalImputer(strategy='median',
-                                               fill_empty=0,
-                                               categorical_features=indices,
-                                               strategy_nominal='most_frequent')),
-             ('hotencoding', sklearn.preprocessing.OneHotEncoder(handle_unknown='ignore',
-                                                                 categorical_features=indices)),
-             ('variencethreshold', sklearn.feature_selection.VarianceThreshold()),
-             ('classifier', classifier)]
-    classifier = sklearn.pipeline.Pipeline(steps=steps)
-    classifier.set_params(**pipeline_parameters)
-    return classifier
+    pipeline = classifier_to_pipeline(classifier, indices)
+    pipeline.set_params(**pipeline_parameters)
+    return pipeline
 
 
 def setups_to_configspace(setups,
