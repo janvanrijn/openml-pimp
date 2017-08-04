@@ -38,7 +38,6 @@ def classifier_to_pipeline(classifier, indices):
 
 def config_to_classifier(config, indices):
     parameter_settings = config.get_dictionary()
-    print(parameter_settings)
     model_type = None
     pipeline_parameters = {}
     for param, value in parameter_settings.items():

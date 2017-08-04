@@ -14,7 +14,7 @@ def parse_args():
     all_classifiers = ['adaboost', 'random_forest']
     parser.add_argument('--n_iters', type=int,  default=50, help='number of runs to be executed in case of random search. ')
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
-    parser.add_argument('--array_index', type=int, required=True, help='the index of job array')
+    parser.add_argument('--array_index', type=int, help='the index of job array')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
@@ -51,13 +51,14 @@ if __name__ == '__main__':
 
     study = openml.study.get_study(args.openml_study)
     if args.array_index is None:
-        tasks = random. shuffle(study.tasks)
+        tasks = study.tasks
+        random.shuffle(tasks)
     else:
-        tasks = study.tasks[args.array_index]
+        tasks = [study.tasks[args.array_index]]
 
     for task_id in tasks:
         try:
-            task = openml.tasks.get_task(study.tasks[task_id])
+            task = openml.tasks.get_task(task_id)
             indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
 
             if args.classifier == 'random_forest':
