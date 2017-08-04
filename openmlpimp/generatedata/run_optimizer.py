@@ -1,6 +1,7 @@
 import argparse
 import openml
 import openmlpimp
+import random
 
 from collections import OrderedDict
 
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
     study = openml.study.get_study(args.openml_study)
     if args.array_index is None:
-        tasks = study.tasks
+        tasks = random. shuffle(study.tasks)
     else:
         tasks = study.tasks[args.array_index]
 
