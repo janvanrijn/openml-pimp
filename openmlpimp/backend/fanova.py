@@ -74,5 +74,6 @@ class FanovaBackend(object):
                 FanovaBackend._plot_result(evaluator, configspace, save_folder + "/fanova")
                 return save_folder + "/" + filename
             except ZeroDivisionError as e:
-                pass
-        raise e
+                if i + 1 == max_tries:
+                    raise e
+        raise ValueError('Should never happen. ')

@@ -38,7 +38,7 @@ def read_cmd():
                         default={'learning_rate': ''},
                         help='Parameters that are on a logscale')
     parser.add_argument('-I', '--ignore_parameters', type=json.loads,
-                        default={'random_state': ''},
+                        default={'random_state': '', 'sparse': ''},
                         help='Parameters to ignore')
     parser.add_argument('-Q', '--use_quantiles', action="store_true",
                         default=True,
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     total_ranks = None
     all_ranks = {}
     nr_tasks = 0
-    for task_id in all_tasks:
+    for task_id in [2, 31, 53]:
         try:
             task_save_folder = save_folder + "/" + str(task_id)
             task_cache_folder = cache_folder + "/" + str(task_id)
