@@ -25,7 +25,7 @@ def parse_args():
     return args
 
 
-def obtain_paramgrid(classifier, reversed=False):
+def obtain_paramgrid(classifier, reverse=False):
     if classifier == 'random_forest':
         param_grid = OrderedDict()
         param_grid['classifier__min_samples_leaf'] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
@@ -37,7 +37,7 @@ def obtain_paramgrid(classifier, reversed=False):
     else:
         raise ValueError()
 
-    if reversed:
+    if reverse:
         return OrderedDict(reversed(list(param_grid.items())))
     else:
         return param_grid
