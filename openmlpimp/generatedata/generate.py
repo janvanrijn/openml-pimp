@@ -21,16 +21,16 @@ def parse_args():
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser.add_argument('--n_executions', type=int,  default=100, help='number of runs to be executed. ')
-    parser.add_argument('--openml_tag', type=str, default=None, help='the tag to obtain the tasks from')
+    parser.add_argument('--study_id', type=int, default=None, help='the tag to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_taskid', type=int, default=None, help='the openml task id to execute')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='decision_tree', help='the classifier to execute')
 
     args = parser.parse_args()
-    if args.openml_taskid is not None and args.openml_tag is not None:
+    if args.openml_taskid is not None and args.study_id is not None:
         raise ValueError('can only set openml_taskid XOR openml_tag')
-    if args.openml_taskid is None and args.openml_tag is None:
+    if args.openml_taskid is None and args.study_id is None:
         raise ValueError('set either openml_taskid or openml_tag')
     return args
 
@@ -92,15 +92,14 @@ if __name__ == '__main__':
     if args.openml_server:
         openml.config.server = args.openml_server
 
-
     configuration_space = get_configuration_space(
         info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
         include_estimators=[args.classifier],
         include_preprocessors=['no_preprocessing'])
 
     if args.openml_taskid is None:
-        all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag, nr_instances=args.n_instances)
-        all_task_ids = set(all_tasks.keys())
+        study = openml.study.get_study(args.study_id)
+        all_task_ids = study.tasks
         print("%s Obtained %d tasks: %s" %(get_time(), len(all_task_ids), all_task_ids))
         weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
         print(weighted_probabilities)

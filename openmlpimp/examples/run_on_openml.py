@@ -93,4 +93,3 @@ if __name__ == '__main__':
     print("TOTAL RANKS:", total_ranks, "("+str(nr_tasks)+")")
     openmlpimp.utils.to_csv_unpivot(all_ranks, save_folder + '/ranks_plain.csv')
     openmlpimp.utils.to_csv_file(all_ranks, save_folder + '/ranks.csv')
-    openmlpimp.utils.plot_nemenyi(total_ranks, nr_tasks, save_folder + "/nemenyi.pdf")
