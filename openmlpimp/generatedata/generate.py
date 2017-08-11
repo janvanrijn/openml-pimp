@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('--n_executions', type=int,  default=100, help='number of runs to be executed. ')
     parser.add_argument('--study_id', type=int, default=None, help='the tag to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
-    parser.add_argument('--openml_taskid', type=list, default=[146607, 146606, 3573], help='the openml task id to execute')
+    parser.add_argument('--openml_taskid', type=list, default=None, help='the openml task id to execute')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='decision_tree', help='the classifier to execute')
 
