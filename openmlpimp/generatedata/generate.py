@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('--n_executions', type=int,  default=100, help='number of runs to be executed. ')
     parser.add_argument('--study_id', type=int, default=None, help='the tag to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
-    parser.add_argument('--openml_taskid', type=list, default=None, help='the openml task id to execute')
+    parser.add_argument('--openml_taskid', type=int, nargs="+", default=None, help='the openml task id to execute')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='decision_tree', help='the classifier to execute')
 
@@ -109,15 +109,18 @@ if __name__ == '__main__':
             if args.openml_taskid is None:
                 # sample a weighted random task
                 task_id = random.choice([val for val, cnt in weighted_probabilities.items() for i in range(cnt)])
-                # download task
-                task = openml.tasks.get_task(task_id)
             elif isinstance(args.openml_taskid, list):
-                task_id = random.choice(args.openml_taskid)
-                task = openml.tasks.get_task(task_id)
+                task_id = int(random.choice(args.openml_taskid))
+            elif isinstance(args.openml_taskid, int):
+                task_id = args.openml_taskid
+            else:
+                raise ValueError('Task id not given')
+            # download task
+            task = openml.tasks.get_task(task_id)
 
             data_name = task.get_dataset().name
             data_qualities = task.get_dataset().qualities
-            print("%s Obtained dataset '%s'; %s attributes; %s observations" %(get_time(), data_name,
+            print("%s Obtained task %d (%s); %s attributes; %s observations" %(get_time(), task_id, data_name,
                                                                                data_qualities['NumberOfFeatures'],
                                                                                data_qualities['NumberOfInstances']))
 
