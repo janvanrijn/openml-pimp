@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 import time
+import openml
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
@@ -63,13 +64,13 @@ if __name__ == '__main__':
     cache_folder = '/home/vanrijn/experiments/PIMP_flow%d_cache' %args.flow_id
     save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s' % (args.flow_id, ts)
 
-    all_tasks = openmlpimp.utils.list_tasks(tag=args.openml_tag)
+    all_tasks = openml.tasks.list_tasks(tag=args.openml_tag)
     print("Tasks: ", list(all_tasks.keys()), "(%d)" %len(all_tasks))
 
     total_ranks = None
     all_ranks = {}
     nr_tasks = 0
-    for task_id in [2, 31, 53]:
+    for task_id in all_tasks:
         try:
             task_save_folder = save_folder + "/" + str(task_id)
             task_cache_folder = cache_folder + "/" + str(task_id)
