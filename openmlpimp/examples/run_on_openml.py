@@ -31,7 +31,7 @@ def read_cmd():
                         help="Minimum number of setups needed to use a task")
     parser.add_argument("-F", "--flow_id", default=6969,
                         help="The OpenML flow id to use")
-    parser.add_argument("-T", "--openml_tag", default="study_14",
+    parser.add_argument("-T", "--openml_studyid", default="14",
                         help="The OpenML tag for obtaining tasks")
     parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
@@ -64,13 +64,13 @@ if __name__ == '__main__':
     cache_folder = '/home/vanrijn/experiments/PIMP_flow%d_cache' %args.flow_id
     save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s' % (args.flow_id, ts)
 
-    all_tasks = openml.tasks.list_tasks(tag=args.openml_tag)
-    print("Tasks: ", list(all_tasks.keys()), "(%d)" %len(all_tasks))
+    study = openml.study.get_study(args.openml_studyid, 'tasks')
+    print("Tasks: ", list(study.tasks), "(%d)" %len(study.tasks))
 
     total_ranks = None
     all_ranks = {}
     nr_tasks = 0
-    for task_id in all_tasks:
+    for task_id in study.tasks:
         try:
             task_save_folder = save_folder + "/" + str(task_id)
             task_cache_folder = cache_folder + "/" + str(task_id)
