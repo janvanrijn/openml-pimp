@@ -2,8 +2,10 @@ import matplotlib.pyplot as plt
 import openml
 import csv
 
+from collections import OrderedDict
+
 x_axis_feature = 'NumberOfInstances'
-x_axis_label = 'Number of Data points'
+x_axis_label = 'Number of Data Points'
 
 y_axis_feature = 'NumberOfFeatures'
 y_axis_label = 'Number of Features'
@@ -11,10 +13,10 @@ y_axis_label = 'Number of Features'
 type = 'rf'
 if type == 'rf':
     results_file = '/home/vanrijn/publications/AutoML2017/plot/data/rf_ranks.csv'
-    colors = {'imputation': 'r', 'samples split': 'y', 'split criterion': 'g', 'bootstrap': 'c', 'max. features': 'b', 'min. samples leaf': 'm'}
+    colors = OrderedDict([('min. samples leaf', 'm'), ('max. features', 'b'), ('bootstrap', 'c'), ('split criterion', 'g'), ('min. samples split', 'y'), ('imputation', 'r')])
 else:
     results_file = '/home/vanrijn/publications/AutoML2017/plot/data/ada_ranks.csv'
-    colors = {'imputation': 'r', 'iterations': 'y', 'algorithm': 'g', 'learning rate': 'b', 'max. depth': 'm'}
+    colors = OrderedDict([('max. depth', 'm'),  ('learning rate', 'b'), ('algorithm', 'g'), ('iterations', 'y'), ('imputation', 'r')])
 
 
 x_vals = {}
@@ -47,12 +49,19 @@ with open(results_file, 'r') as csvfile:
 
 all_params = list(x_vals.keys())
 
+if len(set(all_params) - colors.keys()) > 0:
+    raise ValueError()
+
 plotted_items = []
 legend = []
-for idx, param in enumerate(all_params):
-    occurances = len(x_vals[param])
-    current = plt.scatter(x_vals[param], y_vals[param], s=area[param], c=colors[param], alpha=0.9)
-    plotted_items.append(current)
+for param, value in colors.items():
+    if param in all_params:
+        occurances = len(x_vals[param])
+        current = plt.scatter(x_vals[param], y_vals[param], s=area[param], c=colors[param], alpha=0.9)
+        plotted_items.append(current)
+    else:
+        # param was never most important
+        pass
 
 legend = plt.legend(plotted_items, all_params, scatterpoints=1, loc='upper right')
 for idx in range(len(plotted_items)):
@@ -60,7 +69,7 @@ for idx in range(len(plotted_items)):
 
 plt.xscale("log")
 plt.yscale("log")
-plt.axis((450,100000,1,2100))
+plt.axis((450,100000,3,2100))
 
 plt.xlabel(x_axis_label, fontsize='xx-large')
 plt.ylabel(y_axis_label, fontsize='xx-large')
