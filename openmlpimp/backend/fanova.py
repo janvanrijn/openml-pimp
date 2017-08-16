@@ -71,7 +71,7 @@ class FanovaBackend(object):
                 with open(os.path.join(save_folder, filename), 'w') as out_file:
                     json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
                 # call plotting fn
-                FanovaBackend._plot_result(evaluator, configspace, save_folder + "/fanova")
+                FanovaBackend._plot_result(evaluator, configspace, save_folder + '/fanova')
                 return save_folder + "/" + filename
             except ZeroDivisionError as e:
                 if i + 1 == max_tries:

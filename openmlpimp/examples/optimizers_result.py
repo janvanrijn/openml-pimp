@@ -20,21 +20,16 @@ def parse_args():
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
-    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 rf
+    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf);
 
     args = parser.parse_args()
     return args
 
 
-def obtain_runids(task_ids, classifier):
-    param_order_normal  = obtain_paramgrid(classifier, False)
-    param_order_reverse = obtain_paramgrid(classifier, True)
+def obtain_runids(task_ids, classifier, param_templates):
 
     decoder = json.JSONDecoder(object_pairs_hook=collections.OrderedDict)
-
-    runids_normal = defaultdict(list)
-    runids_reverse = defaultdict(list)
-    runids_other = defaultdict(list)
+    results = defaultdict(lambda: defaultdict(list))
 
     for task_id in task_ids:
         print("task", task_id)
@@ -50,18 +45,19 @@ def obtain_runids(task_ids, classifier):
                 raise ValueError()
             for idx, parameter in setups[setup_id].parameters.items():
                 if parameter.parameter_name == 'param_distributions':
-                    order = decoder.decode(parameter.value)
-                    if dict(order) != dict(param_order_normal):
-                        print('run %d: wrong parameter values' %run_id)
-                        continue
+                    ordered = decoder.decode(parameter.value) # TODO: important for beamsearch
+                    print(parameter.value)
+                    param_grid = json.loads(parameter.value)
+                    # TODO: check if legal
 
-                    if order == param_order_normal:
-                        runids_normal[task_id].append(run_id)
-                    elif order == param_order_reverse:
-                        runids_reverse[task_id].append(run_id)
-                    else:
-                        runids_other[task_id].append(run_id)
-    return runids_normal, runids_reverse, runids_other
+                    for name, param_template in param_templates.items():
+                        if param_template == param_grid:
+                            results[name][task_id].append(run_id)
+                            continue
+
+                    # fill an entry with all others that didn't fit
+                    results['misc'][task_id].append(run_id)
+    return results
 
 
 def plot_task(strategy_directories, plot_directory, task_id):
@@ -141,13 +137,13 @@ if __name__ == '__main__':
     setups = openml.setups.list_setups(flow=args.flowid)
     classifier = 'random_forest'  # TODO
 
-    runids_normal, runids_reverse, runids_other = obtain_runids(study.tasks, classifier)
+    param_templates = {'normal': obtain_paramgrid(classifier, reverse=False),
+                       'reverse': obtain_paramgrid(classifier, reverse=True)}
+    results = obtain_runids(study.tasks, classifier, param_templates)
 
-    print(runids_normal)
-    print(runids_reverse)
+    for name, param_template in results.items():
+        print(results[name])
+        create_curve_files(results[name], name)
 
-    create_curve_files(runids_normal, 'normal')
-    create_curve_files(runids_reverse, 'reverse')
-
-    for task_id in runids_normal:
+    for task_id in results['normal']:
         plot_task([output_directory + 'normal/', output_directory + 'reverse/'], output_directory + 'plots/', task_id)

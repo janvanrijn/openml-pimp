@@ -11,9 +11,9 @@ from openmlpimp.sklearn.beam_search import BeamSearchCV
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description = 'Generate data for openml-pimp project')
+    parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
     all_classifiers = ['adaboost', 'random_forest']
-    parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search. ')
+    parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search')
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--array_index', type=int, help='the index of job array')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
@@ -29,7 +29,7 @@ def obtain_parameters(classifier):
     return set(obtain_paramgrid(classifier).keys())
 
 
-def obtain_paramgrid(classifier, exclude=None):
+def obtain_paramgrid(classifier, exclude=None, reverse=False):
     if classifier == 'random_forest':
         param_grid = OrderedDict()
         param_grid['classifier__min_samples_leaf'] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
@@ -46,7 +46,10 @@ def obtain_paramgrid(classifier, exclude=None):
             raise ValueError()
         del param_grid[exclude]
 
-    return param_grid
+    if reverse:
+        return OrderedDict(reversed(list(param_grid.items())))
+    else:
+        return param_grid
 
 
 if __name__ == '__main__':
@@ -87,7 +90,7 @@ if __name__ == '__main__':
             all_params = list(obtain_parameters(args.classifier))
             random.shuffle(all_params)
             for exclude_param in all_params:
-                param_distributions = obtain_paramgrid(args.classifier, exclude_param)
+                param_distributions = obtain_paramgrid(args.classifier, exclude=exclude_param)
                 print(param_distributions.keys())
                 optimizer = RandomizedSearchCV(estimator=pipeline,
                                                param_distributions=param_distributions,
