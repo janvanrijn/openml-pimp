@@ -20,6 +20,7 @@ def parse_args():
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
     parser.add_argument('--optimizer', type=str, default='random_search')
+    parser.add_argument('--num_exclusions', type=int, default=1, help='Only applicable for Random Search')
 
     args = parser.parse_args()
     return args
@@ -27,6 +28,19 @@ def parse_args():
 
 def obtain_parameters(classifier):
     return set(obtain_paramgrid(classifier).keys())
+
+
+def obtain_parameter_combinations(classifier, num_params):
+    if num_params != 2:
+        raise ValueError('Not implemented yet')
+    result = list()
+    params = set(obtain_paramgrid(classifier).keys())
+    for param1 in params:
+        for param2 in params:
+            if param1 == param2:
+                continue
+            result.append([param1, param2])
+    return result
 
 
 def obtain_paramgrid(classifier, exclude=None, reverse=False):
@@ -42,9 +56,12 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False):
         raise ValueError()
 
     if exclude is not None:
-        if exclude not in param_grid.keys():
-            raise ValueError()
-        del param_grid[exclude]
+        if isinstance(exclude, str):
+            exclude = [exclude]
+        for exclude_param in exclude:
+            if exclude_param not in param_grid.keys():
+                raise ValueError()
+            del param_grid[exclude_param]
 
     if reverse:
         return OrderedDict(reversed(list(param_grid.items())))
@@ -87,9 +104,13 @@ if __name__ == '__main__':
             except Exception as e:
                 print(e)
         elif args.optimizer == 'random_search':
-            all_params = list(obtain_parameters(args.classifier))
-            random.shuffle(all_params)
-            for exclude_param in all_params:
+            if args.num_exclusions == 1:
+                all_exclusion_sets = list(obtain_parameters(args.classifier))
+            else:
+                all_exclusion_sets = obtain_parameter_combinations(args.classifier, args.num_exclusions)
+
+            random.shuffle(all_exclusion_sets)
+            for exclude_param in all_exclusion_sets:
                 param_distributions = obtain_paramgrid(args.classifier, exclude=exclude_param)
                 print(param_distributions.keys())
                 optimizer = RandomizedSearchCV(estimator=pipeline,
@@ -99,6 +120,7 @@ if __name__ == '__main__':
                 try:
                     run = openml.runs.run_model_on_task(task, optimizer)
                     run.publish()
+                    print('uploaded with id %d' %run.run_id)
                 except Exception as e:
                     print(e)
         else:
