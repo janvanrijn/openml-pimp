@@ -5,6 +5,7 @@ import random
 
 from collections import OrderedDict
 
+from sklearn.model_selection._search import RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from openmlpimp.sklearn.beam_search import BeamSearchCV
 
@@ -12,20 +13,23 @@ from openmlpimp.sklearn.beam_search import BeamSearchCV
 def parse_args():
     parser = argparse.ArgumentParser(description = 'Generate data for openml-pimp project')
     all_classifiers = ['adaboost', 'random_forest']
-    parser.add_argument('--n_iters', type=int,  default=50, help='number of runs to be executed in case of random search. ')
+    parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search. ')
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--array_index', type=int, help='the index of job array')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
-    parser.add_argument('--reverse', type=bool, default=False, help='Threat the params in reverse order of importance')
-    parser.add_argument('--optimizer', type=str, default='beam_search')
+    parser.add_argument('--optimizer', type=str, default='random_search')
 
     args = parser.parse_args()
     return args
 
 
-def obtain_paramgrid(classifier, reverse=False):
+def obtain_parameters(classifier):
+    return set(obtain_paramgrid(classifier).keys())
+
+
+def obtain_paramgrid(classifier, exclude=None):
     if classifier == 'random_forest':
         param_grid = OrderedDict()
         param_grid['classifier__min_samples_leaf'] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
@@ -37,10 +41,12 @@ def obtain_paramgrid(classifier, reverse=False):
     else:
         raise ValueError()
 
-    if reverse:
-        return OrderedDict(reversed(list(param_grid.items())))
-    else:
-        return param_grid
+    if exclude is not None:
+        if exclude not in param_grid.keys():
+            raise ValueError()
+        del param_grid[exclude]
+
+    return param_grid
 
 
 if __name__ == '__main__':
@@ -57,24 +63,39 @@ if __name__ == '__main__':
         tasks = [study.tasks[args.array_index]]
 
     for task_id in tasks:
-        try:
-            task = openml.tasks.get_task(task_id)
-            indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
+        task = openml.tasks.get_task(task_id)
+        indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
 
-            if args.classifier == 'random_forest':
-                pipeline = openmlpimp.utils.classifier_to_pipeline(RandomForestClassifier(random_state=1), indices)
-            else:
-                raise ValueError()
+        if args.classifier == 'random_forest':
+            pipeline = openmlpimp.utils.classifier_to_pipeline(RandomForestClassifier(random_state=1), indices)
+        else:
+            raise ValueError()
 
-            if args.optimizer == 'beam_search':
-                optimizer = BeamSearchCV(estimator=pipeline,
-                                         param_distributions=obtain_paramgrid(args.classifier, args.reverse))
-            else:
-                raise ValueError()
-
-            print(task.task_id)
+        print(task.task_id)
+        if args.optimizer == 'beam_search':
+            param_distributions = obtain_paramgrid(args.classifier)
+            optimizer = BeamSearchCV(estimator=pipeline,
+                                     param_distributions=param_distributions)
             print(optimizer)
-            run = openml.runs.run_model_on_task(task, optimizer)
-            run.publish()
-        except Exception as e:
-            print(e)
+            print(param_distributions)
+            try:
+                run = openml.runs.run_model_on_task(task, optimizer)
+                run.publish()
+            except Exception as e:
+                print(e)
+        elif args.optimizer == 'random_search':
+            for exclude_param in random. shuffle(list(obtain_parameters(args.classifier))):
+                param_distributions = obtain_paramgrid(args.classifier, exclude_param)
+                print(param_distributions)
+                optimizer = RandomizedSearchCV(estimator=pipeline,
+                                               param_distributions=param_distributions,
+                                               n_iter=args.n_iters)
+                print(optimizer)
+                try:
+                    run = openml.runs.run_model_on_task(task, optimizer)
+                    # run.publish()
+                except Exception as e:
+                    print(e)
+        else:
+            raise ValueError()
+
