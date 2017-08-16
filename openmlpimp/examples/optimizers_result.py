@@ -8,7 +8,7 @@ import os
 
 from collections import defaultdict
 
-from openmlpimp.generatedata.run_optimizer import obtain_paramgrid
+from openmlpimp.generatedata.run_optimizer import obtain_parameters, obtain_paramgrid
 
 
 plotting_virtual_env = '/home/vanrijn/projects/pythonvirtual/plot2/bin/python'
@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
-    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf);
+    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf); 7096 random_search(rf)
 
     args = parser.parse_args()
     return args
@@ -48,15 +48,17 @@ def obtain_runids(task_ids, classifier, param_templates):
                     ordered = decoder.decode(parameter.value) # TODO: important for beamsearch
                     print(parameter.value)
                     param_grid = json.loads(parameter.value)
+                    to_misc = True
                     # TODO: check if legal
 
                     for name, param_template in param_templates.items():
                         if param_template == param_grid:
                             results[name][task_id].append(run_id)
-                            continue
+                            to_misc = False
 
-                    # fill an entry with all others that didn't fit
-                    results['misc'][task_id].append(run_id)
+                    if to_misc:
+                        # fill an entry with all others that didn't fit
+                        results['misc'][task_id].append(run_id)
     return results
 
 
@@ -127,7 +129,7 @@ def create_curve_files(runids, dirname):
 
 
 if __name__ == '__main__':
-    output_directory = '/home/vanrijn/experiments/optimizers/'
+    output_directory = '/home/vanrijn/experiments/optimizers/randomsearch/'
     args = parse_args()
     openml.config.apikey = args.openml_apikey
     if args.openml_server:
@@ -137,13 +139,23 @@ if __name__ == '__main__':
     setups = openml.setups.list_setups(flow=args.flowid)
     classifier = 'random_forest'  # TODO
 
-    param_templates = {'normal': obtain_paramgrid(classifier, reverse=False),
-                       'reverse': obtain_paramgrid(classifier, reverse=True)}
+    # param_templates = {'normal': obtain_paramgrid(classifier, reverse=False),
+    #                    'reverse': obtain_paramgrid(classifier, reverse=True)}
+    param_templates = dict()
+    for param in obtain_parameters(classifier):
+        param_name = param.split('__')[-1]
+        param_templates[param_name] = obtain_paramgrid(classifier, exclude=param)
+
     results = obtain_runids(study.tasks, classifier, param_templates)
 
+    all_taskids = set()
+    all_strategies = list()
     for name, param_template in results.items():
         print(results[name])
         create_curve_files(results[name], name)
+        all_taskids |= set(results[name].keys())
+        all_strategies.append(output_directory + name + '/')
 
-    for task_id in results['normal']:
-        plot_task([output_directory + 'normal/', output_directory + 'reverse/'], output_directory + 'plots/', task_id)
+
+    for task_id in all_taskids:
+        plot_task(all_strategies, output_directory + 'plots/', task_id)
