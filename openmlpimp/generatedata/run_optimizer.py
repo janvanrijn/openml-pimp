@@ -71,31 +71,33 @@ if __name__ == '__main__':
         else:
             raise ValueError()
 
-        print(task.task_id)
+        print("task", task.task_id)
         if args.optimizer == 'beam_search':
             param_distributions = obtain_paramgrid(args.classifier)
             optimizer = BeamSearchCV(estimator=pipeline,
                                      param_distributions=param_distributions)
             print(optimizer)
-            print(param_distributions)
+            print(param_distributions.keys())
             try:
                 run = openml.runs.run_model_on_task(task, optimizer)
                 run.publish()
             except Exception as e:
                 print(e)
         elif args.optimizer == 'random_search':
-            for exclude_param in random. shuffle(list(obtain_parameters(args.classifier))):
+            all_params = list(obtain_parameters(args.classifier))
+            random.shuffle(all_params)
+            for exclude_param in all_params:
                 param_distributions = obtain_paramgrid(args.classifier, exclude_param)
-                print(param_distributions)
+                print(param_distributions.keys())
                 optimizer = RandomizedSearchCV(estimator=pipeline,
                                                param_distributions=param_distributions,
                                                n_iter=args.n_iters)
                 print(optimizer)
                 try:
                     run = openml.runs.run_model_on_task(task, optimizer)
-                    # run.publish()
+                    run.publish()
                 except Exception as e:
                     print(e)
         else:
-            raise ValueError()
+            raise ValueError('unknown optimizer.')
 
