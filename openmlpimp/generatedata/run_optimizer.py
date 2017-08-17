@@ -115,7 +115,8 @@ if __name__ == '__main__':
                 print(param_distributions.keys())
                 optimizer = RandomizedSearchCV(estimator=pipeline,
                                                param_distributions=param_distributions,
-                                               n_iter=args.n_iters)
+                                               n_iter=args.n_iters,
+                                               random_state=1)
                 print(optimizer)
                 try:
                     run = openml.runs.run_model_on_task(task, optimizer)

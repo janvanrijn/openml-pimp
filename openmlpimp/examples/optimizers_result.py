@@ -5,6 +5,7 @@ import subprocess
 import json
 import csv
 import os
+import openmlpimp
 
 from collections import defaultdict
 
@@ -136,7 +137,7 @@ if __name__ == '__main__':
         openml.config.server = args.openml_server
 
     study = openml.study.get_study(args.openml_study)
-    setups = openml.setups.list_setups(flow=args.flowid)
+    setups = openmlpimp.utils.obtain_all_setups(flow=args.flowid)
     classifier = 'random_forest'  # TODO
 
     # param_templates = {'normal': obtain_paramgrid(classifier, reverse=False),

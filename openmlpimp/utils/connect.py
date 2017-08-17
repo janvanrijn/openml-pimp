@@ -32,6 +32,21 @@ def task_counts(flow_id):
     return task_ids
 
 
+def obtain_all_setups(**kwargs):
+    setups = {}
+    offset = 0
+    limit = 1000
+    while True:
+        setups_batch = openml.setups.list_setups(**kwargs, offset=offset, size=limit)
+        for setup_id in setups_batch.keys():
+            setups[setup_id] = setups_batch[setup_id]
+
+        offset += limit
+        if len(setups_batch) < limit:
+            break
+    return setups
+
+
 def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
     def setup_complies(setup, keyfield, fixed_parameters):
         # tests whether a setup has the right values that are requisted by fixed parameters
