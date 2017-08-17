@@ -16,12 +16,19 @@ def rank_dict(dictionary, reverse=False):
     return result
 
 
-def sum_dict_values(a, b):
+def sum_dict_values(a, b, allow_subsets=False):
     result = {}
-    if set(a.keys()) != set(b.keys()):
+    a_min_b = set(a.keys()) - set(b.keys())
+    b_min_a = set(b.keys()) - set(a.keys())
+    if len(b_min_a) > 0:
+        raise ValueError('dict b got illegal keys: %s' %str(b_min_a))
+    if not allow_subsets and len(a_min_b):
         raise ValueError('keys not the same')
     for idx in a.keys():
-        result[idx] = a[idx] + b[idx]
+        if idx in b:
+            result[idx] = a[idx] + b[idx]
+        else:
+            result[idx] = a[idx]
     return result
 
 

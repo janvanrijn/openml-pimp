@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from ConfigSpace.hyperparameters import CategoricalHyperparameter
+from ConfigSpace.io.pcs_new import read
 
 from fanova.fanova import fANOVA as fanova_pyrfr
 from fanova.visualizer import Visualizer
@@ -34,7 +35,12 @@ class FanovaBackend(object):
 
 
     @staticmethod
-    def execute(save_folder, runhistory, configspace):
+    def execute(save_folder, runhistory_location, configspace_location):
+        with open(runhistory_location) as runhistory_file:
+            runhistory = json.load(runhistory_file)
+        with open(configspace_location) as configspace_file:
+            configspace = read(configspace_file)
+
         try: os.makedirs(save_folder)
         except FileExistsError: pass
 

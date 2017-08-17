@@ -47,23 +47,25 @@ with open(results_file, 'r') as csvfile:
         y_vals[best_param].append(float(task.get_dataset().qualities[y_axis_feature]))
         area[best_param].append(float(value) * 50)
 
-all_params = list(x_vals.keys())
+# maintans a list of the params that were at least once most important
+all_params = set(x_vals.keys())
 
-if len(set(all_params) - colors.keys()) > 0:
+if len(all_params - colors.keys()) > 0:
     raise ValueError()
 
 plotted_items = []
-legend = []
+legend_keys = []
 for param, value in colors.items():
     if param in all_params:
         occurances = len(x_vals[param])
         current = plt.scatter(x_vals[param], y_vals[param], s=area[param], c=colors[param], alpha=0.9)
         plotted_items.append(current)
+        legend_keys.append(param)
     else:
         # param was never most important
         pass
 
-legend = plt.legend(plotted_items, all_params, scatterpoints=1, loc='upper right')
+legend = plt.legend(plotted_items, legend_keys, scatterpoints=1, loc='upper right')
 for idx in range(len(plotted_items)):
     legend.legendHandles[idx]._sizes = [50]
 

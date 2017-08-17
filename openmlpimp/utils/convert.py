@@ -171,11 +171,21 @@ def setups_to_configspace(setups,
     return cs, constants
 
 
+def reverse_runhistory(runhistory):
+    for idx in range(len(runhistory['data'])):
+        score = runhistory['data'][idx][1][0]
+        if score < 0.0:
+            raise ValueError('score should be >= 0.0')
+        if score > 1.0:
+            raise ValueError('score should be <= 1.0')
+        runhistory['data'][idx][1][0] = 1.0 - score
+
+
 def runhistory_to_trajectory(runhistory, default_setup_id):
     trajectory_lines = []
     lowest_cost = 1.0
     lowest_cost_idx = None
-    default_cost = -1.0
+    default_cost = None
     default_cost_idx = None
 
     all_costs = set()
@@ -187,19 +197,13 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
             lowest_cost = cost
             lowest_cost_idx = config_id
 
-        if default_setup_id == None:
-            # pick highest cost in case of unset default idx
-            if cost > default_cost:
-                default_cost_idx = config_id
-                default_cost = cost
-        elif config_id == default_setup_id:
+        if config_id == default_setup_id:
             if default_cost is not None:
                 raise ValueError('default setup id should be encountered once')
             default_cost = run[1][0] # magic index
             default_cost_idx = config_id
 
-
-    if default_cost < 0.0:
+    if default_cost is None:
         raise ValueError('could not find default setup')
 
     if default_cost == lowest_cost:
@@ -208,11 +212,8 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
     if lowest_cost_idx == default_setup_id:
         raise ValueError('default setup id should not be best performing algorithm')
 
-    if lowest_cost == default_cost:
-        raise ValueError('there should be improvement over default cost value')
-
     def _default_trajectory_line():
-        return {"cpu_time": 0.0, "evaluations": 0, "total_cpu_time": 0.0, "wallclock_time": 0.0 }
+        return {"cpu_time": 0.0, "evaluations": 0, "total_cpu_time": 0.0, "wallclock_time": 0.0}
 
     def paramdict_to_incumbent(param_dict):
         res = []
@@ -222,12 +223,12 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
 
     initial = _default_trajectory_line()
     initial['cost'] = default_cost
-    initial['incumbent'] = paramdict_to_incumbent(runhistory['configs'][default_cost_idx])
+    initial['incumbent'] = paramdict_to_incumbent(runhistory['configs'][str(default_cost_idx)])
     trajectory_lines.append(initial)
 
     final = _default_trajectory_line()
     final['cost'] = lowest_cost
-    final['incumbent'] = paramdict_to_incumbent(runhistory['configs'][lowest_cost_idx])
+    final['incumbent'] = paramdict_to_incumbent(runhistory['configs'][str(lowest_cost_idx)])
     trajectory_lines.append(final)
 
     return trajectory_lines

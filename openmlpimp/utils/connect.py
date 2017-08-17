@@ -5,9 +5,8 @@ import os
 import json
 
 from openml.exceptions import OpenMLServerException
-from openml.tasks.functions import _list_tasks
 
-from ConfigSpace.io.pcs_new import write, read
+from ConfigSpace.io.pcs_new import write
 
 
 def task_counts(flow_id):
@@ -84,7 +83,8 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
                                       required_setups=None,
                                       fixed_parameters=None,
                                       logscale_parameters=None,
-                                      ignore_parameters=None):
+                                      ignore_parameters=None,
+                                      reverse=False):
     from smac.tae.execute_ta_run import StatusType
 
     evaluations = openml.evaluations.list_evaluations("predictive_accuracy", flow=[flow_id], task=[task_id])
@@ -149,10 +149,14 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
             configs[config_id].pop(constant, None)
 
     run_history = {"data": data, "configs": configs}
+
+    if reverse:
+        openmlpimp.utils.reverse_runhistory(run_history)
+
     return run_history, config_space
 
 
-def cache_runhistory_configspace(save_folder, flow_id, task_id, args):
+def cache_runhistory_configspace(save_folder, flow_id, task_id, reverse, args):
     runhistory_path = save_folder + '/runhistory.json'
     configspace_path = save_folder + '/config_space.pcs'
 
@@ -161,7 +165,8 @@ def cache_runhistory_configspace(save_folder, flow_id, task_id, args):
                                                                                      required_setups=args.required_setups,
                                                                                      fixed_parameters=args.fixed_parameters,
                                                                                      logscale_parameters=args.logscale_parameters,
-                                                                                     ignore_parameters=args.ignore_parameters)
+                                                                                     ignore_parameters=args.ignore_parameters,
+                                                                                     reverse=reverse)
 
         try: os.makedirs(save_folder)
         except FileExistsError: pass
@@ -175,8 +180,4 @@ def cache_runhistory_configspace(save_folder, flow_id, task_id, args):
         print('[Obtained from cache]')
 
     # now the files are guaranteed to exists
-    with open(runhistory_path) as runhistory_file:
-        runhistory = json.load(runhistory_file)
-    with open(configspace_path) as configspace_file:
-        configspace = read(configspace_file)
-    return runhistory, configspace
+    return runhistory_path, configspace_path

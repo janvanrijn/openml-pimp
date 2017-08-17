@@ -9,7 +9,10 @@ import sys
 import time
 import openml
 
+from ConfigSpace.io.pcs_new import read
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from openmlpimp.backend.fanova import FanovaBackend
+from openmlpimp.backend.pimp import PimpBackend
 
 cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
 cmd_folder = os.path.realpath(os.path.join(cmd_folder, ".."))
@@ -44,6 +47,8 @@ def read_cmd():
     parser.add_argument('-Q', '--use_quantiles', action="store_true",
                         default=True,
                         help='Use quantile information instead of full range')
+    parser.add_argument('-M', '--modus', type=str, choices=['ablation', 'fanova'],
+                        default='ablation', help='Whether to use ablation or fanova')
 
     args_, misc = parser.parse_known_args()
 
@@ -74,17 +79,37 @@ if __name__ == '__main__':
         try:
             task_save_folder = save_folder + "/" + str(task_id)
             task_cache_folder = cache_folder + "/" + str(task_id)
-            runhistory, configspace = openmlpimp.utils.cache_runhistory_configspace(task_cache_folder, args.flow_id, task_id, args)
+            runhistory_path, configspace_path = openmlpimp.utils.cache_runhistory_configspace(task_cache_folder, args.flow_id, task_id, False, args)
 
-            results_file = openmlpimp.backend.FanovaBackend.execute(task_save_folder, runhistory, configspace)
+            if total_ranks is None:
+                with open(configspace_path) as configspace_file:
+                    configspace = read(configspace_file)
+                total_ranks = {param.name: 0 for param in configspace.get_hyperparameters()}
+
+
+            if args.modus == 'fanova':
+                print('Running FANOVA backend on task %d' %task_id)
+                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path)
+            else:
+                print('Running PIMP backend [%s] on task %d' %(args.modus, task_id))
+                results_file = PimpBackend.execute(task_save_folder, runhistory_path, configspace_path, modus=args.modus)
+
             with open(results_file) as result_file:
                 data = json.load(result_file)
+
+                # for pimp backend
+                if 'ablation' in data:
+                    data = data['ablation']
+                    if '-source-' in data:
+                        del data['-source-']
+                    if '-target-' in data:
+                        del data['-target-']
+                if 'fanova' in data:
+                    data = data['fanova']
+
                 all_ranks[task_id] = data
                 ranks = openmlpimp.utils.rank_dict(data, True)
-                if total_ranks is None:
-                    total_ranks = ranks
-                else:
-                    total_ranks = openmlpimp.utils.sum_dict_values(total_ranks, ranks)
+                total_ranks = openmlpimp.utils.sum_dict_values(total_ranks, ranks, allow_subsets=args.modus=='ablation')
                 nr_tasks += 1
                 print("Task", task_id, ranks)
         except Exception as e:
