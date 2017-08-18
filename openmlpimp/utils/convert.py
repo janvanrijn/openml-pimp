@@ -1,6 +1,7 @@
 import sklearn
 import openmlpimp
 import random
+import sys
 
 from openml.flows import flow_to_sklearn
 from openmlstudy14.preprocessing import ConditionalImputer
@@ -34,6 +35,24 @@ def classifier_to_pipeline(classifier, indices):
              ('classifier', classifier)]
     pipeline = sklearn.pipeline.Pipeline(steps=steps)
     return pipeline
+
+
+def modeltype_to_classifier(model_type):
+    required_params = dict()
+    if model_type == 'adaboost':
+        classifier = sklearn.ensemble.AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier())
+    elif model_type == 'decision_tree':
+        classifier = sklearn.tree.DecisionTreeClassifier()
+    elif model_type == 'libsvm_svc':
+        classifier = SVC()
+        required_params['classifier__probability'] = True
+    elif model_type == 'sgd':
+        classifier = sklearn.linear_model.SGDClassifier()
+    elif model_type == 'random_forest':
+        classifier = sklearn.ensemble.RandomForestClassifier()
+    else:
+        raise ValueError('Unknown classifier: %s' %model_type)
+    return classifier, required_params
 
 
 def config_to_classifier(config, indices):
@@ -70,20 +89,8 @@ def config_to_classifier(config, indices):
 
         pipeline_parameters[param_name] = value
 
-    classifier = None
-    if model_type == 'adaboost':
-        classifier = sklearn.ensemble.AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier())
-    elif model_type == 'decision_tree':
-        classifier = sklearn.tree.DecisionTreeClassifier()
-    elif model_type == 'libsvm_svc':
-        classifier = SVC()
-        pipeline_parameters['classifier__probability'] = True
-    elif model_type == 'sgd':
-        classifier = sklearn.linear_model.SGDClassifier()
-    elif model_type == 'random_forest':
-        classifier = sklearn.ensemble.RandomForestClassifier()
-    else:
-        raise ValueError('Unknown classifier: %s' %model_type)
+    classifier, required_parameters = modeltype_to_classifier(model_type)
+    pipeline_parameters.update(required_parameters)
 
     pipeline = classifier_to_pipeline(classifier, indices)
     pipeline.set_params(**pipeline_parameters)
@@ -91,6 +98,7 @@ def config_to_classifier(config, indices):
 
 
 def setups_to_configspace(setups,
+                          default_params,
                           keyfield='parameter_name',
                           logscale_parameters=None,
                           ignore_parameters=None,
@@ -116,6 +124,10 @@ def setups_to_configspace(setups,
                 parameter_values[name] = set()
             parameter_values[name].add(value)
 
+    uncovered = set(parameter_values.keys()) - set(default_params.keys())
+    if len(uncovered) > 0:
+        raise ValueError('Mismatch between keys default_params and parameter_values. Missing' %str(uncovered))
+
     def is_castable_to(value, type):
         try:
             type(value)
@@ -129,7 +141,6 @@ def setups_to_configspace(setups,
     # for parameter in logscale_parameters:
     #     if parameter not in parameter_values.keys():
     #         raise ValueError('(Logscale) Parameter not recognized: %s' %parameter)
-
 
     constants = set()
     for name in parameter_values.keys():
@@ -146,27 +157,37 @@ def setups_to_configspace(setups,
             all_values = [int(item) for item in all_values]
             lower = min(all_values)
             upper = max(all_values)
+            default = default_params[name]
+            if not is_castable_to(default, int):
+                sys.stderr.write('Illegal default for parameter %s (expected int): %s' %(name, str(default)))
+                default = int(lower + lower + upper / 2)
+
             hyper = UniformIntegerHyperparameter(name=name,
                                                  lower=lower,
                                                  upper=upper,
-                                                 default=int(lower+(upper-lower) / 2),  # TODO don't know
+                                                 default=default,
                                                  log=name in logscale_parameters)
             cs.add_hyperparameter(hyper)
         elif all(is_castable_to(item, float) for item in all_values):
             all_values = [float(item) for item in all_values]
             lower = min(all_values)
             upper = max(all_values)
+            default = default_params[name]
+            if not is_castable_to(default, float):
+                sys.stderr.write('Illegal default for parameter %s (expected int): %s' %(name, str(default)))
+                default = lower + lower + upper / 2
+
             hyper = UniformFloatHyperparameter(name=name,
                                                lower=lower,
                                                upper=upper,
-                                               default=lower + (upper - lower) / 2,  # TODO don't know
+                                               default=default,
                                                log=name in logscale_parameters)
             cs.add_hyperparameter(hyper)
         else:
             values = [flow_to_sklearn(item) for item in all_values]
             hyper = CategoricalHyperparameter(name=name,
                                               choices=values,
-                                              default=values[0]) # TODO don't know
+                                              default=default_params[name])
             cs.add_hyperparameter(hyper)
     return cs, constants
 
@@ -181,36 +202,27 @@ def reverse_runhistory(runhistory):
         runhistory['data'][idx][1][0] = 1.0 - score
 
 
-def runhistory_to_trajectory(runhistory, default_setup_id):
+def runhistory_to_trajectory(runhistory, maximize):
     trajectory_lines = []
-    lowest_cost = 1.0
+    lowest_cost = None
     lowest_cost_idx = None
-    default_cost = None
-    default_cost_idx = None
+    highest_cost = None
+    highest_cost_index = None
 
     all_costs = set()
     for run in runhistory['data']:
         config_id = run[0][0] # magic index
         cost = run[1][0] # magic index
         all_costs.add(cost)
-        if cost < lowest_cost:
+        if lowest_cost is None or cost < lowest_cost:
             lowest_cost = cost
             lowest_cost_idx = config_id
+        if highest_cost is None or cost > highest_cost:
+            highest_cost = cost
+            highest_cost_index = config_id
 
-        if config_id == default_setup_id:
-            if default_cost is not None:
-                raise ValueError('default setup id should be encountered once')
-            default_cost = run[1][0] # magic index
-            default_cost_idx = config_id
-
-    if default_cost is None:
-        raise ValueError('could not find default setup')
-
-    if default_cost == lowest_cost:
-        raise ValueError('no improvement over default param settings (tried %d setups)' %len(runhistory['data']))
-
-    if lowest_cost_idx == default_setup_id:
-        raise ValueError('default setup id should not be best performing algorithm')
+    if lowest_cost == highest_cost:
+        raise ValueError('Lowest cost == highst cost. No ablation possible. ')
 
     def _default_trajectory_line():
         return {"cpu_time": 0.0, "evaluations": 0, "total_cpu_time": 0.0, "wallclock_time": 0.0}
@@ -221,15 +233,13 @@ def runhistory_to_trajectory(runhistory, default_setup_id):
             res.append(param + "='" + str(param_dict[param]) + "'")
         return res
 
-    initial = _default_trajectory_line()
-    initial['cost'] = default_cost
-    initial['incumbent'] = paramdict_to_incumbent(runhistory['configs'][str(default_cost_idx)])
-    trajectory_lines.append(initial)
-
     final = _default_trajectory_line()
-    final['cost'] = lowest_cost
-    final['incumbent'] = paramdict_to_incumbent(runhistory['configs'][str(lowest_cost_idx)])
+    if maximize:
+        final['cost'] = highest_cost
+        final['incumbent'] = paramdict_to_incumbent(runhistory['configs'][str(highest_cost_index)])
+    else:
+        final['cost'] = lowest_cost
+        final['incumbent'] = paramdict_to_incumbent(runhistory['configs'][str(lowest_cost_idx)])
     trajectory_lines.append(final)
 
     return trajectory_lines
-

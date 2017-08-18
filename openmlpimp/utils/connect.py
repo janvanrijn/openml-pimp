@@ -3,6 +3,7 @@ import openmlpimp
 
 import os
 import json
+import sys
 
 from openml.exceptions import OpenMLServerException
 
@@ -79,6 +80,7 @@ def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
 
 
 def obtain_runhistory_and_configspace(flow_id, task_id,
+                                      model_type,
                                       keyfield='parameter_name',
                                       required_setups=None,
                                       fixed_parameters=None,
@@ -111,13 +113,13 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     for run_id in evaluations.keys():
         cost = evaluations[run_id].value
         runtime = 0.0 # not easily accessible
-        status = {"__enum__": str(StatusType.SUCCESS) }
+        status = {"__enum__": str(StatusType.SUCCESS)}
         additional = {}
         performance = [cost, runtime, status, additional]
 
         config_id = evaluations[run_id].setup_id
         instance = openml.config.server + "task/" + str(task_id)
-        seed = 1 # not relevant
+        seed = 1  # not relevant
         run = [config_id, instance, seed]
 
         if config_id in setup_ids:
@@ -137,8 +139,22 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
             config[name] = value
         configs[setup_id] = config
 
+    # TODO: we could obtain the intended behaviour by initializing a "default flow",
+    # which is in https://github.com/openml/openml-python/pull/300
+    classifier, _ = openmlpimp.utils.modeltype_to_classifier(model_type)
+    pipeline = openmlpimp.utils.classifier_to_pipeline(classifier, indices=[])
+    pipeline_params = pipeline.get_params()
+    default_params = dict()
+
+    for param, value in pipeline_params.items():
+        shortname = param.split('__')[-1]
+        if shortname in default_params:
+            sys.stderr.write('Duplicate param name: %s' %shortname)
+        default_params[shortname] = value
+
     relevant_setups = {k: setups[k] for k in applicable_setups}
     config_space, constants = openmlpimp.utils.setups_to_configspace(relevant_setups,
+                                                                     default_params,
                                                                      keyfield=keyfield,
                                                                      logscale_parameters=logscale_parameters,
                                                                      ignore_parameters=ignore_parameters)
@@ -156,12 +172,12 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     return run_history, config_space
 
 
-def cache_runhistory_configspace(save_folder, flow_id, task_id, reverse, args):
+def cache_runhistory_configspace(save_folder, flow_id, task_id, model_type, reverse, args):
     runhistory_path = save_folder + '/runhistory.json'
     configspace_path = save_folder + '/config_space.pcs'
 
     if not os.path.isfile(runhistory_path) or not os.path.isfile(configspace_path):
-        runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id,
+        runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id, model_type,
                                                                                      required_setups=args.required_setups,
                                                                                      fixed_parameters=args.fixed_parameters,
                                                                                      logscale_parameters=args.logscale_parameters,

@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
-    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf); 7096 random_search(rf)
+    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf); 7097 random_search(rf)
 
     args = parser.parse_args()
     return args
@@ -154,8 +154,9 @@ if __name__ == '__main__':
     for name, param_template in results.items():
         print(results[name])
         create_curve_files(results[name], name)
-        all_taskids |= set(results[name].keys())
-        all_strategies.append(output_directory + name + '/')
+        if name is not 'misc':
+            all_taskids |= set(results[name].keys())
+            all_strategies.append(output_directory + name + '/')
 
 
     for task_id in all_taskids:

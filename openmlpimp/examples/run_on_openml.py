@@ -30,25 +30,26 @@ def read_cmd():
                         help="verbosity")
     parser.add_argument("-C", "--table", action='store_true',
                         help="Save result table")
-    parser.add_argument("-R", "--required_setups", default=200,
+    parser.add_argument("-R", "--required_setups", default=100,
                         help="Minimum number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6969,
+    parser.add_argument("-F", "--flow_id", default=6952,
                         help="The OpenML flow id to use")
+    parser.add_argument("--model_type", default="libsvm_svc")
     parser.add_argument("-T", "--openml_studyid", default="14",
                         help="The OpenML tag for obtaining tasks")
-    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
+    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default={'kernel': 'rbf'},
                         help='Will only use configurations that have these parameters fixed')
     parser.add_argument('-L', '--logscale_parameters', type=json.loads,
                         default={'learning_rate': ''},
                         help='Parameters that are on a logscale')
     parser.add_argument('-I', '--ignore_parameters', type=json.loads,
-                        default={'random_state': '', 'sparse': ''},
+                        default={'random_state': '', 'sparse': '', 'verbose': ''},
                         help='Parameters to ignore')
     parser.add_argument('-Q', '--use_quantiles', action="store_true",
                         default=True,
                         help='Use quantile information instead of full range')
     parser.add_argument('-M', '--modus', type=str, choices=['ablation', 'fanova'],
-                        default='ablation', help='Whether to use ablation or fanova')
+                        default='fanova', help='Whether to use ablation or fanova')
 
     args_, misc = parser.parse_known_args()
 
@@ -79,13 +80,19 @@ if __name__ == '__main__':
         try:
             task_save_folder = save_folder + "/" + str(task_id)
             task_cache_folder = cache_folder + "/" + str(task_id)
-            runhistory_path, configspace_path = openmlpimp.utils.cache_runhistory_configspace(task_cache_folder, args.flow_id, task_id, False, args)
+
+            # TODO: make the default!
+            runhistory_path, configspace_path = openmlpimp.utils.cache_runhistory_configspace(task_cache_folder,
+                                                                                              args.flow_id,
+                                                                                              task_id,
+                                                                                              model_type=args.model_type,
+                                                                                              reverse=False,
+                                                                                              args=args)
 
             if total_ranks is None:
                 with open(configspace_path) as configspace_file:
                     configspace = read(configspace_file)
                 total_ranks = {param.name: 0 for param in configspace.get_hyperparameters()}
-
 
             if args.modus == 'fanova':
                 print('Running FANOVA backend on task %d' %task_id)
@@ -100,16 +107,21 @@ if __name__ == '__main__':
                 # for pimp backend
                 if 'ablation' in data:
                     data = data['ablation']
+                    # remove obsolute fields
                     if '-source-' in data:
                         del data['-source-']
                     if '-target-' in data:
                         del data['-target-']
+                    # add missing fields
+                    for param in total_ranks.keys():
+                        if param not in data:
+                            data[param] = 0.0
                 if 'fanova' in data:
                     data = data['fanova']
 
                 all_ranks[task_id] = data
-                ranks = openmlpimp.utils.rank_dict(data, True)
-                total_ranks = openmlpimp.utils.sum_dict_values(total_ranks, ranks, allow_subsets=args.modus=='ablation')
+                ranks = openmlpimp.utils.rank_dict(data, reverse=True)
+                total_ranks = openmlpimp.utils.sum_dict_values(total_ranks, ranks, allow_subsets=False)
                 nr_tasks += 1
                 print("Task", task_id, ranks)
         except Exception as e:
