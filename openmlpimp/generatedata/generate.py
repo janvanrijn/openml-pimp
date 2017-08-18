@@ -132,7 +132,7 @@ if __name__ == '__main__':
             # invoke OpenML run
             run = openml.runs.run_model_on_task(task, classifier)
             run.tags.append('openml-pimp')
-            score = run.get_metric_score(sklearn.metrics.accuracy_score)
+            score = run.get_metric_fn(sklearn.metrics.accuracy_score)
             print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (get_time(), task.get_dataset().name, score.mean()))
 
             # and publish it
