@@ -17,7 +17,7 @@ plotting_scripts_dir = '/home/vanrijn/projects/plotting_scripts/scripts'
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description = 'Generate data for openml-pimp project')
+    parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')

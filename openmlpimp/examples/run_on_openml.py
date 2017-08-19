@@ -23,21 +23,14 @@ if cmd_folder not in sys.path:
 def read_cmd():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument("--seed", default=12345, type=int,
-                        help="random seed")
-    parser.add_argument("-V", "--verbose_level", default=logging.INFO,
-                        choices=["INFO", "DEBUG"],
-                        help="verbosity")
-    parser.add_argument("-C", "--table", action='store_true',
-                        help="Save result table")
-    parser.add_argument("-R", "--required_setups", default=100,
-                        help="Minimum number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6952,
-                        help="The OpenML flow id to use")
+    parser.add_argument("--seed", default=12345, type=int, help="random seed")
+    parser.add_argument("-V", "--verbose_level", default=logging.INFO, choices=["INFO", "DEBUG"], help="verbosity")
+    parser.add_argument("-C", "--table", action='store_true', help="Save result table")
+    parser.add_argument("-R", "--required_setups", default=100, help="Minimal number of setups needed to use a task")
+    parser.add_argument("-F", "--flow_id", default=6952, help="The OpenML flow id to use")
     parser.add_argument("--model_type", default="libsvm_svc")
-    parser.add_argument("-T", "--openml_studyid", default="14",
-                        help="The OpenML tag for obtaining tasks")
-    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default={'kernel': 'rbf'},
+    parser.add_argument("-T", "--openml_studyid", default="14", help="The OpenML tag for obtaining tasks")
+    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default={'kernel': 'sigmoid'},
                         help='Will only use configurations that have these parameters fixed')
     parser.add_argument('-L', '--logscale_parameters', type=json.loads,
                         default={'learning_rate': ''},

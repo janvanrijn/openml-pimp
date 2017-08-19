@@ -10,10 +10,19 @@ x_axis_label = 'Number of Data Points'
 y_axis_feature = 'NumberOfFeatures'
 y_axis_label = 'Number of Features'
 
-type = 'rf'
+type = 'sigmoid'
 if type == 'rf':
     results_file = '/home/vanrijn/publications/AutoML2017/plot/data/rf_ranks.csv'
     colors = OrderedDict([('min. samples leaf', 'm'), ('max. features', 'b'), ('bootstrap', 'c'), ('split criterion', 'g'), ('min. samples split', 'y'), ('imputation', 'r')])
+elif type == 'rbf':
+    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_08_19_15:06:53/ranks.csv'
+    colors = {'tol':'m', 'strategy': 'c', 'shrinking': 'b', 'gamma': 'g', 'C': 'r'}
+elif type == 'poly':
+    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_08_19_15:07:16/ranks.csv'
+    colors =  {'degree': 'k', 'C': 'y', 'coef0': 'm', 'tol': 'c', 'strategy': 'b', 'gamma': 'g', 'shrinking': 'r'}
+elif type == 'sigmoid':
+    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_08_19_15:07:25/ranks.csv'
+    colors = {'shrinking': 'r', 'C': 'g', 'strategy': 'b', 'coef0': 'm', 'tol': 'k', 'gamma': 'c'}
 else:
     results_file = '/home/vanrijn/publications/AutoML2017/plot/data/ada_ranks.csv'
     colors = OrderedDict([('max. depth', 'm'),  ('learning rate', 'b'), ('algorithm', 'g'), ('iterations', 'y'), ('imputation', 'r')])

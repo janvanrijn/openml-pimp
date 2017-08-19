@@ -43,6 +43,11 @@ def obtain_parameter_combinations(classifier, num_params):
     return result
 
 
+def get_param_values(classifier, parameter):
+    param_grid = obtain_paramgrid(classifier)
+    return param_grid[parameter]
+
+
 def obtain_paramgrid(classifier, exclude=None, reverse=False):
     if classifier == 'random_forest':
         param_grid = OrderedDict()
@@ -112,18 +117,22 @@ if __name__ == '__main__':
             random.shuffle(all_exclusion_sets)
             for exclude_param in all_exclusion_sets:
                 param_distributions = obtain_paramgrid(args.classifier, exclude=exclude_param)
-                print(param_distributions.keys())
-                optimizer = RandomizedSearchCV(estimator=pipeline,
-                                               param_distributions=param_distributions,
-                                               n_iter=args.n_iters,
-                                               random_state=1)
-                print(optimizer)
-                try:
-                    run = openml.runs.run_model_on_task(task, optimizer)
-                    run.publish()
-                    print('uploaded with id %d' %run.run_id)
-                except Exception as e:
-                    print(e)
+                print("param grid", param_distributions.keys())
+                values = get_param_values(args.classifier, exclude_param)
+                random.shuffle(values)
+                for value in values:
+                    print("exclude", exclude_param, value)
+                    optimizer = RandomizedSearchCV(estimator=pipeline,
+                                                   param_distributions=param_distributions,
+                                                   n_iter=args.n_iters,
+                                                   random_state=1)
+                    optimizer.set_params(**{'estimator__' + exclude_param: value})
+                    print(optimizer)
+                    try:
+                        run = openml.runs.run_model_on_task(task, optimizer)
+                        run.publish()
+                        print('uploaded with id %d' %run.run_id)
+                    except Exception as e:
+                        print(e)
         else:
             raise ValueError('unknown optimizer.')
-

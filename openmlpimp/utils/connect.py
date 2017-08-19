@@ -173,8 +173,15 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
 
 
 def cache_runhistory_configspace(save_folder, flow_id, task_id, model_type, reverse, args):
-    runhistory_path = save_folder + '/runhistory.json'
-    configspace_path = save_folder + '/config_space.pcs'
+    if args.fixed_parameters:
+        save_folder_suffix = [param + '_' + value for param, value in args.fixed_parameters.items()]
+        save_folder_suffix = '/' + '__'.join(save_folder_suffix)
+    else:
+        save_folder_suffix = '/vanilla'
+
+    runhistory_path = save_folder + save_folder_suffix + '/runhistory.json'
+    configspace_path = save_folder + save_folder_suffix + '/config_space.pcs'
+    print(runhistory_path, configspace_path)
 
     if not os.path.isfile(runhistory_path) or not os.path.isfile(configspace_path):
         runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id, model_type,
@@ -184,7 +191,7 @@ def cache_runhistory_configspace(save_folder, flow_id, task_id, model_type, reve
                                                                                      ignore_parameters=args.ignore_parameters,
                                                                                      reverse=reverse)
 
-        try: os.makedirs(save_folder)
+        try: os.makedirs(save_folder + save_folder_suffix)
         except FileExistsError: pass
 
         with open(runhistory_path, 'w') as outfile:
