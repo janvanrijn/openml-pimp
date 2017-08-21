@@ -15,7 +15,7 @@ from autosklearn.util.pipeline import get_configuration_space
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description = 'Generate data for openml-pimp project')
+    parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
     all_classifiers = ['adaboost', 'bernoulli_nb', 'decision_tree', 'extra_trees', 'gaussian_nb', 'gradient_boosting',
                        'k_nearest_neighbors', 'lda', 'liblinear_svc', 'libsvm_svc', 'multinomial_nb', 'passive_aggressive',
                        'qda', 'random_forest', 'sgd']
