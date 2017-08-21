@@ -3,8 +3,6 @@ import openml
 import openmlpimp
 import random
 
-from collections import OrderedDict
-
 from sklearn.model_selection._search import RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from openmlpimp.sklearn.beam_search import BeamSearchCV
@@ -20,58 +18,9 @@ def parse_args():
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
     parser.add_argument('--optimizer', type=str, default='random_search')
-    parser.add_argument('--num_exclusions', type=int, default=1, help='Only applicable for Random Search')
 
     args = parser.parse_args()
     return args
-
-
-def obtain_parameters(classifier):
-    return set(obtain_paramgrid(classifier).keys())
-
-
-def obtain_parameter_combinations(classifier, num_params):
-    if num_params != 2:
-        raise ValueError('Not implemented yet')
-    result = list()
-    params = set(obtain_paramgrid(classifier).keys())
-    for param1 in params:
-        for param2 in params:
-            if param1 == param2:
-                continue
-            result.append([param1, param2])
-    return result
-
-
-def get_param_values(classifier, parameter):
-    param_grid = obtain_paramgrid(classifier)
-    return param_grid[parameter]
-
-
-def obtain_paramgrid(classifier, exclude=None, reverse=False):
-    if classifier == 'random_forest':
-        param_grid = OrderedDict()
-        param_grid['classifier__min_samples_leaf'] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-        param_grid['classifier__max_features'] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-        param_grid['classifier__bootstrap'] = [True, False]
-        param_grid['classifier__min_samples_split'] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-        param_grid['classifier__criterion'] = ['gini', 'entropy']
-        param_grid['imputation__strategy'] = ['mean','median','most_frequent']
-    else:
-        raise ValueError()
-
-    if exclude is not None:
-        if isinstance(exclude, str):
-            exclude = [exclude]
-        for exclude_param in exclude:
-            if exclude_param not in param_grid.keys():
-                raise ValueError()
-            del param_grid[exclude_param]
-
-    if reverse:
-        return OrderedDict(reversed(list(param_grid.items())))
-    else:
-        return param_grid
 
 
 if __name__ == '__main__':
@@ -98,7 +47,7 @@ if __name__ == '__main__':
 
         print("task", task.task_id)
         if args.optimizer == 'beam_search':
-            param_distributions = obtain_paramgrid(args.classifier)
+            param_distributions = openmlpimp.utils.obtain_paramgrid(args.classifier)
             optimizer = BeamSearchCV(estimator=pipeline,
                                      param_distributions=param_distributions)
             print(optimizer)
@@ -109,16 +58,13 @@ if __name__ == '__main__':
             except Exception as e:
                 print(e)
         elif args.optimizer == 'random_search':
-            if args.num_exclusions == 1:
-                all_exclusion_sets = list(obtain_parameters(args.classifier))
-            else:
-                all_exclusion_sets = obtain_parameter_combinations(args.classifier, args.num_exclusions)
+            all_exclusion_sets = list(openmlpimp.utils.obtain_parameters(args.classifier))
 
             random.shuffle(all_exclusion_sets)
             for exclude_param in all_exclusion_sets:
-                param_distributions = obtain_paramgrid(args.classifier, exclude=exclude_param)
+                param_distributions = openmlpimp.utils.obtain_paramgrid(args.classifier, exclude=exclude_param)
                 print("param grid", param_distributions.keys())
-                values = get_param_values(args.classifier, exclude_param)
+                values = openmlpimp.utils.get_param_values(args.classifier, exclude_param)
                 random.shuffle(values)
                 for value in values:
                     print("exclude", exclude_param, value)

@@ -2,14 +2,12 @@ import argparse
 import openml
 import collections
 import subprocess
-import json
 import csv
 import os
+import sys
 import openmlpimp
 
 from collections import defaultdict
-
-from openmlpimp.generatedata.run_optimizer import obtain_parameters, obtain_paramgrid
 
 
 plotting_virtual_env = '/home/vanrijn/projects/pythonvirtual/plot2/bin/python'
@@ -21,46 +19,10 @@ def parse_args():
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
-    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf); 7097 random_search(rf)
+    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf); 7096/7097 random_search(rf)
 
     args = parser.parse_args()
     return args
-
-
-def obtain_runids(task_ids, classifier, param_templates):
-
-    decoder = json.JSONDecoder(object_pairs_hook=collections.OrderedDict)
-    results = defaultdict(lambda: defaultdict(list))
-
-    for task_id in task_ids:
-        print("task", task_id)
-        try:
-            runs = openml.runs.list_runs(task=[task_id], flow=[args.flowid])
-        except:
-            print("runs None")
-            continue
-
-        for run_id in runs:
-            setup_id = runs[run_id]['setup_id']
-            if setup_id not in setups:
-                raise ValueError()
-            for idx, parameter in setups[setup_id].parameters.items():
-                if parameter.parameter_name == 'param_distributions':
-                    ordered = decoder.decode(parameter.value) # TODO: important for beamsearch
-                    print(parameter.value)
-                    param_grid = json.loads(parameter.value)
-                    to_misc = True
-                    # TODO: check if legal
-
-                    for name, param_template in param_templates.items():
-                        if param_template == param_grid:
-                            results[name][task_id].append(run_id)
-                            to_misc = False
-
-                    if to_misc:
-                        # fill an entry with all others that didn't fit
-                        results['misc'][task_id].append(run_id)
-    return results
 
 
 def plot_task(strategy_directories, plot_directory, task_id):
@@ -70,8 +32,7 @@ def plot_task(strategy_directories, plot_directory, task_id):
     for strategy in strategy_directories:
         strategy_splitted = strategy.split('/')
         cmd.append(strategy_splitted[-2])
-        cmd.append(strategy + str(task_id) + '/*.csv')
-
+        cmd.append(strategy + str(task_id) + '/*/*.csv')
     try:
         os.makedirs(plot_directory)
     except FileExistsError:
@@ -85,7 +46,12 @@ def plot_task(strategy_directories, plot_directory, task_id):
 
 
 def obtain_performance_curves(run_id, directory, improvements=True):
-    trace = openml.runs.get_run_trace(run_id)
+    try:
+        trace = openml.runs.get_run_trace(run_id)
+    except Exception as e:
+        sys.stderr.write(e.message)
+        return
+
     curves = defaultdict(dict)
 
     try:
@@ -117,16 +83,24 @@ def obtain_performance_curves(run_id, directory, improvements=True):
                 csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
 
 
-def create_curve_files(runids, dirname):
-
+def create_curve_files(runids, classifier, exclude_param):
+    missing = dict()
     for task_id in runids:
-        task_directory = output_directory + dirname + '/' + str(task_id) + '/'
-        if os.path.isdir(task_directory):
-            num_files = len(os.listdir(task_directory))
-            if num_files != 10:
-                raise ValueError('Expected %d files, obtained %d, for task: %d' %(10, num_files, task_id))
-        else:
-            obtain_performance_curves(runids[task_id][0], task_directory)
+        all_values = openmlpimp.utils.get_param_values(classifier, exclude_param)
+        unfinished = 0
+        for value in all_values:
+            task_directory = output_directory + exclude_param + '/' + str(task_id) + '/' + str(value) + '/'
+            if os.path.isdir(task_directory):
+                num_files = len(os.listdir(task_directory))
+                if num_files != 10:
+                    raise ValueError('Expected %d files, obtained %d, for task: %d' %(10, num_files, task_id))
+            else:
+                if value in runids[task_id]:
+                    obtain_performance_curves(runids[task_id][value][0], task_directory)
+                else:
+                    unfinished += 1
+        missing[task_id] = unfinished
+    return missing
 
 
 if __name__ == '__main__':
@@ -137,27 +111,34 @@ if __name__ == '__main__':
         openml.config.server = args.openml_server
 
     study = openml.study.get_study(args.openml_study)
-    setups = openmlpimp.utils.obtain_all_setups(flow=args.flowid)
     classifier = 'random_forest'  # TODO
 
     # param_templates = {'normal': obtain_paramgrid(classifier, reverse=False),
     #                    'reverse': obtain_paramgrid(classifier, reverse=True)}
     param_templates = dict()
-    for param in obtain_parameters(classifier):
-        param_name = param.split('__')[-1]
-        param_templates[param_name] = obtain_paramgrid(classifier, exclude=param)
+    for param in openmlpimp.utils.obtain_parameters(classifier):
+        param_templates[param] = openmlpimp.utils.obtain_paramgrid(classifier, exclude=param)
 
-    results = obtain_runids(study.tasks, classifier, param_templates)
+    results = openmlpimp.utils.obtain_runids(study.tasks, args.flowid, classifier, param_templates)
 
     all_taskids = set()
     all_strategies = list()
+    missing_total = dict()
     for name, param_template in results.items():
         print(results[name])
-        create_curve_files(results[name], name)
-        if name is not 'misc':
-            all_taskids |= set(results[name].keys())
-            all_strategies.append(output_directory + name + '/')
+        missing = create_curve_files(results[name], classifier, name)
+        for task_id in missing:
+            if task_id not in missing_total:
+                missing_total[task_id] = 0
+            missing_total[task_id] += missing[task_id]
 
+        all_taskids |= set(results[name].keys())
+        all_strategies.append(output_directory + name + '/')
+
+    for task_id in missing_total:
+        print(task_id, missing_total[task_id])
+    print("total missing:", sum(missing_total.values()))
 
     for task_id in all_taskids:
         plot_task(all_strategies, output_directory + 'plots/', task_id)
+
