@@ -3,3 +3,4 @@ from .connect import task_counts, obtain_runhistory_and_configspace, cache_runhi
 from .dictutils import rank_dict, sum_dict_values, divide_dict_values
 from .optimize import obtain_parameters, obtain_parameter_combinations, get_excluded_params, get_param_values, obtain_paramgrid, obtain_runids
 from .plot import to_csv_file, to_csv_unpivot
+from .priors import obtain_priors
