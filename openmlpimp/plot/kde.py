@@ -5,7 +5,9 @@ import openmlpimp
 import os
 import sys
 import matplotlib.pyplot as plt
-from scipy.stats import gaussian_kde
+
+from collections import OrderedDict
+from scipy.stats import gaussian_kde, rv_histogram, rv_discrete
 
 import autosklearn.constants
 from ConfigSpace.hyperparameters import Constant, CategoricalHyperparameter, NumericalHyperparameter
@@ -28,7 +30,28 @@ def parse_args():
     return args
 
 
-def plot(X, output_dir, parameter_name, log_scale, min_value, max_value):
+def plot_categorical(X, output_dir, parameter_name):
+    try:
+        os.makedirs(output_dir)
+    except FileExistsError:
+        pass
+
+    X_prime = OrderedDict()
+    for value in X:
+        if value not in X_prime:
+            X_prime[value] = 0
+        X_prime[value] = X_prime[value] + (1.0 / len(X))
+    distrib = rv_discrete(values=(list(range(len(X_prime))), list(X_prime.values())))
+
+    fig, ax = plt.subplots()
+    # TODO: resampled from dist, but will do.
+    ax.hist(distrib.rvs(size=100), range=(0, len(X_prime)))
+    ax.legend(loc='upper left')
+
+    plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
+
+
+def plot_numeric(X, output_dir, parameter_name, log_scale, min_value, max_value):
     try:
         os.makedirs(output_dir)
     except FileExistsError:
@@ -82,7 +105,6 @@ if __name__ == '__main__':
         if isinstance(parameter, CategoricalHyperparameter):
             if len(parameter.choices) <= 1:
                 continue
-            continue # TEMP
         hyperparameters[splittedname[-1]] = parameter
 
         if parameter.name == 'classifier:random_forest:max_features':
@@ -92,14 +114,16 @@ if __name__ == '__main__':
     print(hyperparameters)
 
     X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
-    
+
     #----------------------------------------------------------------------
     # Plot a 1D density example
     for param_name, parameter in hyperparameters.items():
         logscale = False
         if isinstance(parameter, NumericalHyperparameter):
             logscale = parameter.log
-        try:
-            plot(X[param_name], output_dir + '/', param_name, logscale , parameter.lower, parameter.upper)
-        except np.linalg.linalg.LinAlgError as e:
-            sys.stderr.write(param_name + ': ' + str(e))
+            try:
+                plot_numeric(X[param_name], output_dir + '/', param_name, logscale , parameter.lower, parameter.upper)
+            except np.linalg.linalg.LinAlgError as e:
+                sys.stderr.write(param_name + ': ' + str(e))
+        elif isinstance(parameter, CategoricalHyperparameter):
+            plot_categorical(X[param_name], output_dir + '/', param_name)

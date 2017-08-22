@@ -4,6 +4,8 @@ import openmlpimp
 import os
 import pickle
 
+from ConfigSpace.hyperparameters import Constant, CategoricalHyperparameter, NumericalHyperparameter
+
 
 def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
     study = openml.study.get_study(study_id, 'tasks')
@@ -52,9 +54,14 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
             print('Holdout task %d' %task_id)
             continue
         paramname_paramidx = {param.parameter_name: idx for idx, param in setups[setup_id].parameters.items()}
-        for parameter in hyperparameters.keys():
-            param = setups[setup_id].parameters[paramname_paramidx[parameter]]
-            X[parameter].append(float(param.value))
+        for param_name, parameter in hyperparameters.items():
+            param = setups[setup_id].parameters[paramname_paramidx[param_name]]
+            if isinstance(parameter, NumericalHyperparameter):
+                X[param_name].append(float(param.value))
+            elif isinstance(parameter, CategoricalHyperparameter):
+                X[param_name].append(param.value)
+            else:
+                raise ValueError()
 
     for parameter in X:
         X[parameter] = np.array(X[parameter])
