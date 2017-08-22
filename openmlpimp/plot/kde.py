@@ -5,8 +5,9 @@ import openml
 import openmlpimp
 import os
 import pickle
+import sys
 import matplotlib.pyplot as plt
-from sklearn.neighbors import KernelDensity
+from scipy.stats import gaussian_kde
 
 import autosklearn.constants
 from ConfigSpace.hyperparameters import Constant, CategoricalHyperparameter, NumericalHyperparameter
@@ -30,26 +31,25 @@ def parse_args():
 
 
 def plot(X, output_dir, parameter_name, log_scale, min_value, max_value):
-    print(parameter_name)
     try:
         os.makedirs(output_dir)
     except FileExistsError:
         pass
 
-    X_plot = np.linspace(min_value, max_value, 1000)[:, np.newaxis]
+    X_plot = np.linspace(min_value, max_value, 1000)
     fig, ax = plt.subplots()
 
     if log_scale:
-        kde = KernelDensity(kernel='gaussian', bandwidth=0.5).fit(np.log2(X))
-        log_dens = kde.score_samples(np.log2(X_plot))
+        kde = gaussian_kde(np.log2(X))
+        log_dens = kde.pdf(np.log2(X_plot))
     else:
-        kde = KernelDensity(kernel='gaussian', bandwidth=0.5).fit(X)
-        log_dens = kde.score_samples(X_plot)
+        kde = gaussian_kde(X)
+        log_dens = kde.pdf(X_plot)
 
-    ax.plot(X_plot[:, 0], np.exp(log_dens), '-', label="kernel = '{0}'".format('gaussian'))
+    ax.plot(X_plot, log_dens, 'r-', lw = 5, alpha = 0.6, label='gaussian kde')
 
     ax.legend(loc='upper left')
-    ax.plot(X[:, 0], -0.005 - 0.01 * np.random.random(X.shape[0]), '+k')
+    ax.plot(X, -0.005 - 0.01 * np.random.random(X.shape[0]), '+k')
 
     ax.set_xlim(min_value, max_value)
     if log_scale:
@@ -57,7 +57,7 @@ def plot(X, output_dir, parameter_name, log_scale, min_value, max_value):
     plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
 
 
-def cache_priors(cache_directory, study_id, hyperparameters, fixed_parameters):
+def cache_priors(cache_directory, study_id, fixed_parameters):
     study = openml.study.get_study(study_id, 'tasks')
     if fixed_parameters is not None and len(fixed_parameters) > 0:
         setups = openmlpimp.utils.obtain_all_setups(flow=args.flow_id)
@@ -93,7 +93,7 @@ def cache_priors(cache_directory, study_id, hyperparameters, fixed_parameters):
 def obtain_priors(cache_directory, study_id, hyperparameters, fixed_parameters, holdout=None):
     filename = cache_directory + '/best_setup_per_task.pkl'
     if not os.path.isfile(filename):
-        cache_priors(cache_directory, study_id, hyperparameters, fixed_parameters)
+        cache_priors(cache_directory, study_id, fixed_parameters)
 
     with open(filename, 'rb') as f:
         best_setupids = pickle.load(f)
@@ -108,7 +108,7 @@ def obtain_priors(cache_directory, study_id, hyperparameters, fixed_parameters, 
         paramname_paramidx = {param.parameter_name: idx for idx, param in setups[setup_id].parameters.items()}
         for parameter in hyperparameters.keys():
             param = setups[setup_id].parameters[paramname_paramidx[parameter]]
-            X[parameter].append([float(param.value)])
+            X[parameter].append(float(param.value))
 
     for parameter in X:
         X[parameter] = np.array(X[parameter])
@@ -159,4 +159,7 @@ if __name__ == '__main__':
         logscale = False
         if isinstance(parameter, NumericalHyperparameter):
             logscale = parameter.log
-        plot(X[param_name], output_dir + '/', param_name, logscale , parameter.lower, parameter.upper)
+        try:
+            plot(X[param_name], output_dir + '/', param_name, logscale , parameter.lower, parameter.upper)
+        except np.linalg.linalg.LinAlgError as e:
+            sys.stderr.write(param_name + ': ' + str(e))
