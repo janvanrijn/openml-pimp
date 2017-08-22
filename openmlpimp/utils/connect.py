@@ -47,19 +47,23 @@ def obtain_all_setups(**kwargs):
     return setups
 
 
-def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
-    def setup_complies(setup, keyfield, fixed_parameters):
-        # tests whether a setup has the right values that are requisted by fixed parameters
-        setup_parameters = {getattr(setup.parameters[param_id], keyfield): setup.parameters[param_id].value for param_id in setup.parameters}
-        for parameter in fixed_parameters.keys():
-            if parameter not in setup_parameters.keys():
-                raise ValueError('Required parameter %s not in setup parameter for setup %d' %(parameter, setup.setup_id))
-            value_online = openml.flows.flow_to_sklearn(setup_parameters[parameter])
-            value_request = fixed_parameters[parameter]
-            if value_online != value_request:
-                return False
+def setup_complies_to_fixed_parameters(setup, keyfield, fixed_parameters):
+    # tests whether a setup has the right values that are requisted by fixed parameters
+    if fixed_parameters is None or len(fixed_parameters) == 0:
         return True
+    setup_parameters = {getattr(setup.parameters[param_id], keyfield): setup.parameters[param_id].value for param_id in
+                        setup.parameters}
+    for parameter in fixed_parameters.keys():
+        if parameter not in setup_parameters.keys():
+            raise ValueError('Required parameter %s not in setup parameter for setup %d' % (parameter, setup.setup_id))
+        value_online = openml.flows.flow_to_sklearn(setup_parameters[parameter])
+        value_request = fixed_parameters[parameter]
+        if value_online != value_request:
+            return False
+    return True
 
+
+def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
     setups = {}
     offset = 0
     limit  = 500
@@ -70,7 +74,7 @@ def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
             setups.update(setups_batch)
         else:
             for setup_id in setups_batch.keys():
-                if setup_complies(setups_batch[setup_id], keyfield, fixed_parameters):
+                if setup_complies_to_fixed_parameters(setups_batch[setup_id], keyfield, fixed_parameters):
                     setups[setup_id] = setups_batch[setup_id]
 
         offset += limit
