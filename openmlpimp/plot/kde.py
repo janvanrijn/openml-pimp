@@ -1,10 +1,8 @@
 import argparse
 import json
 import numpy as np
-import openml
 import openmlpimp
 import os
-import pickle
 import sys
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
@@ -94,7 +92,7 @@ if __name__ == '__main__':
     print(hyperparameters)
 
     X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
-
+    
     #----------------------------------------------------------------------
     # Plot a 1D density example
     for param_name, parameter in hyperparameters.items():

@@ -17,9 +17,7 @@ def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
         best_score = 0.0
         for run in runs.values():
             score = run.value
-            if run.setup_id not in setups:
-                raise ValueError()
-            if score > best_score and len(fixed_parameters) == 0:
+            if score > best_score and (fixed_parameters is None or len(fixed_parameters) == 0):
                 best_score = score
                 best_setupids[task_id] = run.setup_id
             elif score > best_score and openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id],
