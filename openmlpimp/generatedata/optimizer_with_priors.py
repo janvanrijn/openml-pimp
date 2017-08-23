@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # select tasks to execute
     if args.openml_taskid is None:
-        study = openml.study.get_study(args.study_id)
+        study = openml.study.get_study(args.study_id, 'tasks')
         all_task_ids = study.tasks
         random.shuffle(all_task_ids)
     elif isinstance(args.openml_taskid, int):
