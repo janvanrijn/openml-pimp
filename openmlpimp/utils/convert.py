@@ -4,13 +4,12 @@ import random
 import sys
 
 from openml.flows import flow_to_sklearn
-from openmlstudy14.preprocessing import ConditionalImputer
 from sklearn.svm import SVC
 
 
 from ConfigSpace.configuration_space import ConfigurationSpace
 from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
-    UniformIntegerHyperparameter, CategoricalHyperparameter
+    UniformIntegerHyperparameter, CategoricalHyperparameter, Constant
 
 
 def obtain_classifier(configuration_space, indices, max_attempts=5):
@@ -25,6 +24,7 @@ def obtain_classifier(configuration_space, indices, max_attempts=5):
 
 
 def classifier_to_pipeline(classifier, indices):
+    from openmlstudy14.preprocessing import ConditionalImputer
     steps = [('imputation', ConditionalImputer(strategy='median',
                                                fill_empty=0,
                                                categorical_features=indices,
@@ -37,22 +37,41 @@ def classifier_to_pipeline(classifier, indices):
     return pipeline
 
 
-def modeltype_to_classifier(model_type):
+def modeltype_to_classifier(model_type, params={}):
     required_params = dict()
     if model_type == 'adaboost':
-        classifier = sklearn.ensemble.AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier())
+        classifier = sklearn.ensemble.AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier(), **params)
     elif model_type == 'decision_tree':
-        classifier = sklearn.tree.DecisionTreeClassifier()
+        classifier = sklearn.tree.DecisionTreeClassifier(**params)
     elif model_type == 'libsvm_svc':
-        classifier = SVC()
+        classifier = SVC(**params)
         required_params['classifier__probability'] = True
     elif model_type == 'sgd':
-        classifier = sklearn.linear_model.SGDClassifier()
+        classifier = sklearn.linear_model.SGDClassifier(**params)
     elif model_type == 'random_forest':
-        classifier = sklearn.ensemble.RandomForestClassifier()
+        classifier = sklearn.ensemble.RandomForestClassifier(**params)
     else:
         raise ValueError('Unknown classifier: %s' %model_type)
     return classifier, required_params
+
+
+def configspace_to_relevantparams(configuration_space):
+    hyperparameters = {}
+    for parameter in configuration_space.get_hyperparameters():
+        splittedname = parameter.name.split(':')
+        if splittedname[0] not in ['classifier', 'imputation']:
+            continue
+        if isinstance(parameter, Constant):
+            continue
+        if isinstance(parameter, CategoricalHyperparameter):
+            if len(parameter.choices) <= 1:
+                continue
+        hyperparameters[splittedname[-1]] = parameter
+
+        if parameter.name == 'classifier:random_forest:max_features':
+            hyperparameters[splittedname[-1]].lower = 0.1
+            hyperparameters[splittedname[-1]].upper = 0.9
+    return hyperparameters
 
 
 def config_to_classifier(config, indices):

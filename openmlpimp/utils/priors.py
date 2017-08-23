@@ -1,10 +1,77 @@
 import numpy as np
+import json
 import openml
 import openmlpimp
 import os
 import pickle
+from scipy.stats import gaussian_kde, rv_discrete
 
-from ConfigSpace.hyperparameters import Constant, CategoricalHyperparameter, NumericalHyperparameter
+from collections import OrderedDict
+
+from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter
+
+
+class rv_discrete_wrapper(object):
+    def __init__(self, param_name, X):
+        self.param_name = param_name
+        self.X_prime = OrderedDict()
+        for value in X:
+            if value not in self.X_prime:
+                self.X_prime[value] = 0
+            self.X_prime[value] = self.X_prime[value] + (1.0 / len(X))
+        self.distrib = rv_discrete(values=(list(range(len(self.X_prime))), list(self.X_prime.values())))
+
+    @staticmethod
+    def _is_castable_to(value, type):
+        try:
+            type(value)
+            return True
+        except ValueError:
+            return False
+
+    def rvs(self, *args, **kwargs):
+        # assumes a samplesize of 1, for random search
+        sample = self.distrib.rvs()
+        value = list(self.X_prime.keys())[sample]
+        if value in ['True', 'False']:
+            return bool(value)
+        elif self._is_castable_to(value, int):
+            return int(value)
+        elif self._is_castable_to(value, float):
+            return float(value)
+        else:
+            return str(value)
+
+
+class gaussian_kde_wrapper(object):
+    def __init__(self, param_name, X, log):
+        self.param_name = param_name
+        self.log = log
+        self.const = False
+        try:
+            if self.log:
+                self.distrib = gaussian_kde(np.log2(X))
+            else:
+                self.distrib = gaussian_kde(X)
+        except np.linalg.linalg.LinAlgError:
+            self.distrib = rv_discrete(values=([X[0]], [1.0]))
+            self.const = True
+
+    def pdf(self, x):
+        if self.const:
+            raise ValueError('No pdf available for rv_sample')
+        if self.log:
+            return self.distrib.pdf(np.log2(x))
+        else:
+            return self.distrib.pdf(x)
+
+    def rvs(self, *args, **kwargs):
+        # assumes a samplesize of 1, for random search
+        sample = self.distrib.resample(size=1)[0][0]
+        if self.log:
+            return np.power(2, sample)
+        else:
+            return sample
 
 
 def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
@@ -39,6 +106,35 @@ def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
 
 
 def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None):
+    """
+    Obtains the priors based on (almost) all tasks in an OpenML study
+
+    Parameters
+    -------
+    cache_directory : str
+        a directory on the filesystem to store and obtain the cache from
+
+    study_id : int
+        the study id to obtain the priors from
+
+    flow id : int
+        the flow id of the classifier
+
+    hyperparameters : dict[str, ConfigSpace.Hyperparameter]
+        dictionary mapping from parameter name to the ConfigSpace Hyperparameter object
+
+    fixed_parameters : dict[str, str]
+        maps from hyperparameter name to a value. Only setups are considered
+        that have this hyperparameter set to this specific value
+
+    holdout : int
+        OpenML task id to not involve in the sampling
+
+    Returns
+    -------
+    X : dict[str, list[mixed]]
+        Mapping from hyperparameter name to a list of the best values.
+    """
     filename = cache_directory + '/best_setup_per_task.pkl'
     if not os.path.isfile(filename):
         cache_priors(cache_directory, study_id, flow_id, fixed_parameters)
@@ -59,10 +155,25 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
             if isinstance(parameter, NumericalHyperparameter):
                 X[param_name].append(float(param.value))
             elif isinstance(parameter, CategoricalHyperparameter):
-                X[param_name].append(param.value)
+                X[param_name].append(json.loads(param.value))
             else:
                 raise ValueError()
 
     for parameter in X:
         X[parameter] = np.array(X[parameter])
     return X
+
+
+def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None):
+    priors = obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout)
+    param_grid = dict()
+
+    for parameter_name, prior in priors.items():
+        hyperparameter = hyperparameters[parameter_name]
+        if isinstance(hyperparameter, CategoricalHyperparameter):
+            param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
+        elif isinstance(hyperparameter, NumericalHyperparameter):
+            param_grid[parameter_name] = gaussian_kde_wrapper(parameter_name, prior, hyperparameter.log)
+        else:
+            raise ValueError()
+    return param_grid

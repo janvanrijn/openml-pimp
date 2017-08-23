@@ -6,7 +6,6 @@ import random
 import traceback
 import sklearn
 
-from time import gmtime, strftime
 from openml.exceptions import OpenMLServerException
 from collections import OrderedDict
 
@@ -33,10 +32,6 @@ def parse_args():
     if args.openml_taskid is None and args.study_id is None:
         raise ValueError('set either openml_taskid or openml_tag')
     return args
-
-
-def get_time():
-    return strftime("[%Y-%m-%d %H:%M:%S]", gmtime())
 
 
 def get_probability_fn(configuration_space, all_task_ids):
@@ -81,7 +76,7 @@ def check_classifier_equals(run_id, classifier):
     task = openml.tasks.get_task(run.task_id)
     run_check = openml.runs.run_model_on_task(task, classif_prime)
     score = run_check.get_metric_score(sklearn.metrics.accuracy_score)
-    print('%s [CHECK] Data: %s; Accuracy: %0.2f' % (get_time(), task.get_dataset().name, score.mean()))
+    print('%s [CHECK] Data: %s; Accuracy: %0.2f' % (openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
 
     return True
 
@@ -100,7 +95,7 @@ if __name__ == '__main__':
     if args.openml_taskid is None:
         study = openml.study.get_study(args.study_id)
         all_task_ids = study.tasks
-        print("%s Obtained %d tasks: %s" %(get_time(), len(all_task_ids), all_task_ids))
+        print("%s Obtained %d tasks: %s" %(openmlpimp.utils.get_time(), len(all_task_ids), all_task_ids))
         weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
         print(weighted_probabilities)
 
@@ -120,24 +115,24 @@ if __name__ == '__main__':
 
             data_name = task.get_dataset().name
             data_qualities = task.get_dataset().qualities
-            print("%s Obtained task %d (%s); %s attributes; %s observations" %(get_time(), task_id, data_name,
+            print("%s Obtained task %d (%s); %s attributes; %s observations" %(openmlpimp.utils.get_time(), task_id, data_name,
                                                                                data_qualities['NumberOfFeatures'],
                                                                                data_qualities['NumberOfInstances']))
 
             indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
 
             classifier = openmlpimp.utils.obtain_classifier(configuration_space, indices)
-            print(get_time(), classifier)
+            print(openmlpimp.utils.get_time(), classifier)
 
             # invoke OpenML run
             run = openml.runs.run_model_on_task(task, classifier)
             run.tags.append('openml-pimp')
             score = run.get_metric_fn(sklearn.metrics.accuracy_score)
-            print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (get_time(), task.get_dataset().name, score.mean()))
+            print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
 
             # and publish it
             run.publish()
-            print("%s Uploaded with run id %d" %(get_time(), run.run_id))
+            print("%s Uploaded with run id %d" %(openmlpimp.utils.get_time(), run.run_id))
 
             # now do a check!
             # check_classifier_equals(run.run_id, classifier)

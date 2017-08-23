@@ -7,7 +7,7 @@ import sys
 import matplotlib.pyplot as plt
 
 from collections import OrderedDict
-from scipy.stats import gaussian_kde, rv_histogram, rv_discrete
+from scipy.stats import gaussian_kde, rv_discrete
 
 import autosklearn.constants
 from ConfigSpace.hyperparameters import Constant, CategoricalHyperparameter, NumericalHyperparameter
@@ -51,7 +51,7 @@ def plot_categorical(X, output_dir, parameter_name):
     plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
 
 
-def plot_numeric(X, output_dir, parameter_name, log_scale, min_value, max_value):
+def plot_numeric(X, distribution, output_dir, parameter_name, log_scale, min_value, max_value):
     try:
         os.makedirs(output_dir)
     except FileExistsError:
@@ -60,14 +60,7 @@ def plot_numeric(X, output_dir, parameter_name, log_scale, min_value, max_value)
     X_plot = np.linspace(min_value, max_value, 1000)
     fig, ax = plt.subplots()
 
-    if log_scale:
-        kde = gaussian_kde(np.log2(X))
-        log_dens = kde.pdf(np.log2(X_plot))
-    else:
-        kde = gaussian_kde(X)
-        log_dens = kde.pdf(X_plot)
-
-    ax.plot(X_plot, log_dens, 'r-', lw = 5, alpha = 0.6, label='gaussian kde')
+    ax.plot(X_plot, distribution.pdf(X_plot), 'r-', lw = 5, alpha = 0.6, label='gaussian kde')
 
     ax.legend(loc='upper left')
     ax.plot(X, -0.005 - 0.01 * np.random.random(X.shape[0]), '+k')
@@ -80,8 +73,8 @@ def plot_numeric(X, output_dir, parameter_name, log_scale, min_value, max_value)
 
 if __name__ == '__main__':
     args = parse_args()
-    cache_dir = '/home/vanrijn/experiments/cache_kde'
-    output_dir = '/home/vanrijn/experiments/pdf'
+    cache_dir = os.path.expanduser('~') + '/experiments/cache_kde'
+    output_dir = os.path.expanduser('~') + '/experiments/pdf'
     if args.fixed_parameters:
         save_folder_suffix = [param + '_' + value for param, value in args.fixed_parameters.items()]
         save_folder_suffix = '/' + '__'.join(save_folder_suffix)
@@ -95,35 +88,19 @@ if __name__ == '__main__':
         include_estimators=[args.classifier],
         include_preprocessors=['no_preprocessing'])
 
-    hyperparameters = {}
-    for parameter in configuration_space.get_hyperparameters():
-        splittedname = parameter.name.split(':')
-        if splittedname[0] not in ['classifier', 'imputation']:
-            continue
-        if isinstance(parameter, Constant):
-            continue
-        if isinstance(parameter, CategoricalHyperparameter):
-            if len(parameter.choices) <= 1:
-                continue
-        hyperparameters[splittedname[-1]] = parameter
-
-        if parameter.name == 'classifier:random_forest:max_features':
-            hyperparameters[splittedname[-1]].lower = 0.1
-            hyperparameters[splittedname[-1]].upper = 0.9
-
+    hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
     print(hyperparameters)
 
     X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
+    param_grid = openmlpimp.utils.get_prior_paramgrid(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
 
-    #----------------------------------------------------------------------
-    # Plot a 1D density example
     for param_name, parameter in hyperparameters.items():
         logscale = False
         if isinstance(parameter, NumericalHyperparameter):
             logscale = parameter.log
             try:
-                plot_numeric(X[param_name], output_dir + '/', param_name, logscale , parameter.lower, parameter.upper)
-            except np.linalg.linalg.LinAlgError as e:
+                plot_numeric(X[param_name], param_grid[param_name], output_dir + '/', param_name, logscale, parameter.lower, parameter.upper)
+            except ValueError as e:
                 sys.stderr.write(param_name + ': ' + str(e))
         elif isinstance(parameter, CategoricalHyperparameter):
             plot_categorical(X[param_name], output_dir + '/', param_name)
