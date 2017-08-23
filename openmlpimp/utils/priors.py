@@ -79,7 +79,10 @@ class gaussian_kde_wrapper(object):
 def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
     study = openml.study.get_study(study_id, 'tasks')
     if fixed_parameters is not None and len(fixed_parameters) > 0:
+        print('No cache file for setups, will create one ... ')
         setups = openmlpimp.utils.obtain_all_setups(flow=flow_id)
+    else:
+        print('Obtained setups from cache')
 
     best_setupids = {}
     for task_id in study.tasks:

@@ -68,6 +68,7 @@ if __name__ == '__main__':
         include_estimators=[args.classifier],
         include_preprocessors=['no_preprocessing'])
 
+    print("%s Tasks: %s" %(openmlpimp.utils.get_time(), str(all_task_ids)))
     for task_id in all_task_ids:
         task = openml.tasks.get_task(task_id)
         data_name = task.get_dataset().name
