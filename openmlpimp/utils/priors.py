@@ -4,11 +4,13 @@ import openml
 import openmlpimp
 import os
 import pickle
-from scipy.stats import gaussian_kde, rv_discrete
+from scipy.stats import gaussian_kde, rv_discrete, uniform
 
 from collections import OrderedDict
 
-from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter
+from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter, UniformFloatHyperparameter, UniformIntegerHyperparameter
+
+from openmlstudy14.distributions import loguniform, loguniform_int
 
 
 class rv_discrete_wrapper(object):
@@ -169,11 +171,39 @@ def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fix
     param_grid = dict()
 
     for parameter_name, prior in priors.items():
+        if fixed_parameters is not None and parameter_name in fixed_parameters.keys():
+            continue
         hyperparameter = hyperparameters[parameter_name]
         if isinstance(hyperparameter, CategoricalHyperparameter):
             param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
         elif isinstance(hyperparameter, NumericalHyperparameter):
             param_grid[parameter_name] = gaussian_kde_wrapper(parameter_name, prior, hyperparameter.log)
+        else:
+            raise ValueError()
+    return param_grid
+
+
+def get_uniform_paramgrid(hyperparameters, fixed_parameters):
+    param_grid = dict()
+    for param_name, hyperparameter in hyperparameters.items():
+        if fixed_parameters is not None and param_name in fixed_parameters.keys():
+            continue
+        if isinstance(hyperparameter, CategoricalHyperparameter):
+            all_values = hyperparameter.choices
+            if all(item in ['True', 'False'] for item in all_values):
+                all_values = [bool(item) for item in all_values]
+            param_grid[param_name] = all_values
+        elif isinstance(hyperparameter, UniformFloatHyperparameter):
+            if hyperparameter.log:
+                param_grid[param_name] = loguniform(base=2, low=hyperparameter.lower, high=hyperparameter.upper)
+            else:
+
+                param_grid[param_name] = uniform(loc=hyperparameter.lower, scale=hyperparameter.upper)
+        elif isinstance(hyperparameter, UniformIntegerHyperparameter):
+            if hyperparameter.log:
+                param_grid[param_name] = loguniform_int(base=2, low=hyperparameter.lower, high=hyperparameter.upper)
+            else:
+                param_grid[param_name] = list(range(hyperparameter.lower, hyperparameter.upper))
         else:
             raise ValueError()
     return param_grid

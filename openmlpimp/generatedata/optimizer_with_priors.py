@@ -10,6 +10,7 @@ import autosklearn.constants
 from autosklearn.util.pipeline import get_configuration_space
 from sklearn.model_selection._search import RandomizedSearchCV
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
     all_classifiers = ['adaboost', 'bernoulli_nb', 'decision_tree', 'extra_trees', 'gaussian_nb', 'gradient_boosting',
@@ -23,6 +24,7 @@ def parse_args():
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_taskid', type=int, nargs="+", default=59, help='the openml task id to execute')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='libsvm_svc', help='the classifier to execute')
+    parser.add_argument('--search_type', type=str, choices=['priors', 'uniform'], default='priors', help='the way to apply the search')
     parser.add_argument('--n_iters', type=int, default=5, help='number of runs to be executed in case of random search')
     parser.add_argument('--fixed_parameters', type=json.loads, default={'kernel': 'poly'}, help='Will only use configurations that have these parameters fixed')
 
@@ -75,27 +77,38 @@ if __name__ == '__main__':
 
         hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
 
-        param_distributions = openmlpimp.utils.get_prior_paramgrid(cache_dir,
-                                                                   args.study_id,
-                                                                   args.flow_id,
-                                                                   hyperparameters,
-                                                                   args.fixed_parameters,
-                                                                   holdout=task_id)
+        if args.search_type == 'priors':
+            param_distributions = openmlpimp.utils.get_prior_paramgrid(cache_dir,
+                                                                       args.study_id,
+                                                                       args.flow_id,
+                                                                       hyperparameters,
+                                                                       args.fixed_parameters,
+                                                                       holdout=task_id)
+        elif args.search_type == 'uniform':
+            param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
+        else:
+            raise ValueError()
 
         # TODO: make this better
         param_dist_adjusted = dict()
+        fixed_param_values = dict()
         for param_name, hyperparameter in param_distributions.items():
             if param_name == 'strategy':
                 param_name = 'imputation__strategy'
             else:
                 param_name = 'classifier__' + param_name
             param_dist_adjusted[param_name] = hyperparameter
+        for param_name, value in args.fixed_parameters.items():
+            param_name = 'estimator__classifier__' + param_name
+            fixed_param_values[param_name] = value
 
         optimizer = RandomizedSearchCV(estimator=pipe,
                                        param_distributions=param_dist_adjusted,
                                        n_iter=args.n_iters,
                                        random_state=1)
+        optimizer.set_params(**fixed_param_values)
         print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
+
 
         res = openml.runs.functions._run_task_get_arffcontent(optimizer, task, task.class_labels)
         run = openml.runs.OpenMLRun(task_id=task.task_id, dataset_id=None, flow_id=None,
@@ -105,8 +118,7 @@ if __name__ == '__main__':
 
         print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
 
-        type = 'random_search_priors'
-        output_dir = args.output_dir + '/' + args.classifier + '/' + save_folder_suffix + '/' + type + '/' + str(task_id) + '/'
+        output_dir = args.output_dir + '/' + args.classifier + '/' + save_folder_suffix + '/' + args.search_type + '/' + str(task_id) + '/'
         try:
             os.makedirs(output_dir)
         except FileExistsError:
