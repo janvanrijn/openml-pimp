@@ -42,31 +42,30 @@ def to_csv_unpivot(ranks_dict, location):
     pass
 
 
-def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directories, plot_directory, task_id):
+def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, plot_directory, task_id):
     # make regret plot:
     script = "%s %s/plot_test_performance_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
     cmd = [script]
-    for strategy in strategy_directories:
-        strategy_splitted = strategy.split('/')
-        cmd.append(strategy_splitted[-2])
-        cmd.append(strategy + str(task_id) + '/*/*.csv')
+    for strategy, directory in strategy_directory.items():
+        cmd.append(strategy)
+        cmd.append(directory + str(task_id) + '/*.csv')
     try:
         os.makedirs(plot_directory)
     except FileExistsError:
         pass
 
-    cmd.append('--save %s ' % os.path.join(plot_directory, 'validation_regret%d.png' %task_id))
+    cmd.append('--save %s ' % os.path.join(plot_directory, 'validation_regret%s.png' %str(task_id)))
     cmd.append('--ylabel "Accuracy Loss"')
 
     subprocess.run(' '.join(cmd), shell=True)
     print('CMD: ', ' '.join(cmd))
 
 
-def obtain_performance_curves(trace, directory, improvements):
+def obtain_performance_curves(trace, save_directory, improvements):
     curves = collections.defaultdict(dict)
 
     try:
-        os.makedirs(directory)
+        os.makedirs(save_directory)
     except FileExistsError:
         pass
 
@@ -86,7 +85,7 @@ def obtain_performance_curves(trace, directory, improvements):
                     current_curve[idx] = current_curve[idx - 1]
 
     for repeat, fold in curves.keys():
-        with open(directory + '%d_%d.csv' %(repeat, fold), 'w') as csvfile:
+        with open(save_directory + '%d_%d.csv' %(repeat, fold), 'w') as csvfile:
             current_curve = curves[(repeat, fold)]
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
@@ -94,18 +93,18 @@ def obtain_performance_curves(trace, directory, improvements):
                 csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
 
 
-def obtain_performance_curves_arff(arff_location, directory, improvements=True):
-    with open(arff_location, 'w') as arff_file:
+def obtain_performance_curves_arff(arff_location, save_directory, improvements=True):
+    with open(arff_location, 'r') as arff_file:
         trace_arff = arff.load(arff_file)
-    trace = openml.runs.functions._create_trace_from_arff(None, trace_arff)
-    obtain_performance_curves(trace, directory, improvements)
+    trace = openml.runs.functions._create_trace_from_arff(trace_arff)
+    obtain_performance_curves(trace, save_directory, improvements)
 
 
-def obtain_performance_curves_openml(run_id, directory, improvements=True):
+def obtain_performance_curves_openml(run_id, save_directory, improvements=True):
     try:
         trace = openml.runs.get_run_trace(run_id)
     except Exception as e:
         sys.stderr.write(e.message)
         return
-    obtain_performance_curves(trace, directory, improvements)
+    obtain_performance_curves(trace, save_directory, improvements)
 

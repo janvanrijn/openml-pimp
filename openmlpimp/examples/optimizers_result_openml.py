@@ -3,7 +3,6 @@ import openml
 import os
 import openmlpimp
 
-# CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 nemo/
 plotting_virtual_env = '/home/vanrijn/projects/pythonvirtual/plot2/bin/python'
 plotting_scripts_dir = '/home/vanrijn/projects/plotting_scripts/scripts'
 
@@ -58,7 +57,7 @@ if __name__ == '__main__':
     results = openmlpimp.utils.obtain_runids(study.tasks, args.flowid, classifier, param_templates)
 
     all_taskids = set()
-    all_strategies = list()
+    all_strategies = dict()
     missing_total = dict()
     for name, param_template in results.items():
         print(results[name])
@@ -69,7 +68,7 @@ if __name__ == '__main__':
             missing_total[task_id] += missing[task_id]
 
         all_taskids |= set(results[name].keys())
-        all_strategies.append(output_directory + name + '/')
+        all_strategies[name] = output_directory + name + '/'
 
     for task_id in missing_total:
         print(task_id, missing_total[task_id])
