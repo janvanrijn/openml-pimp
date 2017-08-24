@@ -67,6 +67,7 @@ if __name__ == '__main__':
         include_estimators=[args.classifier],
         include_preprocessors=['no_preprocessing'])
 
+    print("classifier %s; flow id: %d; fixed_parameters: %s" %(args.classifier, args.flow_id, args.fixed_parameters))
     print("%s Tasks: %s" %(openmlpimp.utils.get_time(), str(all_task_ids)))
     for task_id in all_task_ids:
         task = openml.tasks.get_task(task_id)
