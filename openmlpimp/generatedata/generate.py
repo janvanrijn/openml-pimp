@@ -93,7 +93,7 @@ if __name__ == '__main__':
         include_preprocessors=['no_preprocessing'])
 
     if args.openml_taskid is None:
-        study = openml.study.get_study(args.study_id)
+        study = openml.study.get_study(args.study_id, 'tasks')
         all_task_ids = study.tasks
         print("%s Obtained %d tasks: %s" %(openmlpimp.utils.get_time(), len(all_task_ids), all_task_ids))
         weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
