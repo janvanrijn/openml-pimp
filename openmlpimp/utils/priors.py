@@ -46,10 +46,11 @@ class rv_discrete_wrapper(object):
 
 
 class gaussian_kde_wrapper(object):
-    def __init__(self, param_name, X, log):
+    def __init__(self, hyperparameter, param_name, X, log):
         self.param_name = param_name
         self.log = log
         self.const = False
+        self.hyperparameter = hyperparameter
         try:
             if self.log:
                 self.distrib = gaussian_kde(np.log2(X))
@@ -71,9 +72,16 @@ class gaussian_kde_wrapper(object):
         # assumes a samplesize of 1, for random search
         sample = self.distrib.resample(size=1)[0][0]
         if self.log:
-            return np.power(2, sample)
+            value = np.power(2, sample)
         else:
-            return sample
+            value = sample
+        if value < self.hyperparameter.lower:
+            value = self.hyperparameter.lower
+        elif value > self.hyperparameter.upper:
+            value = self.hyperparameter.upper
+        if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+            value = int(value)
+        return value
 
 
 def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
@@ -180,7 +188,7 @@ def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fix
         if isinstance(hyperparameter, CategoricalHyperparameter):
             param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
         elif isinstance(hyperparameter, NumericalHyperparameter):
-            param_grid[parameter_name] = gaussian_kde_wrapper(parameter_name, prior, hyperparameter.log)
+            param_grid[parameter_name] = gaussian_kde_wrapper(hyperparameter, parameter_name, prior, hyperparameter.log)
         else:
             raise ValueError()
     return param_grid

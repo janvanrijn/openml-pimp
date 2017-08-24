@@ -20,10 +20,10 @@ def parse_args():
                        'k_nearest_neighbors', 'lda', 'liblinear_svc', 'libsvm_svc', 'multinomial_nb', 'passive_aggressive',
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'random_forest']
-    parser.add_argument('--flow_id', type=int, default=6952, help='the OpenML flow id')
+    parser.add_argument('--flow_id', type=int, default=6969, help='the OpenML flow id')
     parser.add_argument('--study_id', type=str, default='OpenML100', help='the OpenML study id')
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='libsvm_svc', help='the classifier to execute')
-    parser.add_argument('--fixed_parameters', type=json.loads, default={'kernel': 'sigmoid'},
+    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
+    parser.add_argument('--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
 
     args = parser.parse_args()
