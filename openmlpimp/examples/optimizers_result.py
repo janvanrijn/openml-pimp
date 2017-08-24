@@ -1,15 +1,9 @@
 import argparse
 import openml
-import collections
-import subprocess
-import csv
 import os
-import sys
 import openmlpimp
 
-from collections import defaultdict
-
-
+# CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 nemo/
 plotting_virtual_env = '/home/vanrijn/projects/pythonvirtual/plot2/bin/python'
 plotting_scripts_dir = '/home/vanrijn/projects/plotting_scripts/scripts'
 
@@ -18,72 +12,14 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
-    parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
+    parser.add_argument('--openml_apikey', type=str, default=None, help='the apikey to authenticate to OpenML')
     parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf); 7096/7097 random_search(rf)
 
     args = parser.parse_args()
     return args
 
 
-def plot_task(strategy_directories, plot_directory, task_id):
-    # make regret plot:
-    script = "%s %s/plot_test_performance_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
-    cmd = [script]
-    for strategy in strategy_directories:
-        strategy_splitted = strategy.split('/')
-        cmd.append(strategy_splitted[-2])
-        cmd.append(strategy + str(task_id) + '/*/*.csv')
-    try:
-        os.makedirs(plot_directory)
-    except FileExistsError:
-        pass
-
-    cmd.append('--save %s ' % os.path.join(plot_directory, 'validation_regret%d.png' %task_id))
-    cmd.append('--ylabel "Accuracy Loss"')
-
-    subprocess.run(' '.join(cmd), shell=True)
-    print('CMD: ', ' '.join(cmd))
-
-
-def obtain_performance_curves(run_id, directory, improvements=True):
-    try:
-        trace = openml.runs.get_run_trace(run_id)
-    except Exception as e:
-        sys.stderr.write(e.message)
-        return
-
-    curves = defaultdict(dict)
-
-    try:
-        os.makedirs(directory)
-    except FileExistsError:
-        pass
-
-    for itt in trace.trace_iterations:
-        cur = trace.trace_iterations[itt]
-        curves[(cur.repeat, cur.fold)][cur.iteration] = cur.evaluation
-
-    for curve in curves.keys():
-        current_curve = curves[curve]
-        curves[curve] = list(collections.OrderedDict(sorted(current_curve.items())).values())
-
-    if improvements:
-        for curve in curves.keys():
-            current_curve = curves[curve]
-            for idx in range(1, len(current_curve)):
-                if current_curve[idx] < current_curve[idx-1]:
-                    current_curve[idx] = current_curve[idx - 1]
-
-    for repeat, fold in curves.keys():
-        with open(directory + '%d_%d.csv' %(repeat, fold), 'w') as csvfile:
-            current_curve = curves[(repeat, fold)]
-            csvwriter = csv.writer(csvfile)
-            csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
-            for idx in range(len(current_curve)):
-                csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
-
-
-def create_curve_files(runids, classifier, exclude_param):
+def create_curve_files(output_directory, runids, classifier, exclude_param):
     missing = dict()
     for task_id in runids:
         all_values = openmlpimp.utils.get_param_values(classifier, exclude_param)
@@ -96,7 +32,7 @@ def create_curve_files(runids, classifier, exclude_param):
                     raise ValueError('Expected %d files, obtained %d, for task: %d' %(10, num_files, task_id))
             else:
                 if value in runids[task_id]:
-                    obtain_performance_curves(runids[task_id][value][0], task_directory)
+                    openmlpimp.utils.obtain_performance_curves_openml(runids[task_id][value][0], task_directory)
                 else:
                     unfinished += 1
         missing[task_id] = unfinished
@@ -126,7 +62,7 @@ if __name__ == '__main__':
     missing_total = dict()
     for name, param_template in results.items():
         print(results[name])
-        missing = create_curve_files(results[name], classifier, name)
+        missing = create_curve_files(output_directory, results[name], classifier, name)
         for task_id in missing:
             if task_id not in missing_total:
                 missing_total[task_id] = 0
@@ -140,5 +76,5 @@ if __name__ == '__main__':
     print("total missing:", sum(missing_total.values()))
 
     for task_id in all_taskids:
-        plot_task(all_strategies, output_directory + 'plots/', task_id)
+        openmlpimp.utils.plot_task(plotting_virtual_env, plotting_scripts_dir, all_strategies, output_directory + 'plots/', task_id)
 
