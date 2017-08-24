@@ -5,7 +5,6 @@ import random
 
 from sklearn.model_selection._search import RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
-from openmlpimp.sklearn.beam_search import BeamSearchCV
 
 
 def parse_args():
@@ -46,18 +45,7 @@ if __name__ == '__main__':
             raise ValueError()
 
         print("task", task.task_id)
-        if args.optimizer == 'beam_search':
-            param_distributions = openmlpimp.utils.obtain_paramgrid(args.classifier)
-            optimizer = BeamSearchCV(estimator=pipeline,
-                                     param_distributions=param_distributions)
-            print(optimizer)
-            print(param_distributions.keys())
-            try:
-                run = openml.runs.run_model_on_task(task, optimizer)
-                run.publish()
-            except Exception as e:
-                print(e)
-        elif args.optimizer == 'random_search':
+        if args.optimizer == 'random_search':
             all_exclusion_sets = list(openmlpimp.utils.obtain_parameters(args.classifier))
 
             random.shuffle(all_exclusion_sets)
@@ -71,7 +59,8 @@ if __name__ == '__main__':
                     optimizer = RandomizedSearchCV(estimator=pipeline,
                                                    param_distributions=param_distributions,
                                                    n_iter=args.n_iters,
-                                                   random_state=1)
+                                                   random_state=1,
+                                                   n_jobs=-1)
                     optimizer.set_params(**{'estimator__' + exclude_param: value})
                     print(optimizer)
                     try:

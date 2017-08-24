@@ -1,5 +1,4 @@
 import argparse
-import openml
 import os
 import openmlpimp
 
