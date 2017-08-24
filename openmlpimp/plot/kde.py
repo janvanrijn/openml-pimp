@@ -75,11 +75,8 @@ if __name__ == '__main__':
     args = parse_args()
     cache_dir = os.path.expanduser('~') + '/experiments/cache_kde'
     output_dir = os.path.expanduser('~') + '/experiments/pdf'
-    if args.fixed_parameters:
-        save_folder_suffix = [param + '_' + value for param, value in args.fixed_parameters.items()]
-        save_folder_suffix = '/' + '__'.join(save_folder_suffix)
-    else:
-        save_folder_suffix = '/vanilla'
+
+    save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
     output_dir = output_dir + '/' + args.classifier + '/' + save_folder_suffix
     cache_dir = cache_dir + '/' + args.classifier + '/' + save_folder_suffix
 
