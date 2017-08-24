@@ -55,7 +55,8 @@ if __name__ == '__main__':
     if args.search_type is None:
         search_types = ['priors', 'uniform']
 
-    cache_dir = args.cache_dir + '/' + args.classifier + '/' + openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
+    save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
+    cache_dir = args.cache_dir + '/' + args.classifier + '/' + save_folder_suffix
 
     configuration_space = get_configuration_space(
         info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
