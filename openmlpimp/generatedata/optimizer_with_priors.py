@@ -133,7 +133,8 @@ if __name__ == '__main__':
                 optimizer = RandomizedSearchCV(estimator=pipe,
                                                param_distributions=param_dist_adjusted,
                                                n_iter=args.n_iters,
-                                               random_state=1)
+                                               random_state=1,
+                                               n_jobs=-1)
                 optimizer.set_params(**fixed_param_values)
                 print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
 
