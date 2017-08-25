@@ -117,6 +117,7 @@ if __name__ == '__main__':
                     param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
                 else:
                     raise ValueError()
+                print('Obtained paramgrid. Start modelling ... [takes a while]')
 
                 # TODO: make this better
                 param_dist_adjusted = dict()

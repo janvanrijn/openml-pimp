@@ -149,6 +149,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     if not os.path.isfile(filename):
         print('No cache file for setups, will create one ... ')
         cache_priors(cache_directory, study_id, flow_id, fixed_parameters)
+        print('Cache created. Available in: %s' %filename)
 
     with open(filename, 'rb') as f:
         task_setup_scores = pickle.load(f)
