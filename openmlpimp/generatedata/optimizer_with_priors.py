@@ -141,7 +141,6 @@ if __name__ == '__main__':
                 optimizer.set_params(**fixed_param_values)
                 print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
 
-
                 res = openml.runs.functions._run_task_get_arffcontent(optimizer, task, task.class_labels)
                 run = openml.runs.OpenMLRun(task_id=task.task_id, dataset_id=None, flow_id=None,
                                             model=optimizer)

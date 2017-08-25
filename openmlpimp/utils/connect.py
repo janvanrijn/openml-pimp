@@ -32,10 +32,28 @@ def task_counts(flow_id):
     return task_ids
 
 
-def obtain_all_setups(**kwargs):
+def obtain_setups_by_setup_id(setup_ids, flow):
+    # because urls can be a bitch
     setups = {}
     offset = 0
     limit = 100
+    while offset < len(setup_ids):
+        setups_batch = openml.setups.list_setups(setup=setup_ids[offset:offset+limit], flow=flow)
+        for setup_id in setups_batch.keys():
+            setups[setup_id] = setups_batch[setup_id]
+
+        offset += limit
+        if len(setups_batch) < limit:
+            break
+    if set(setup_ids) != set(setups.keys()):
+        raise ValueError()
+    return setups
+
+
+def obtain_all_setups(**kwargs):
+    setups = {}
+    offset = 0
+    limit = 1000
     while True:
         setups_batch = openml.setups.list_setups(**kwargs, offset=offset, size=limit)
         for setup_id in setups_batch.keys():

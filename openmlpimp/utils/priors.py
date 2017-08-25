@@ -62,7 +62,12 @@ class gaussian_kde_wrapper(object):
             else:
                 self.distrib = gaussian_kde(X)
                 if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-                    self.probabilities = {val: self.distrib.pdf(val) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
+                    self.probabilities = {val: self.distrib.pdf(val)[0] for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
+
+                    # normalize the dict
+                    factor = 1.0 / sum(self.probabilities.values())
+                    for k in self.probabilities:
+                        self.probabilities[k] = self.probabilities[k] * factor
         except np.linalg.linalg.LinAlgError:
             self.distrib = rv_discrete(values=([X[0]], [1.0]))
             self.const = True
@@ -78,7 +83,10 @@ class gaussian_kde_wrapper(object):
     def rvs(self, *args, **kwargs):
         # assumes a samplesize of 1, for random search
         if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-            return np.choice.random(a=self.probabilities.keys(), p=self.probabilities.values())
+            values = list(self.probabilities.keys())
+            probs = list(self.probabilities.values())
+            # cast to int, because of np serializability
+            return int(np.random.choice(a=values, p=probs))
         while True:
             sample = self.distrib.resample(size=1)[0][0]
             if self.log:
@@ -147,6 +155,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     """
     filename = cache_directory + '/best_setup_per_task.pkl'
     if not os.path.isfile(filename):
+        print(filename)
         print('%s No cache file for setups, will create one ... ' %openmlpimp.utils.get_time())
         cache_priors(cache_directory, study_id, flow_id, fixed_parameters)
         print('%s Cache created. Available in: %s' %(openmlpimp.utils.get_time(),filename))
@@ -162,7 +171,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
         all_setups |= set(task_setups[task])
 
     X = {parameter: list() for parameter in hyperparameters.keys()}
-    setups = openmlpimp.utils.obtain_all_setups(setup=list(all_setups), flow=flow_id)
+    setups = openmlpimp.utils.obtain_setups_by_setup_id(setup_ids=list(all_setups), flow=flow_id)
 
     for task_id, best_setups in task_setups.items():
         if task_id == holdout:
