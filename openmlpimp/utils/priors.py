@@ -147,9 +147,9 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     """
     filename = cache_directory + '/best_setup_per_task.pkl'
     if not os.path.isfile(filename):
-        print('No cache file for setups, will create one ... ')
+        print('%s No cache file for setups, will create one ... ' %openmlpimp.utils.get_time())
         cache_priors(cache_directory, study_id, flow_id, fixed_parameters)
-        print('Cache created. Available in: %s' %filename)
+        print('%s Cache created. Available in: %s' %(openmlpimp.utils.get_time(),filename))
 
     with open(filename, 'rb') as f:
         task_setup_scores = pickle.load(f)
