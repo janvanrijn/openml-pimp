@@ -56,7 +56,7 @@ if __name__ == '__main__':
     if args.search_type is None:
         search_types = ['priors', 'uniform']
 
-    important_parameters = copy.copy(args.fixed_parameters)
+    important_parameters = copy.deepcopy(args.fixed_parameters) if args.fixed_parameters is not None else {}
     important_parameters['bestN'] = args.bestN
 
     save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
