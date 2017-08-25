@@ -112,7 +112,7 @@ def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
         pickle.dump(task_setup_scores, f, pickle.HIGHEST_PROTOCOL)
 
 
-def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1):
+def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout, bestN):
     """
     Obtains the priors based on (almost) all tasks in an OpenML study
 
@@ -184,8 +184,8 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     return X
 
 
-def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None):
-    priors = obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout)
+def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1):
+    priors = obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout, bestN)
     param_grid = dict()
 
     for parameter_name, prior in priors.items():

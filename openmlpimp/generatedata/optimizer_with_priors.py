@@ -1,10 +1,10 @@
 import argparse
 import arff
+import copy
 import json
 import openml
 import openmlpimp
 import os
-import random
 import sklearn
 import fasteners
 
@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
     parser.add_argument('--search_type', type=str, choices=['priors', 'uniform'], default=None, help='the way to apply the search')
     parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search')
+    parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
 
     args = parser.parse_args()
@@ -55,7 +56,10 @@ if __name__ == '__main__':
     if args.search_type is None:
         search_types = ['priors', 'uniform']
 
-    save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
+    important_parameters = copy.copy(args.fixed_parameters)
+    important_parameters['bestN'] = args.bestN
+
+    save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
     cache_dir = args.cache_dir + '/' + args.classifier + '/' + save_folder_suffix
 
     configuration_space = get_configuration_space(
@@ -107,7 +111,8 @@ if __name__ == '__main__':
                                                                                args.flow_id,
                                                                                hyperparameters,
                                                                                args.fixed_parameters,
-                                                                               holdout=task_id)
+                                                                               holdout=task_id,
+                                                                               bestN=args.bestN)
                 elif search_type == 'uniform':
                     param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
                 else:
