@@ -162,7 +162,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
         all_setups |= set(task_setups[task])
 
     X = {parameter: list() for parameter in hyperparameters.keys()}
-    setups = openml.setups.list_setups(setup=list(all_setups), flow=flow_id)
+    setups = openmlpimp.utils.obtain_all_setups(setup=list(all_setups), flow=flow_id)
 
     for task_id, best_setups in task_setups.items():
         if task_id == holdout:
