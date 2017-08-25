@@ -53,16 +53,21 @@ class gaussian_kde_wrapper(object):
         self.hyperparameter = hyperparameter
         try:
             if self.log:
-                self.distrib = gaussian_kde(np.log2(X))
+                raise NotImplementedError('Logaritmic Integer Parameter not tested yet. ')
+                # self.distrib = gaussian_kde(np.log2(X))
+                # if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+                #     self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
             else:
                 self.distrib = gaussian_kde(X)
+                if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+                    self.probabilities = {val: self.distrib.pdf(val) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
         except np.linalg.linalg.LinAlgError:
             self.distrib = rv_discrete(values=([X[0]], [1.0]))
             self.const = True
 
     def pdf(self, x):
         if self.const:
-            raise ValueError('No pdf available for rv_sample')
+            raise ValueError('No pdf available for constant value')
         if self.log:
             return self.distrib.pdf(np.log2(x))
         else:
@@ -70,18 +75,17 @@ class gaussian_kde_wrapper(object):
 
     def rvs(self, *args, **kwargs):
         # assumes a samplesize of 1, for random search
-        sample = self.distrib.resample(size=1)[0][0]
-        if self.log:
-            value = np.power(2, sample)
-        else:
-            value = sample
-        if value < self.hyperparameter.lower:
-            value = self.hyperparameter.lower
-        elif value > self.hyperparameter.upper:
-            value = self.hyperparameter.upper
         if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-            value = int(value)
-        return value
+            return np.choice.random(a=self.probabilities.keys(), p=self.probabilities.values())
+        while True:
+            sample = self.distrib.resample(size=1)[0][0]
+            if self.log:
+                value = np.power(2, sample)
+            else:
+                value = sample
+
+            if self.hyperparameter.lower <= value <= self.hyperparameter.upper:
+                return value
 
 
 def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
