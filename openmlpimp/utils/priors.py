@@ -1,7 +1,9 @@
+import collections
 import numpy as np
 import json
 import openml
 import openmlpimp
+import operator
 import os
 import pickle
 from scipy.stats import gaussian_kde, rv_discrete, uniform
@@ -90,27 +92,15 @@ class gaussian_kde_wrapper(object):
 
 def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
     study = openml.study.get_study(study_id, 'tasks')
-    if fixed_parameters is not None and len(fixed_parameters) > 0:
-        print('No cache file for setups, will create one ... ')
-        setups = openmlpimp.utils.obtain_all_setups(flow=flow_id)
-    else:
-        print('Obtained setups from cache')
+    setups = openmlpimp.utils.obtain_all_setups(flow=flow_id)
 
-    best_setupids = {}
+    task_setup_scores = collections.defaultdict(dict)
     for task_id in study.tasks:
         print("task", task_id)
         runs = openml.evaluations.list_evaluations("predictive_accuracy", task=[task_id], flow=[flow_id])
-        best_score = 0.0
         for run in runs.values():
-            score = run.value
-            if score > best_score and (fixed_parameters is None or len(fixed_parameters) == 0):
-                best_score = score
-                best_setupids[task_id] = run.setup_id
-            elif score > best_score and openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id],
-                                                                                            'parameter_name',
-                                                                                            fixed_parameters):
-                best_score = score
-                best_setupids[task_id] = run.setup_id
+            if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name', fixed_parameters):
+                task_setup_scores[task_id][run.setup_id] = run.value
 
                 # if len(best_setupids) > 10: break
     try:
@@ -119,10 +109,10 @@ def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
         pass
 
     with open(cache_directory + '/best_setup_per_task.pkl', 'wb') as f:
-        pickle.dump(best_setupids, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(task_setup_scores, f, pickle.HIGHEST_PROTOCOL)
 
 
-def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None):
+def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1):
     """
     Obtains the priors based on (almost) all tasks in an OpenML study
 
@@ -147,6 +137,9 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     holdout : int
         OpenML task id to not involve in the sampling
 
+    bestN : int
+        from each task, take the N best setups.
+
     Returns
     -------
     X : dict[str, list[mixed]]
@@ -154,27 +147,37 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     """
     filename = cache_directory + '/best_setup_per_task.pkl'
     if not os.path.isfile(filename):
+        print('No cache file for setups, will create one ... ')
         cache_priors(cache_directory, study_id, flow_id, fixed_parameters)
 
     with open(filename, 'rb') as f:
-        best_setupids = pickle.load(f)
+        task_setup_scores = pickle.load(f)
+    task_setups = dict()
+    all_setups = set()
+    for task, setup_scores in task_setup_scores.items():
+        if len(setup_scores) < bestN * 2:
+            raise ValueError('Not enough setups for task %d. Need %d, expected at least %d, got %d' %(task, bestN, bestN*2, len(setup_scores)))
+        task_setups[task] = dict(sorted(setup_scores.items(), key=operator.itemgetter(1), reverse=True)[:bestN]).keys()
+        all_setups |= set(task_setups[task])
 
     X = {parameter: list() for parameter in hyperparameters.keys()}
-    setups = openml.setups.list_setups(setup=list(best_setupids.values()), flow=flow_id)
+    setups = openml.setups.list_setups(setup=list(all_setups), flow=flow_id)
 
-    for task_id, setup_id in best_setupids.items():
+    for task_id, best_setups in task_setups.items():
         if task_id == holdout:
             print('Holdout task %d' %task_id)
             continue
-        paramname_paramidx = {param.parameter_name: idx for idx, param in setups[setup_id].parameters.items()}
-        for param_name, parameter in hyperparameters.items():
-            param = setups[setup_id].parameters[paramname_paramidx[param_name]]
-            if isinstance(parameter, NumericalHyperparameter):
-                X[param_name].append(float(param.value))
-            elif isinstance(parameter, CategoricalHyperparameter):
-                X[param_name].append(json.loads(param.value))
-            else:
-                raise ValueError()
+
+        for setup_id in best_setups:
+            paramname_paramidx = {param.parameter_name: idx for idx, param in setups[setup_id].parameters.items()}
+            for param_name, parameter in hyperparameters.items():
+                param = setups[setup_id].parameters[paramname_paramidx[param_name]]
+                if isinstance(parameter, NumericalHyperparameter):
+                    X[param_name].append(float(param.value))
+                elif isinstance(parameter, CategoricalHyperparameter):
+                    X[param_name].append(json.loads(param.value))
+                else:
+                    raise ValueError()
 
     for parameter in X:
         X[parameter] = np.array(X[parameter])
