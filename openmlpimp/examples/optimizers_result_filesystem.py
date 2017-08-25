@@ -1,5 +1,8 @@
 import argparse
+import arff
+import collections
 import os
+import openml
 import openmlpimp
 
 # CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 nemo/
@@ -20,6 +23,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     all_taskids = set()
+    all_traces = collections.defaultdict(dict)
 
     all_strategies = os.listdir(args.directory)
     strategy_directories = {}
@@ -30,8 +34,16 @@ if __name__ == '__main__':
         for task in task_directories:
             arff_file = os.path.join(args.directory, strategy, task, 'trace.arff')
             if os.path.isfile(arff_file):
-                openmlpimp.utils.obtain_performance_curves_arff(arff_file, output_directory + strategy + '/' + task + '/')
+                with open(arff_file, 'r') as fp:
+                    trace_arff = arff.load(fp)
+                trace = openml.runs.functions._create_trace_from_arff(trace_arff)
+                all_traces[task][strategy] = trace
+                openmlpimp.utils.obtain_performance_curves(trace, output_directory + strategy + '/' + task + '/')
+
                 all_taskids.add(task)
+
+    for task in all_traces.keys():
+        openmlpimp.utils.boxplot_traces(all_traces[task], output_directory + 'boxplots/', str(task) + '.png')
 
     for task_id in all_taskids:
         openmlpimp.utils.plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directories, output_directory + 'plots/', task_id)

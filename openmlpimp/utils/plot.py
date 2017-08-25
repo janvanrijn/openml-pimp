@@ -1,10 +1,10 @@
-import arff
 import collections
 import csv
 import openml
 import os
 import subprocess
 import sys
+import matplotlib.pyplot as plt
 
 
 def to_csv_file(ranks_dict, location):
@@ -61,7 +61,28 @@ def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, pl
     print('CMD: ', ' '.join(cmd))
 
 
-def obtain_performance_curves(trace, save_directory, improvements):
+def boxplot_traces(strategy_traces, save_directory, name):
+    try:
+        os.makedirs(save_directory)
+    except FileExistsError:
+        pass
+
+    data = []
+    label_names = []
+
+    for strategy, trace in strategy_traces.items():
+        current = [trace_item.evaluation for trace_item in trace.trace_iterations.values()]
+        data.append(current)
+        label_names.append(strategy)
+
+
+    plt.figure()
+    plt.boxplot(data)
+    plt.xticks(list(range(1, len(label_names) + 1)), label_names)
+    plt.savefig(os.path.join(save_directory, name))
+
+
+def obtain_performance_curves(trace, save_directory, improvements=True):
     curves = collections.defaultdict(dict)
 
     try:
@@ -91,13 +112,6 @@ def obtain_performance_curves(trace, save_directory, improvements):
             csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
             for idx in range(len(current_curve)):
                 csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
-
-
-def obtain_performance_curves_arff(arff_location, save_directory, improvements=True):
-    with open(arff_location, 'r') as arff_file:
-        trace_arff = arff.load(arff_file)
-    trace = openml.runs.functions._create_trace_from_arff(trace_arff)
-    obtain_performance_curves(trace, save_directory, improvements)
 
 
 def obtain_performance_curves_openml(run_id, save_directory, improvements=True):
