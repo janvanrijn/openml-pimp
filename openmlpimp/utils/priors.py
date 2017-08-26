@@ -6,6 +6,7 @@ import openmlpimp
 import operator
 import os
 import pickle
+import warnings
 from scipy.stats import gaussian_kde, rv_discrete, uniform
 
 from collections import OrderedDict
@@ -164,8 +165,8 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     task_setups = dict()
     all_setups = set()
     for task, setup_scores in task_setup_scores.items():
-        if len(setup_scores) < bestN * 2:
-            raise ValueError('Not enough setups for task %d. Need %d, expected at least %d, got %d' %(task, bestN, bestN*2, len(setup_scores)))
+        if len(setup_scores) < bestN * 4:
+            warnings.warn('Not enough setups for task %d. Need %d, expected at least %d, got %d' %(task, bestN, bestN*2, len(setup_scores)))
         task_setups[task] = dict(sorted(setup_scores.items(), key=operator.itemgetter(1), reverse=True)[:bestN]).keys()
         all_setups |= set(task_setups[task])
 
