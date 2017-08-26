@@ -1,4 +1,5 @@
 import argparse
+import copy
 import json
 import numpy as np
 import openmlpimp
@@ -20,11 +21,12 @@ def parse_args():
                        'k_nearest_neighbors', 'lda', 'liblinear_svc', 'libsvm_svc', 'multinomial_nb', 'passive_aggressive',
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'random_forest']
-    parser.add_argument('--flow_id', type=int, default=6969, help='the OpenML flow id')
+    parser.add_argument('--flow_id', type=int, default=6970, help='the OpenML flow id')
     parser.add_argument('--study_id', type=str, default='OpenML100', help='the OpenML study id')
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
+    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
+    parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
 
     args = parser.parse_args()
     return args
@@ -76,7 +78,9 @@ if __name__ == '__main__':
     cache_dir = os.path.expanduser('~') + '/experiments/cache_kde'
     output_dir = os.path.expanduser('~') + '/experiments/pdf'
 
-    save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
+    important_parameters = copy.deepcopy(args.fixed_parameters) if args.fixed_parameters is not None else {}
+    important_parameters['bestN'] = args.bestN
+    save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
     output_dir = output_dir + '/' + args.classifier + '/' + save_folder_suffix
     cache_dir = cache_dir + '/' + args.classifier + '/' + save_folder_suffix
 
@@ -88,7 +92,7 @@ if __name__ == '__main__':
     hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
     print(hyperparameters)
 
-    X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
+    X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters, holdout=None, bestN=10)
     param_grid = openmlpimp.utils.get_prior_paramgrid(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
 
     for param_name, parameter in hyperparameters.items():
