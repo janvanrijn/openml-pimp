@@ -117,7 +117,6 @@ if __name__ == '__main__':
                     if args.classifier == 'adaboost':
                         param_distributions['base_estimator__max_depth'] = param_distributions.pop('max_depth')
 
-
                 elif search_type == 'uniform':
                     param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
                 else:
@@ -158,6 +157,8 @@ if __name__ == '__main__':
                 trace_arff = arff.dumps(run._generate_trace_arff_dict())
                 with open(output_dir + 'trace.arff', 'w') as f:
                     f.write(trace_arff)
+            except ValueError as e:
+                print('%s An error occured while executing this task:', e)
             finally:
                 if obtained_lock:
                     lock_file.release()
