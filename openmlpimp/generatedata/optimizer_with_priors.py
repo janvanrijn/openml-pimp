@@ -61,8 +61,9 @@ if __name__ == '__main__':
     important_parameters['bestN'] = args.bestN
     important_parameters['inverse_holdout'] = args.inverse_holdout
 
-    save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
-    cache_dir = args.cache_dir + '/' + args.classifier + '/' + save_folder_suffix
+    output_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
+    cache_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
+    cache_dir = args.cache_dir + '/' + args.classifier + '/' + cache_save_folder_suffix
 
     configuration_space = get_configuration_space(
         info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
@@ -89,7 +90,7 @@ if __name__ == '__main__':
         hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
 
         for search_type in search_types:
-            output_dir = args.output_dir + '/' + args.classifier + '/' + save_folder_suffix + '/' + search_type + '/' + str(task_id) + '/'
+            output_dir = args.output_dir + '/' + args.classifier + '/' + output_save_folder_suffix + '/' + search_type + '/' + str(task_id) + '/'
             try:
                 os.makedirs(output_dir)
             except FileExistsError:
