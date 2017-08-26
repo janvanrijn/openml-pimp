@@ -22,10 +22,10 @@ def parse_args():
     parser.add_argument('--cache_dir', type=str, default=os.path.expanduser('~') + '/experiments/cache_kde')
     parser.add_argument('--output_dir', type=str, default=os.path.expanduser('~') + '/experiments/random_search_prior')
     parser.add_argument('--study_id', type=str, default='OpenML100', help='the tag to obtain the tasks for the prior from')
-    parser.add_argument('--flow_id', type=int, default=6969, help='the tag to obtain the tasks for the prior from')
+    parser.add_argument('--flow_id', type=int, default=6970, help='the tag to obtain the tasks for the prior from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_taskid', type=int, nargs="+", default=None, help='the openml task id to execute')
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
+    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
     parser.add_argument('--search_type', type=str, choices=['priors', 'uniform'], default=None, help='the way to apply the search')
     parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
@@ -113,11 +113,17 @@ if __name__ == '__main__':
                                                                                args.fixed_parameters,
                                                                                holdout=task_id,
                                                                                bestN=args.bestN)
+                    # TODO: hacky mapping update
+                    if args.classifier == 'adaboost':
+                        param_distributions['base_estimator__max_depth'] = param_distributions.pop('max_depth')
+
+
                 elif search_type == 'uniform':
                     param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
                 else:
                     raise ValueError()
-                print('Obtained paramgrid. Start modelling ... [takes a while]')
+                print('%s Param Grid:' %openmlpimp.utils.get_time(), param_distributions)
+                print('%s Start modelling ... [takes a while]' %openmlpimp.utils.get_time())
 
                 # TODO: make this better
                 param_dist_adjusted = dict()

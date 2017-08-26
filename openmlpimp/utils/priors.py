@@ -55,10 +55,9 @@ class gaussian_kde_wrapper(object):
         self.hyperparameter = hyperparameter
         try:
             if self.log:
-                raise NotImplementedError('Logaritmic Integer Parameter not tested yet. ')
-                # self.distrib = gaussian_kde(np.log2(X))
-                # if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-                #     self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
+                self.distrib = gaussian_kde(np.log2(X))
+                if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+                    self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
             else:
                 self.distrib = gaussian_kde(X)
                 if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
