@@ -54,23 +54,19 @@ class gaussian_kde_wrapper(object):
         self.log = log
         self.const = False
         self.hyperparameter = hyperparameter
-        try:
-            if self.log:
-                self.distrib = gaussian_kde(np.log2(X))
-                if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-                    self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
-            else:
-                self.distrib = gaussian_kde(X)
-                if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-                    self.probabilities = {val: self.distrib.pdf(val)[0] for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
+        if self.log:
+            self.distrib = gaussian_kde(np.log2(X))
+            if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+                self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
+        else:
+            self.distrib = gaussian_kde(X)
+            if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+                self.probabilities = {val: self.distrib.pdf(val)[0] for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
 
-                    # normalize the dict
-                    factor = 1.0 / sum(self.probabilities.values())
-                    for k in self.probabilities:
-                        self.probabilities[k] = self.probabilities[k] * factor
-        except np.linalg.linalg.LinAlgError:
-            self.distrib = rv_discrete(values=([X[0]], [1.0]))
-            self.const = True
+                # normalize the dict
+                factor = 1.0 / sum(self.probabilities.values())
+                for k in self.probabilities:
+                    self.probabilities[k] = self.probabilities[k] * factor
 
     def pdf(self, x):
         if self.const:
@@ -200,6 +196,9 @@ def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fix
 
     for parameter_name, prior in priors.items():
         if fixed_parameters is not None and parameter_name in fixed_parameters.keys():
+            continue
+        if all(x == prior[0] for x in prior):
+            warnings.warn('Skipping Hyperparameter %s: All prior values equals (%s). ' %(parameter_name, prior[0]))
             continue
         hyperparameter = hyperparameters[parameter_name]
         if isinstance(hyperparameter, CategoricalHyperparameter):
