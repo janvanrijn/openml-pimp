@@ -9,8 +9,6 @@ import sklearn
 from openml.exceptions import OpenMLServerException
 from collections import OrderedDict
 
-import autosklearn.constants
-from autosklearn.util.pipeline import get_configuration_space
 
 
 def parse_args():
@@ -20,7 +18,7 @@ def parse_args():
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser.add_argument('--n_executions', type=int,  default=100, help='number of runs to be executed. ')
-    parser.add_argument('--study_id', type=int, default=None, help='the tag to obtain the tasks from')
+    parser.add_argument('--study_id', type=str, default=None, help='the tag to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_taskid', type=int, nargs="+", default=None, help='the openml task id to execute')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
@@ -30,11 +28,11 @@ def parse_args():
     if args.openml_taskid is not None and args.study_id is not None:
         raise ValueError('can only set openml_taskid XOR openml_tag')
     if args.openml_taskid is None and args.study_id is None:
-        raise ValueError('set either openml_taskid or openml_tag')
+        raise ValueError('set either openml_taskid or study_id')
     return args
 
 
-def get_probability_fn(configuration_space, all_task_ids):
+def get_probability_fn(configuration_space, all_task_ids, max_required=None):
     classifier = openmlpimp.utils.obtain_classifier(configuration_space, None)
     flow = openml.flows.sklearn_to_flow(classifier)
     flow_id = openml.flows.flow_exists(flow.name, flow.external_version)
@@ -47,6 +45,8 @@ def get_probability_fn(configuration_space, all_task_ids):
     for task_id in all_task_ids:
         if task_id not in task_counts:
             task_counts[task_id] = 0
+        if max_required is not None and task_counts[task_id] >= max_required:
+            del task_counts[task_id]
 
     max_value = 0
     if len(task_counts) > 0: max_value = max(1, max(task_counts.values()))
@@ -87,16 +87,14 @@ if __name__ == '__main__':
     if args.openml_server:
         openml.config.server = args.openml_server
 
-    configuration_space = get_configuration_space(
-        info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
-        include_estimators=[args.classifier],
-        include_preprocessors=['no_preprocessing'])
+    configuration_space = openmlpimp.utils.get_config_space(args.classifier)
+    print(configuration_space)
 
     if args.openml_taskid is None:
         study = openml.study.get_study(args.study_id, 'tasks')
         all_task_ids = study.tasks
         print("%s Obtained %d tasks: %s" %(openmlpimp.utils.get_time(), len(all_task_ids), all_task_ids))
-        weighted_probabilities = get_probability_fn(configuration_space, all_task_ids)
+        weighted_probabilities = get_probability_fn(configuration_space, all_task_ids, 800)
         print(weighted_probabilities)
 
     for i in range(args.n_executions):
