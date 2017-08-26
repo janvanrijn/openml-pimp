@@ -113,14 +113,15 @@ if __name__ == '__main__':
                                                                                args.fixed_parameters,
                                                                                holdout=task_id,
                                                                                bestN=args.bestN)
-                    # TODO: hacky mapping update
-                    if args.classifier == 'adaboost':
-                        param_distributions['base_estimator__max_depth'] = param_distributions.pop('max_depth')
-
                 elif search_type == 'uniform':
                     param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
                 else:
                     raise ValueError()
+                
+                # TODO: hacky mapping update
+                if args.classifier == 'adaboost':
+                    param_distributions['base_estimator__max_depth'] = param_distributions.pop('max_depth')
+
                 print('%s Param Grid:' %openmlpimp.utils.get_time(), param_distributions)
                 print('%s Start modelling ... [takes a while]' %openmlpimp.utils.get_time())
 
