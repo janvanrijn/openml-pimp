@@ -166,6 +166,8 @@ if __name__ == '__main__':
                 trace_arff = arff.dumps(run._generate_trace_arff_dict())
                 with open(output_dir + 'trace.arff', 'w') as f:
                     f.write(trace_arff)
+            except ValueError as e:
+                print('%s ValueError:' %openmlpimp.utils.get_time(), e)
             finally:
                 if obtained_lock:
                     lock_file.release()

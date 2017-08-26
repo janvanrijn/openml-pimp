@@ -161,8 +161,9 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     task_setups = dict()
     all_setups = set()
     for task, setup_scores in task_setup_scores.items():
-        if len(setup_scores) < bestN * 4:
-            warnings.warn('Not enough setups for task %d. Need %d, expected at least %d, got %d' %(task, bestN, bestN*2, len(setup_scores)))
+        if (holdout is None or task not in holdout) and len(setup_scores) < bestN * 4:
+            warnings.warn('Not enough setups for task %d. Need %d, expected at least %d, got %d' %(task, bestN, bestN*4, len(setup_scores)))
+            continue
         task_setups[task] = dict(sorted(setup_scores.items(), key=operator.itemgetter(1), reverse=True)[:bestN]).keys()
         all_setups |= set(task_setups[task])
 
@@ -170,7 +171,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     setups = openmlpimp.utils.obtain_setups_by_setup_id(setup_ids=list(all_setups), flow=flow_id)
 
     for task_id, best_setups in task_setups.items():
-        if task_id in holdout:
+        if holdout is not None and task_id in holdout:
             print('Holdout task %d' %task_id)
             continue
 
@@ -186,6 +187,8 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
                     raise ValueError()
 
     for parameter in X:
+        if len(X[parameter]) == 0:
+            raise ValueError('Did not obtain priors for task. ')
         X[parameter] = np.array(X[parameter])
     return X
 
