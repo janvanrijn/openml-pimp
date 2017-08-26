@@ -23,7 +23,7 @@ class rv_discrete_wrapper(object):
         for value in X:
             if value not in self.X_prime:
                 self.X_prime[value] = 0
-            self.X_prime[value] = self.X_prime[value] + (1.0 / len(X))
+            self.X_prime[value] += (1.0 / len(X))
         self.distrib = rv_discrete(values=(list(range(len(self.X_prime))), list(self.X_prime.values())))
 
     @staticmethod
@@ -138,7 +138,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
         maps from hyperparameter name to a value. Only setups are considered
         that have this hyperparameter set to this specific value
 
-    holdout : int
+    holdout : list[int]
         OpenML task id to not involve in the sampling
 
     bestN : int
@@ -170,7 +170,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     setups = openmlpimp.utils.obtain_setups_by_setup_id(setup_ids=list(all_setups), flow=flow_id)
 
     for task_id, best_setups in task_setups.items():
-        if task_id == holdout:
+        if task_id in holdout:
             print('Holdout task %d' %task_id)
             continue
 

@@ -30,6 +30,7 @@ def parse_args():
     parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
+    parser.add_argument('--inverse_holdout', action="store_true", help='Will only operate on the task at hand (overestimate performance)')
 
     args = parser.parse_args()
     return args
@@ -58,6 +59,7 @@ if __name__ == '__main__':
 
     important_parameters = copy.deepcopy(args.fixed_parameters) if args.fixed_parameters is not None else {}
     important_parameters['bestN'] = args.bestN
+    important_parameters['inverse_holdout'] = args.inverse_holdout
 
     save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
     cache_dir = args.cache_dir + '/' + args.classifier + '/' + save_folder_suffix
@@ -106,12 +108,17 @@ if __name__ == '__main__':
                     continue
 
                 if search_type == 'priors':
+                    if args.inverse_holdout:
+                        holdout = set(all_task_ids) - {task_id}
+                    else:
+                        holdout = {task_id}
+
                     param_distributions = openmlpimp.utils.get_prior_paramgrid(cache_dir,
                                                                                args.study_id,
                                                                                args.flow_id,
                                                                                hyperparameters,
                                                                                args.fixed_parameters,
-                                                                               holdout=task_id,
+                                                                               holdout=holdout,
                                                                                bestN=args.bestN)
                 elif search_type == 'uniform':
                     param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
