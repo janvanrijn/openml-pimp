@@ -51,7 +51,6 @@ class rv_discrete_wrapper(object):
 class gaussian_kde_wrapper(object):
     def __init__(self, hyperparameter, param_name, X):
         self.param_name = param_name
-        self.log = log
         self.const = False
         self.hyperparameter = hyperparameter
         if self.hyperparameter.log:
