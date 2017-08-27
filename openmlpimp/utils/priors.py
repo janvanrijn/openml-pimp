@@ -49,12 +49,12 @@ class rv_discrete_wrapper(object):
 
 
 class gaussian_kde_wrapper(object):
-    def __init__(self, hyperparameter, param_name, X, log):
+    def __init__(self, hyperparameter, param_name, X):
         self.param_name = param_name
         self.log = log
         self.const = False
         self.hyperparameter = hyperparameter
-        if self.log:
+        if self.hyperparameter.log:
             self.distrib = gaussian_kde(np.log2(X))
             if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
                 self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
@@ -71,7 +71,7 @@ class gaussian_kde_wrapper(object):
     def pdf(self, x):
         if self.const:
             raise ValueError('No pdf available for constant value')
-        if self.log:
+        if self.hyperparameter.log:
             return self.distrib.pdf(np.log2(x))
         else:
             return self.distrib.pdf(x)
@@ -85,7 +85,7 @@ class gaussian_kde_wrapper(object):
             return int(np.random.choice(a=values, p=probs))
         while True:
             sample = self.distrib.resample(size=1)[0][0]
-            if self.log:
+            if self.hyperparameter.log:
                 value = np.power(2, sample)
             else:
                 value = sample
@@ -207,7 +207,7 @@ def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fix
         if isinstance(hyperparameter, CategoricalHyperparameter):
             param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
         elif isinstance(hyperparameter, NumericalHyperparameter):
-            param_grid[parameter_name] = gaussian_kde_wrapper(hyperparameter, parameter_name, prior, hyperparameter.log)
+            param_grid[parameter_name] = gaussian_kde_wrapper(hyperparameter, parameter_name, prior)
         else:
             raise ValueError()
     return param_grid
@@ -227,7 +227,6 @@ def get_uniform_paramgrid(hyperparameters, fixed_parameters):
             if hyperparameter.log:
                 param_grid[param_name] = loguniform(base=2, low=hyperparameter.lower, high=hyperparameter.upper)
             else:
-
                 param_grid[param_name] = uniform(loc=hyperparameter.lower, scale=hyperparameter.upper)
         elif isinstance(hyperparameter, UniformIntegerHyperparameter):
             if hyperparameter.log:

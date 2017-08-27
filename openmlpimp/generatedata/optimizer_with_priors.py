@@ -1,6 +1,7 @@
 import argparse
 import arff
 import copy
+import ConfigSpace
 import json
 import openml
 import openmlpimp
@@ -31,6 +32,7 @@ def parse_args():
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--inverse_holdout', action="store_true", help='Will only operate on the task at hand (overestimate performance)')
+    parser.add_argument('--ignore_logscale', action="store_true", help='Will only use hyperparameters that are not on a logscale')
 
     args = parser.parse_args()
     return args
@@ -60,6 +62,7 @@ if __name__ == '__main__':
     important_parameters = copy.deepcopy(args.fixed_parameters) if args.fixed_parameters is not None else {}
     important_parameters['bestN'] = args.bestN
     important_parameters['inverse_holdout'] = args.inverse_holdout
+    important_parameters['ignore_logscale'] = args.ignore_logscale
 
     output_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
     cache_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
@@ -88,6 +91,10 @@ if __name__ == '__main__':
             pipe.set_params(**required_params)
 
         hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
+        if args.ignore_logscale:
+            for param_name in hyperparameters.keys():
+                if isinstance(hyperparameters[param_name], ConfigSpace.NumericHyperparameter):
+                    hyperparameters[param_name].log = False
 
         for search_type in search_types:
             output_dir = args.output_dir + '/' + args.classifier + '/' + output_save_folder_suffix + '/' + search_type + '/' + str(task_id) + '/'
