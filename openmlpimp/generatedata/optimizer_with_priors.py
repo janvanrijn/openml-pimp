@@ -1,7 +1,6 @@
 import argparse
 import arff
 import copy
-import ConfigSpace
 import json
 import openml
 import openmlpimp
@@ -12,6 +11,7 @@ import fasteners
 import autosklearn.constants
 from autosklearn.util.pipeline import get_configuration_space
 from sklearn.model_selection._search import RandomizedSearchCV
+from ConfigSpace.hyperparameters import NumericalHyperparameter
 
 
 def parse_args():
@@ -93,7 +93,7 @@ if __name__ == '__main__':
         hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
         if args.ignore_logscale:
             for param_name in hyperparameters.keys():
-                if isinstance(hyperparameters[param_name], ConfigSpace.NumericHyperparameter):
+                if isinstance(hyperparameters[param_name], NumericalHyperparameter):
                     hyperparameters[param_name].log = False
 
         for search_type in search_types:
