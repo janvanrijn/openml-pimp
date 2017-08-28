@@ -49,23 +49,26 @@ class rv_discrete_wrapper(object):
 
 
 class gaussian_kde_wrapper(object):
-    def __init__(self, hyperparameter, param_name, X):
+    def __init__(self, hyperparameter, param_name, data, oob_strategy='resample'):
+        if oob_strategy not in ['resample', 'round']:
+            raise ValueError()
+        self.oob_strategy = oob_strategy
         self.param_name = param_name
         self.const = False
         self.hyperparameter = hyperparameter
         if self.hyperparameter.log:
-            self.distrib = gaussian_kde(np.log2(X))
+            self.distrib = gaussian_kde(np.log2(data))
             if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
                 self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
         else:
-            self.distrib = gaussian_kde(X)
+            self.distrib = gaussian_kde(data)
             if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
                 self.probabilities = {val: self.distrib.pdf(val)[0] for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
 
                 # normalize the dict
                 factor = 1.0 / sum(self.probabilities.values())
                 for k in self.probabilities:
-                    self.probabilities[k] = self.probabilities[k] * factor
+                    self.probabilities[k] *= factor
 
     def pdf(self, x):
         if self.const:
@@ -91,6 +94,11 @@ class gaussian_kde_wrapper(object):
 
             if self.hyperparameter.lower <= value <= self.hyperparameter.upper:
                 return value
+            elif self.oob_strategy == 'round':
+                if value < self.hyperparameter.lower:
+                    return self.hyperparameter.lower
+                elif value > self.hyperparameter.upper:
+                    return self.hyperparameter.upper
 
 
 def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
@@ -190,7 +198,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     return X
 
 
-def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1):
+def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1, oob_strategy='resample'):
     priors = obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout, bestN)
     param_grid = dict()
 
@@ -204,7 +212,7 @@ def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fix
         if isinstance(hyperparameter, CategoricalHyperparameter):
             param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
         elif isinstance(hyperparameter, NumericalHyperparameter):
-            param_grid[parameter_name] = gaussian_kde_wrapper(hyperparameter, parameter_name, prior)
+            param_grid[parameter_name] = gaussian_kde_wrapper(hyperparameter, parameter_name, prior, oob_strategy)
         else:
             raise ValueError()
     return param_grid
