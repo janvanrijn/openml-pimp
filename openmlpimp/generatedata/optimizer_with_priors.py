@@ -33,6 +33,7 @@ def parse_args():
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--inverse_holdout', action="store_true", help='Will only operate on the task at hand (overestimate performance)')
     parser.add_argument('--ignore_logscale', action="store_true", help='Will only use hyperparameters that are not on a logscale')
+    parser.add_argument('--oob_strategy', type=str, default='resample', help='Way to handle priors that are out of bound')
 
     args = parser.parse_args()
     return args
@@ -63,6 +64,7 @@ if __name__ == '__main__':
     important_parameters['bestN'] = args.bestN
     important_parameters['inverse_holdout'] = args.inverse_holdout
     important_parameters['ignore_logscale'] = args.ignore_logscale
+    important_parameters['oob_strategy'] = args.oob_strategy
 
     output_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
     cache_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
@@ -127,7 +129,8 @@ if __name__ == '__main__':
                                                                                hyperparameters,
                                                                                args.fixed_parameters,
                                                                                holdout=holdout,
-                                                                               bestN=args.bestN)
+                                                                               bestN=args.bestN,
+                                                                               oob_strategy=args.oob_strategy)
                 elif search_type == 'uniform':
                     param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
                 else:
