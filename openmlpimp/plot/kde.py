@@ -1,14 +1,14 @@
+import arff
 import argparse
+import collections
 import copy
 import json
 import numpy as np
 import openmlpimp
 import os
-import sys
 import matplotlib.pyplot as plt
 
-from collections import OrderedDict
-from scipy.stats import gaussian_kde, rv_discrete
+from scipy.stats import rv_discrete
 
 import autosklearn.constants
 from ConfigSpace.hyperparameters import Constant, CategoricalHyperparameter, NumericalHyperparameter
@@ -27,9 +27,25 @@ def parse_args():
     parser.add_argument('--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
+    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/random_search_prior/adaboost/bestN_10', help="Adds samples obtained from a result directory")
 
     args = parser.parse_args()
     return args
+
+
+def obtain_sampled_parameters(directory):
+    import glob
+    files = glob.glob(directory + '/*/*.arff')
+    values = collections.defaultdict(list)
+    for file in files:
+        with open(file, 'r') as fp:
+            arff_file = arff.load(fp)
+        for idx, attribute in enumerate(arff_file['attributes']):
+            attribute_name = attribute[0]
+            if attribute_name.startswith('parameter_'):
+                canonical_name = attribute_name.split('__')[-1]
+                values[canonical_name].extend([arff_file['data'][x][idx] for x in range(len((arff_file['data'])))])
+    return values
 
 
 def plot_categorical(X, output_dir, parameter_name):
@@ -38,7 +54,7 @@ def plot_categorical(X, output_dir, parameter_name):
     except FileExistsError:
         pass
 
-    X_prime = OrderedDict()
+    X_prime = collections.OrderedDict()
     for value in X:
         if value not in X_prime:
             X_prime[value] = 0
@@ -51,6 +67,7 @@ def plot_categorical(X, output_dir, parameter_name):
     ax.legend(loc='upper left')
 
     plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
+    plt.close()
 
 
 def plot_numeric(hyperparameter, distributions, output_dir, parameter_name, data=None):
@@ -59,11 +76,13 @@ def plot_numeric(hyperparameter, distributions, output_dir, parameter_name, data
     except FileExistsError:
         pass
 
+    lines = ['r-', 'b-', 'g-']
     X_values_plot = np.linspace(hyperparameter.lower, hyperparameter.upper, 1000)
     fig, ax = plt.subplots()
 
-    for name, distribution in distributions.items():
-        ax.plot(X_values_plot, distribution.pdf(X_values_plot), 'r-', lw = 5, alpha = 0.6, label=name)
+    for index, name in enumerate(distributions):
+        distribution = distributions[name]
+        ax.plot(X_values_plot, distribution.pdf(X_values_plot), lines[index], lw=5, alpha=0.6, label=name)
 
     ax.legend(loc='upper left')
 
@@ -74,6 +93,7 @@ def plot_numeric(hyperparameter, distributions, output_dir, parameter_name, data
     if hyperparameter.log:
         plt.xscale("log", log=2)
     plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
+    plt.close()
 
 
 if __name__ == '__main__':
@@ -94,16 +114,21 @@ if __name__ == '__main__':
         include_preprocessors=['no_preprocessing'])
 
     hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
-    print(hyperparameters)
+    obtained_results = {}
+    if args.result_directory is not None:
+        for strategy in os.listdir(args.result_directory):
+            obtained_results[strategy] = obtain_sampled_parameters(os.path.join(args.result_directory, strategy))
 
     X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters, holdout=None, bestN=10)
     prior_param_grid = openmlpimp.utils.get_prior_paramgrid(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
-    uniform_param_grid = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
 
     for param_name, priors in prior_param_grid.items():
         current_parameter = hyperparameters[param_name]
         if isinstance(current_parameter, NumericalHyperparameter):
-            distributions = {'gaussian_kde': prior_param_grid[param_name]}
+            distributions = collections.OrderedDict({'gaussian_kde': prior_param_grid[param_name]})
+            for strategy in obtained_results:
+                data = np.array(obtained_results[strategy][param_name], dtype=np.float64)
+                distributions[strategy] = openmlpimp.utils.priors.gaussian_kde_wrapper(current_parameter, current_parameter.name, data)
             plot_numeric(current_parameter, distributions, output_dir + '/', param_name, X[param_name])
         elif isinstance(current_parameter, CategoricalHyperparameter):
             plot_categorical(X[param_name], output_dir + '/', param_name)
