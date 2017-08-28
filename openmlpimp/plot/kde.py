@@ -53,22 +53,25 @@ def plot_categorical(X, output_dir, parameter_name):
     plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
 
 
-def plot_numeric(X, distribution, output_dir, parameter_name, log_scale, min_value, max_value):
+def plot_numeric(hyperparameter, distributions, output_dir, parameter_name, data=None):
     try:
         os.makedirs(output_dir)
     except FileExistsError:
         pass
 
-    X_plot = np.linspace(min_value, max_value, 1000)
+    X_values_plot = np.linspace(hyperparameter.lower, hyperparameter.upper, 1000)
     fig, ax = plt.subplots()
 
-    ax.plot(X_plot, distribution.pdf(X_plot), 'r-', lw = 5, alpha = 0.6, label='gaussian kde')
+    for name, distribution in distributions.items():
+        ax.plot(X_values_plot, distribution.pdf(X_values_plot), 'r-', lw = 5, alpha = 0.6, label=name)
 
     ax.legend(loc='upper left')
-    ax.plot(X, -0.005 - 0.01 * np.random.random(X.shape[0]), '+k')
 
-    ax.set_xlim(min_value, max_value)
-    if log_scale:
+    if data is not None:
+        ax.plot(data, -0.005 - 0.01 * np.random.random(data.shape[0]), '+k')
+
+    ax.set_xlim(hyperparameter.lower, hyperparameter.upper)
+    if hyperparameter.log:
         plt.xscale("log", log=2)
     plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
 
@@ -94,16 +97,13 @@ if __name__ == '__main__':
     print(hyperparameters)
 
     X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters, holdout=None, bestN=10)
-    param_grid = openmlpimp.utils.get_prior_paramgrid(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
+    prior_param_grid = openmlpimp.utils.get_prior_paramgrid(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
+    uniform_param_grid = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
 
-    for param_name, priors in param_grid.items():
-        logscale = False
-        parameter = hyperparameters[param_name]
-        if isinstance(parameter, NumericalHyperparameter):
-            logscale = parameter.log
-            try:
-                plot_numeric(X[param_name], param_grid[param_name], output_dir + '/', param_name, logscale, parameter.lower, parameter.upper)
-            except ValueError as e:
-                sys.stderr.write(param_name + ': ' + str(e))
-        elif isinstance(parameter, CategoricalHyperparameter):
+    for param_name, priors in prior_param_grid.items():
+        current_parameter = hyperparameters[param_name]
+        if isinstance(current_parameter, NumericalHyperparameter):
+            distributions = {'gaussian_kde': prior_param_grid[param_name]}
+            plot_numeric(current_parameter, distributions, output_dir + '/', param_name, X[param_name])
+        elif isinstance(current_parameter, CategoricalHyperparameter):
             plot_categorical(X[param_name], output_dir + '/', param_name)
