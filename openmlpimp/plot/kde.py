@@ -96,8 +96,9 @@ if __name__ == '__main__':
     X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters, holdout=None, bestN=10)
     param_grid = openmlpimp.utils.get_prior_paramgrid(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
 
-    for param_name, parameter in hyperparameters.items():
+    for param_name, priors in param_grid.items():
         logscale = False
+        parameter = hyperparameters[param_name]
         if isinstance(parameter, NumericalHyperparameter):
             logscale = parameter.log
             try:
