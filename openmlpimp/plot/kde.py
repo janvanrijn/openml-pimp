@@ -78,11 +78,12 @@ if __name__ == '__main__':
     cache_dir = os.path.expanduser('~') + '/experiments/cache_kde'
     output_dir = os.path.expanduser('~') + '/experiments/pdf'
 
+    cache_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
     important_parameters = copy.deepcopy(args.fixed_parameters) if args.fixed_parameters is not None else {}
     important_parameters['bestN'] = args.bestN
     save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
     output_dir = output_dir + '/' + args.classifier + '/' + save_folder_suffix
-    cache_dir = cache_dir + '/' + args.classifier + '/' + save_folder_suffix
+    cache_dir = cache_dir + '/' + args.classifier + '/' + cache_folder_suffix
 
     configuration_space = get_configuration_space(
         info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
