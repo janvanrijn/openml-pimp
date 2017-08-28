@@ -99,7 +99,6 @@ def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
 
     task_setup_scores = collections.defaultdict(dict)
     for task_id in study.tasks:
-        print("task", task_id)
         runs = openml.evaluations.list_evaluations("predictive_accuracy", task=[task_id], flow=[flow_id])
         for run in runs.values():
             if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name', fixed_parameters):
@@ -150,8 +149,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     """
     filename = cache_directory + '/best_setup_per_task.pkl'
     if not os.path.isfile(filename):
-        print(filename)
-        print('%s No cache file for setups, will create one ... ' %openmlpimp.utils.get_time())
+        print('%s No cache file for setups (expected: %s), will create one ... ' %(openmlpimp.utils.get_time(), filename))
         cache_priors(cache_directory, study_id, flow_id, fixed_parameters)
         print('%s Cache created. Available in: %s' %(openmlpimp.utils.get_time(),filename))
 

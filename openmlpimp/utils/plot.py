@@ -48,7 +48,7 @@ def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, pl
     cmd = [script]
     for strategy, directory in strategy_directory.items():
         cmd.append(strategy)
-        cmd.append(directory + str(task_id) + '/*.csv')
+        cmd.append(directory + '/' + str(task_id) + '/*.csv')
     try:
         os.makedirs(plot_directory)
     except FileExistsError:
@@ -75,14 +75,41 @@ def boxplot_traces(strategy_traces, save_directory, name):
         data.append(current)
         label_names.append(strategy)
 
-
     plt.figure()
     plt.boxplot(data)
     plt.xticks(list(range(1, len(label_names) + 1)), label_names)
     plt.savefig(os.path.join(save_directory, name))
+    plt.close()
 
 
-def obtain_performance_curves(trace, save_directory, improvements=True):
+def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, curves_directory):
+    script = "%s %s/plot_ranks_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
+    cmd = [script]
+
+    results = collections.defaultdict(dict)
+    for strategy in os.listdir(curves_directory):
+        for task_csv in os.listdir(os.path.join(curves_directory, strategy)):
+            task_id = task_csv.split('.')[0]
+            results[task_id][strategy] = os.path.join(curves_directory, strategy, task_csv)
+
+    for task_id, strategy_file in results.items():
+        for strategy, file in results[task_id].items():
+            cmd.append('%s %s %s' % (str(task_id), strategy, file))
+
+    cmd.append('--save ' + output_directory + '/average_ranks.png')
+    subprocess.run(' '.join(cmd), shell=True)
+
+
+def obtain_performance_curves(trace, save_directory, avg_curve_directory=None, task_id=None, improvements=True):
+    def save_curve(filename):
+        with open(filename, 'w') as csvfile:
+            current_curve = curves[(repeat, fold)]
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
+            for idx in range(len(current_curve)):
+                csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
+
+
     curves = collections.defaultdict(dict)
 
     try:
@@ -105,13 +132,24 @@ def obtain_performance_curves(trace, save_directory, improvements=True):
                 if current_curve[idx] < current_curve[idx-1]:
                     current_curve[idx] = current_curve[idx - 1]
 
+    if avg_curve_directory is not None:
+        if task_id is None:
+            raise ValueError()
+
+        try:
+            os.makedirs(avg_curve_directory)
+        except FileExistsError:
+            pass
+
+        average_curve = list(range(0, len(curves[(0, 0)])))
+        # assumes all curves have same nr of iterations :)
+        for (repeat, fold), currentcurve in curves.items():
+            for itt, value in enumerate(currentcurve):
+                average_curve[itt] += value / len(curves)
+        save_curve(avg_curve_directory + '/%s.csv' % str(task_id))
+
     for repeat, fold in curves.keys():
-        with open(save_directory + '%d_%d.csv' %(repeat, fold), 'w') as csvfile:
-            current_curve = curves[(repeat, fold)]
-            csvwriter = csv.writer(csvfile)
-            csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
-            for idx in range(len(current_curve)):
-                csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
+        save_curve(save_directory + '/%d_%d.csv' %(repeat, fold))
 
 
 def obtain_performance_curves_openml(run_id, save_directory, improvements=True):
