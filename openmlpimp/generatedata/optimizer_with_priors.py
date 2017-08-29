@@ -7,6 +7,7 @@ import openmlpimp
 import os
 import sklearn
 import fasteners
+import warnings
 
 import autosklearn.constants
 from autosklearn.util.pipeline import get_configuration_space
@@ -21,23 +22,42 @@ def parse_args():
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser.add_argument('--cache_dir', type=str, default=os.path.expanduser('~') + '/experiments/cache_kde')
-    parser.add_argument('--output_dir', type=str, default=os.path.expanduser('~') + '/experiments/random_search_prior')
+    parser.add_argument('--output_dir', type=str, default=os.path.expanduser('~') + '/experiments/priorbased_experiments')
     parser.add_argument('--study_id', type=str, default='OpenML100', help='the tag to obtain the tasks for the prior from')
     parser.add_argument('--flow_id', type=int, default=6970, help='the tag to obtain the tasks for the prior from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_taskid', type=int, nargs="+", default=None, help='the openml task id to execute')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
-    parser.add_argument('--search_type', type=str, choices=['priors', 'uniform', 'empirical'], default=None, help='the way to apply the search')
+    parser.add_argument('--search_type', type=str, choices=['kde', 'uniform', 'empirical', 'multivariate'], default='kde', help='the way to apply the search')
     parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--inverse_holdout', action="store_true", help='Will only operate on the task at hand (overestimate performance)')
     parser.add_argument('--ignore_logscale', action="store_true", help='Will only use hyperparameters that are not on a logscale')
-    parser.add_argument('--oob_strategy', type=str, default='resample', help='Way to handle priors that are out of bound')
+    parser.add_argument('--oob_strategy', type=str, default='ignore', help='Way to handle priors that are out of bound')
 
     args = parser.parse_args()
+
+    if args.search_type == 'uniform':
+        if args.inverse_holdout is True:
+            raise ValueError('Inverse holdout set not applicable to search type uniform')
+
     return args
 
+
+def update_param_dist(classifier, param_distributions):
+    param_dist_adjusted = dict()
+    # TODO hacky update
+    if classifier == 'adaboost':
+        param_distributions['base_estimator__max_depth'] = param_distributions.pop('max_depth')
+
+    for param_name, hyperparameter in param_distributions.items():
+        if param_name == 'strategy':
+            param_name = 'imputation__strategy'
+        else:
+            param_name = 'classifier__' + param_name
+        param_dist_adjusted[param_name] = hyperparameter
+    return param_dist_adjusted
 
 if __name__ == '__main__':
     args = parse_args()
@@ -55,18 +75,13 @@ if __name__ == '__main__':
     else:
         raise ValueError()
 
-    # select search_types to execute
-    search_types = [args.search_type]
-    if args.search_type is None:
-        search_types = ['priors', 'uniform']
+    optimizer_parameters = {}
+    optimizer_parameters['bestN'] = args.bestN
+    optimizer_parameters['inverse_holdout'] = args.inverse_holdout
+    optimizer_parameters['ignore_logscale'] = args.ignore_logscale
+    optimizer_parameters['oob_strategy'] = args.oob_strategy
 
-    important_parameters = copy.deepcopy(args.fixed_parameters) if args.fixed_parameters is not None else {}
-    important_parameters['bestN'] = args.bestN
-    important_parameters['inverse_holdout'] = args.inverse_holdout
-    important_parameters['ignore_logscale'] = args.ignore_logscale
-    important_parameters['oob_strategy'] = args.oob_strategy
-
-    output_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
+    output_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(optimizer_parameters)
     cache_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
     cache_dir = args.cache_dir + '/' + args.classifier + '/' + cache_save_folder_suffix
 
@@ -98,94 +113,117 @@ if __name__ == '__main__':
                 if isinstance(hyperparameters[param_name], NumericalHyperparameter):
                     hyperparameters[param_name].log = False
 
-        for search_type in search_types:
-            output_dir = args.output_dir + '/' + args.classifier + '/' + output_save_folder_suffix + '/' + search_type + '/' + str(task_id) + '/'
-            try:
-                os.makedirs(output_dir)
-            except FileExistsError:
-                pass
+        output_dir = args.output_dir + '/' + args.classifier + cache_save_folder_suffix + '/' + args.search_type + '_' + output_save_folder_suffix[1:] + '/' + str(task_id)
+        try:
+            os.makedirs(output_dir)
+        except FileExistsError:
+            pass
 
-            if os.path.isfile(output_dir + 'trace.arff'):
-                print("Task already finished: %d %s" % (task_id, search_type))
+        if os.path.isfile(output_dir + '/trace.arff'):
+            print("Task already finished: %d %s" % (task_id, args.search_type))
+            continue
+
+        lock_file = fasteners.InterProcessLock(output_dir + '/tmp.lock')
+        obtained_lock = lock_file.acquire(blocking=False)
+        try:
+            if not obtained_lock:
+                # this means some other process already is working
+                print("Task already in progress: %d %s" %(task_id, args.search_type))
                 continue
 
-            lock_file = fasteners.InterProcessLock(output_dir + 'tmp.lock')
-            obtained_lock = lock_file.acquire(blocking=False)
-            try:
-                if not obtained_lock:
-                    # this means some other process already is working
-                    print("Task already in progress: %d %s" %(task_id, search_type))
-                    continue
+            if args.inverse_holdout:
+                holdout = set(all_task_ids) - {task_id}
+            else:
+                holdout = {task_id}
 
-                if args.inverse_holdout:
-                    holdout = set(all_task_ids) - {task_id}
-                else:
-                    holdout = {task_id}
+            optimizer = None
+            if args.search_type == 'kde':  # KDE
+                param_distributions = openmlpimp.utils.get_kde_paramgrid(cache_dir,
+                                                                         args.study_id,
+                                                                         args.flow_id,
+                                                                         hyperparameters,
+                                                                         args.fixed_parameters,
+                                                                         holdout=holdout,
+                                                                         bestN=args.bestN,
+                                                                         oob_strategy=args.oob_strategy)
+                param_distributions = update_param_dist(args.classifier, param_distributions)
+                print('%s Param Grid:' % openmlpimp.utils.get_time(), param_distributions)
 
-                if search_type == 'priors': # KDE
-                    param_distributions = openmlpimp.utils.get_kde_paramgrid(cache_dir,
-                                                                             args.study_id,
-                                                                             args.flow_id,
-                                                                             hyperparameters,
-                                                                             args.fixed_parameters,
-                                                                             holdout=holdout,
-                                                                             bestN=args.bestN,
-                                                                             oob_strategy=args.oob_strategy)
-                elif search_type == 'empirical':
-                    param_distributions = openmlpimp.utils.get_empericaldistribution_paramgrid(cache_dir,
-                                                                                               args.study_id,
-                                                                                               args.flow_id,
-                                                                                               hyperparameters,
-                                                                                               args.fixed_parameters,
-                                                                                               holdout=holdout,
-                                                                                               bestN=args.bestN)
-                elif search_type == 'uniform':
-                    param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
-                else:
-                    raise ValueError()
-                
-                # TODO: hacky mapping update
-                if args.classifier == 'adaboost':
-                    param_distributions['base_estimator__max_depth'] = param_distributions.pop('max_depth')
+            elif args.search_type == 'empirical':
+                param_distributions = openmlpimp.utils.get_empericaldistribution_paramgrid(cache_dir,
+                                                                                           args.study_id,
+                                                                                           args.flow_id,
+                                                                                           hyperparameters,
+                                                                                           args.fixed_parameters,
+                                                                                           holdout=holdout,
+                                                                                           bestN=args.bestN)
+                param_distributions = update_param_dist(args.classifier, param_distributions)
+                print('%s Param Grid:' % openmlpimp.utils.get_time(), param_distributions)
 
-                print('%s Param Grid:' %openmlpimp.utils.get_time(), param_distributions)
-                print('%s Start modelling ... [takes a while]' %openmlpimp.utils.get_time())
+            elif args.search_type == 'multivariate':
+                priors = openmlpimp.utils.obtain_priors(cache_dir,
+                                                        args.study_id,
+                                                        args.flow_id,
+                                                        hyperparameters,
+                                                        args.fixed_parameters,
+                                                        holdout,
+                                                        args.bestN)
+                for name in list(priors.keys()):
+                    if args.fixed_parameters is not None and name in args.fixed_parameters.keys():
+                        priors.pop(name)
+                        hyperparameters.pop(name)
+                    elif all(x == priors[name][0] for x in priors[name]):
+                        warnings.warn('Skipping Hyperparameter %s: All prior values equals (%s). ' % (name, priors[name][0]))
+                        priors.pop(name)
+                        hyperparameters.pop(name)
 
-                # TODO: make this better
-                param_dist_adjusted = dict()
-                fixed_param_values = dict()
-                for param_name, hyperparameter in param_distributions.items():
-                    if param_name == 'strategy':
-                        param_name = 'imputation__strategy'
-                    else:
-                        param_name = 'classifier__' + param_name
-                    param_dist_adjusted[param_name] = hyperparameter
-                if args.fixed_parameters is not None:
-                    for param_name, value in args.fixed_parameters.items():
-                        param_name = 'estimator__classifier__' + param_name
-                        fixed_param_values[param_name] = value
+                priors = update_param_dist(args.classifier, priors)
 
+                optimizer = openmlpimp.utils.MultivariateKdeSearch(estimator=pipe,
+                                                                   param_priors=priors,
+                                                                   param_hyperparameters=update_param_dist(args.classifier, hyperparameters),
+                                                                   n_iter=args.n_iters,
+                                                                   random_state=1,
+                                                                   n_jobs=-1)
+                print('%s Prior keys:' % openmlpimp.utils.get_time(), priors.keys())
+
+            elif args.search_type == 'uniform':
+                param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
+                param_distributions = update_param_dist(args.classifier, param_distributions)
+                print('%s Param Grid:' % openmlpimp.utils.get_time(), param_distributions)
+
+            else:
+                raise ValueError()
+
+            print('%s Start modelling ... [takes a while]' %openmlpimp.utils.get_time())
+
+            # TODO: make this better
+            fixed_param_values = dict()
+            if args.fixed_parameters is not None:
+                for param_name, value in args.fixed_parameters.items():
+                    param_name = 'estimator__classifier__' + param_name
+                    fixed_param_values[param_name] = value
+
+            if optimizer is None:
                 optimizer = RandomizedSearchCV(estimator=pipe,
-                                               param_distributions=param_dist_adjusted,
+                                               param_distributions=param_distributions,
                                                n_iter=args.n_iters,
                                                random_state=1,
                                                n_jobs=-1)
-                optimizer.set_params(**fixed_param_values)
-                print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
+            optimizer.set_params(**fixed_param_values)
+            print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
 
-                res = openml.runs.functions._run_task_get_arffcontent(optimizer, task, task.class_labels)
-                run = openml.runs.OpenMLRun(task_id=task.task_id, dataset_id=None, flow_id=None,
-                                            model=optimizer)
-                run.data_content, run.trace_content, run.trace_attributes, run.fold_evaluations, _ = res
-                score = run.get_metric_fn(sklearn.metrics.accuracy_score)
+            res = openml.runs.functions._run_task_get_arffcontent(optimizer, task, task.class_labels)
+            run = openml.runs.OpenMLRun(task_id=task.task_id, dataset_id=None, flow_id=None,
+                                        model=optimizer)
+            run.data_content, run.trace_content, run.trace_attributes, run.fold_evaluations, _ = res
+            score = run.get_metric_fn(sklearn.metrics.accuracy_score)
 
-                print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
+            print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
 
-                trace_arff = arff.dumps(run._generate_trace_arff_dict())
-                with open(output_dir + 'trace.arff', 'w') as f:
-                    f.write(trace_arff)
-            except ValueError as e:
-                print('%s ValueError:' %openmlpimp.utils.get_time(), e)
-            finally:
-                if obtained_lock:
-                    lock_file.release()
+            trace_arff = arff.dumps(run._generate_trace_arff_dict())
+            with open(output_dir + '/trace.arff', 'w') as f:
+                f.write(trace_arff)
+        finally:
+            if obtained_lock:
+                lock_file.release()
