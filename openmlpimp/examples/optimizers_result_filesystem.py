@@ -7,20 +7,22 @@ import os
 import openml
 import openmlpimp
 
-# Mounting CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 nemo/
 
+# Mounting CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 nemo/
 def parse_args():
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
     parser.add_argument('--virtual_env', type=str, default=os.path.expanduser('~') + '/projects/pythonvirtual/plot2/bin/python', help='python virtual env for plotting')
     parser.add_argument('--scripts_dir', type=str, default=os.path.expanduser('~') + '/projects/plotting_scripts/scripts', help='directory to Katha\'s plotting scripts')
-    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/random_search_prior/', help='the directory to load the experiments from')
+    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/priorbased_experiments/', help='the directory to load the experiments from')
     parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/optimizers/priors/', help='the directory to load the experiments from')
 
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
-    parser.add_argument('--inverse_holdout', action="store_true", default=True, help='Will only operate on the task at hand (overestimate performance)')
+    parser.add_argument('--inverse_holdout', action="store_true", default=False, help='Will only operate on the task at hand (overestimate performance)')
+    parser.add_argument('--ignore_logscale', action="store_true", default=False, help='Will only operate on the task at hand (overestimate performance)')
+    parser.add_argument('--oob_strategy', type=str, default='round', help='Way to handle priors that are out of bound')
 
     args = parser.parse_args()
     return args
@@ -29,11 +31,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    important_parameters = copy.deepcopy(args.fixed_parameters) if args.fixed_parameters is not None else {}
-    important_parameters['bestN'] = args.bestN
-    important_parameters['inverse_holdout'] = args.inverse_holdout
-
-    results_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
+    results_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
 
     result_directory = args.result_directory + args.classifier + '/' + results_suffix
     output_directory = args.output_directory + args.classifier + '/' + results_suffix
@@ -45,11 +43,12 @@ if __name__ == '__main__':
     strategy_directories = {}
     for strategy in all_strategies:
         directory = os.path.join(result_directory, strategy)
-        strategy_directories[strategy] = output_directory + '/curves/' + strategy
         task_directories = os.listdir(directory)
+        strategy_count = 0
         for task in task_directories:
             arff_file = os.path.join(result_directory, strategy, task, 'trace.arff')
             if os.path.isfile(arff_file):
+                strategy_count += 1
                 with open(arff_file, 'r') as fp:
                     trace_arff = arff.load(fp)
                 trace = openml.runs.functions._create_trace_from_arff(trace_arff)
@@ -60,6 +59,8 @@ if __name__ == '__main__':
                 openmlpimp.utils.obtain_performance_curves(trace, output_indivudual, output_averaged, task)
 
                 all_taskids.add(task)
+        if strategy_count > 0:
+            strategy_directories[strategy] = output_directory + '/curves/' + strategy
 
     openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory + '/', output_directory + '/curves_avg')
 
