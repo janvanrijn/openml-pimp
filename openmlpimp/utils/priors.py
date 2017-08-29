@@ -7,19 +7,17 @@ import operator
 import os
 import pickle
 import warnings
+
+from astroML.density_estimation import EmpiricalDistribution
 from scipy.stats import gaussian_kde, rv_discrete, uniform
-
-from collections import OrderedDict
-
 from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter, UniformFloatHyperparameter, UniformIntegerHyperparameter
-
 from openmlstudy14.distributions import loguniform, loguniform_int
 
 
 class rv_discrete_wrapper(object):
     def __init__(self, param_name, X):
         self.param_name = param_name
-        self.X_prime = OrderedDict()
+        self.X_prime = collections.OrderedDict()
         for value in X:
             if value not in self.X_prime:
                 self.X_prime[value] = 0
@@ -46,6 +44,20 @@ class rv_discrete_wrapper(object):
             return float(value)
         else:
             return str(value)
+
+
+class empirical_distribution_wrapper(object):
+
+    def __init__(self, hyperparameter, priors):
+        self.hyperparameter = hyperparameter
+        self.distrib = EmpiricalDistribution(priors)
+
+    def rvs(self, *args, **kwargs):
+        # assumes a samplesize of 1, for random search
+        sample = self.distrib.rvs(1)[0]
+        if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+            return int(sample)
+        return sample
 
 
 class gaussian_kde_wrapper(object):
@@ -200,7 +212,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     return X
 
 
-def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1, oob_strategy='resample'):
+def get_kde_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1, oob_strategy='resample'):
     priors = obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout, bestN)
     param_grid = dict()
 
@@ -215,6 +227,26 @@ def get_prior_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fix
             param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
         elif isinstance(hyperparameter, NumericalHyperparameter):
             param_grid[parameter_name] = gaussian_kde_wrapper(hyperparameter, parameter_name, prior, oob_strategy)
+        else:
+            raise ValueError()
+    return param_grid
+
+
+def get_empericaldistribution_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1):
+    priors = obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout, bestN)
+    param_grid = dict()
+
+    for parameter_name, prior in priors.items():
+        if fixed_parameters is not None and parameter_name in fixed_parameters.keys():
+            continue
+        if all(x == prior[0] for x in prior):
+            warnings.warn('Skipping Hyperparameter %s: All prior values equals (%s). ' %(parameter_name, prior[0]))
+            continue
+        hyperparameter = hyperparameters[parameter_name]
+        if isinstance(hyperparameter, CategoricalHyperparameter):
+            param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
+        elif isinstance(hyperparameter, NumericalHyperparameter):
+            param_grid[parameter_name] = empirical_distribution_wrapper(hyperparameter, prior)
         else:
             raise ValueError()
     return param_grid

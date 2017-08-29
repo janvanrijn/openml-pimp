@@ -60,7 +60,7 @@ def plot_categorical(X, output_dir, parameter_name):
     for value in X:
         if value not in X_prime:
             X_prime[value] = 0
-        X_prime[value] = X_prime[value] + (1.0 / len(X))
+        X_prime[value] += (1.0 / len(X))
     distrib = rv_discrete(values=(list(range(len(X_prime))), list(X_prime.values())))
 
     fig, ax = plt.subplots()
@@ -72,28 +72,43 @@ def plot_categorical(X, output_dir, parameter_name):
     plt.close()
 
 
-def plot_numeric(hyperparameter, distributions, output_dir, parameter_name, data=None):
+def plot_numeric(hyperparameter, data, output_dir, parameter_name):
     try:
         os.makedirs(output_dir)
     except FileExistsError:
         pass
 
-    lines = ['r-', 'b-', 'g-']
-    X_values_plot = np.linspace(hyperparameter.lower, hyperparameter.upper, 1000)
-    fig, ax = plt.subplots()
+    factor = 1.0
+    lines = ['r', 'b', 'g']
+    min = np.power(hyperparameter.lower, factor)
+    max = np.power(hyperparameter.upper, factor)
+    if max < hyperparameter.upper:
+        max = hyperparameter.upper * factor
+    X_values_plot = np.linspace(min, max, 1000)
+    fig, axes = plt.subplots(2, figsize=(8, 12), sharex=True)
 
-    for index, name in enumerate(distributions):
-        distribution = distributions[name]
-        ax.plot(X_values_plot, distribution.pdf(X_values_plot), lines[index], lw=5, alpha=0.6, label=name)
+    for index, name in enumerate(data):
+        # plot pdfs
+        distribution = openmlpimp.utils.priors.gaussian_kde_wrapper(hyperparameter, hyperparameter.name, data[name])
+        axes[0].plot(X_values_plot, distribution.pdf(X_values_plot), lines[index]+'-', lw=5, alpha=0.6, label=name)
 
-    ax.legend(loc='upper left')
+        # plot cdfs
+        sorted = np.sort(np.array(data[name]))
+        yvals = np.arange(1, len(sorted) + 1) / float(len(sorted))
+        axes[1].step(sorted, yvals, linewidth=1, c=lines[index], label=name)
 
-    if data is not None:
-        ax.plot(data, -0.005 - 0.01 * np.random.random(data.shape[0]), '+k')
 
-    ax.set_xlim(hyperparameter.lower, hyperparameter.upper)
+    # add original data points
+    if 'gaussian_kde' in data:
+        axes[0].plot(data['gaussian_kde'], -0.005 - 0.01 * np.random.random(len(data['gaussian_kde'])), '+k')
+
+    # axis and labels
+    axes[1].legend(loc='upper left')
+    axes[0].set_xlim(min, max)
     if hyperparameter.log:
         plt.xscale("log", log=2)
+
+    # plot
     plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
     plt.close()
 
@@ -121,16 +136,16 @@ if __name__ == '__main__':
         for strategy in os.listdir(results_dir):
             obtained_results[strategy] = obtain_sampled_parameters(os.path.join(results_dir, strategy))
 
-    X = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters, holdout=None, bestN=10)
-    prior_param_grid = openmlpimp.utils.get_prior_paramgrid(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters)
+    param_priors = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters, holdout=None, bestN=10)
 
-    for param_name, priors in prior_param_grid.items():
+    for param_name, priors in param_priors.items():
+        if all(x == priors[0] for x in priors):
+            continue
         current_parameter = hyperparameters[param_name]
         if isinstance(current_parameter, NumericalHyperparameter):
-            distributions = collections.OrderedDict({'gaussian_kde': prior_param_grid[param_name]})
+            data = collections.OrderedDict({'gaussian_kde': priors})
             for strategy in obtained_results:
-                data = np.array(obtained_results[strategy][param_name], dtype=np.float64)
-                distributions[strategy] = openmlpimp.utils.priors.gaussian_kde_wrapper(current_parameter, current_parameter.name, data)
-            plot_numeric(current_parameter, distributions, output_dir + '/', param_name, X[param_name])
+                data[strategy] = np.array(obtained_results[strategy][param_name], dtype=np.float64)
+            plot_numeric(current_parameter, data, output_dir + '/', param_name)
         elif isinstance(current_parameter, CategoricalHyperparameter):
-            plot_categorical(X[param_name], output_dir + '/', param_name)
+            plot_categorical(priors, output_dir + '/', param_name)
