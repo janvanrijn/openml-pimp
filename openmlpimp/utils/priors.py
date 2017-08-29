@@ -50,7 +50,7 @@ class rv_discrete_wrapper(object):
 
 class gaussian_kde_wrapper(object):
     def __init__(self, hyperparameter, param_name, data, oob_strategy='resample'):
-        if oob_strategy not in ['resample', 'round']:
+        if oob_strategy not in ['resample', 'round', 'ignore']:
             raise ValueError()
         self.oob_strategy = oob_strategy
         self.param_name = param_name
@@ -93,6 +93,8 @@ class gaussian_kde_wrapper(object):
                 value = sample
 
             if self.hyperparameter.lower <= value <= self.hyperparameter.upper:
+                return value
+            elif self.oob_strategy == 'ignore':
                 return value
             elif self.oob_strategy == 'round':
                 if value < self.hyperparameter.lower:
