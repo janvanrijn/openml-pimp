@@ -1,17 +1,17 @@
 import arff
 import argparse
 import collections
-import copy
 import json
 import numpy as np
 import openmlpimp
 import os
 import matplotlib.pyplot as plt
+import warnings
 
 from scipy.stats import rv_discrete
 
 import autosklearn.constants
-from ConfigSpace.hyperparameters import Constant, CategoricalHyperparameter, NumericalHyperparameter
+from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter
 from autosklearn.util.pipeline import get_configuration_space
 
 
@@ -21,15 +21,13 @@ def parse_args():
                        'k_nearest_neighbors', 'lda', 'liblinear_svc', 'libsvm_svc', 'multinomial_nb', 'passive_aggressive',
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'random_forest']
-    parser.add_argument('--flow_id', type=int, default=6970, help='the OpenML flow id')
+    parser.add_argument('--flow_id', type=int, default=6969, help='the OpenML flow id')
     parser.add_argument('--study_id', type=str, default='OpenML100', help='the OpenML study id')
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
-    parser.add_argument('--fixed_parameters', type=json.loads, default=None,
-                        help='Will only use configurations that have these parameters fixed')
-    parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
+    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
+    parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--cache_directory', type=str, default=os.path.expanduser('~') + '/experiments/cache_kde', help="Directory containing cache files")
     parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/pdf', help="Directory to save the result files")
-    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/random_search_prior', help="Adds samples obtained from a result directory")
+    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/priorbased_experiments', help="Adds samples obtained from a result directory")
 
     args = parser.parse_args()
     return args
@@ -46,7 +44,7 @@ def obtain_sampled_parameters(directory):
             attribute_name = attribute[0]
             if attribute_name.startswith('parameter_'):
                 canonical_name = attribute_name.split('__')[-1]
-                values[canonical_name].extend([arff_file['data'][x][idx] for x in range(len((arff_file['data'])))])
+                values[canonical_name].extend([arff_file['data'][x][idx] for x in range(len(arff_file['data']))])
     return values
 
 
@@ -79,7 +77,7 @@ def plot_numeric(hyperparameter, data, output_dir, parameter_name):
         pass
 
     factor = 1.0
-    lines = ['r', 'b', 'g']
+    lines = ['r', 'b', 'g', 'c', 'm', 'y', 'k', 'w']
     min = np.power(hyperparameter.lower, factor)
     max = np.power(hyperparameter.upper, factor)
     if max < hyperparameter.upper:
@@ -116,14 +114,10 @@ def plot_numeric(hyperparameter, data, output_dir, parameter_name):
 if __name__ == '__main__':
     args = parse_args()
 
-    cache_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
-    important_parameters = copy.deepcopy(args.fixed_parameters) if args.fixed_parameters is not None else {}
-    important_parameters['bestN'] = args.bestN
-    save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(important_parameters)
-
-    output_dir = args.output_directory + '/' + args.classifier + '/' + save_folder_suffix
-    cache_dir = args.cache_directory + '/' + args.classifier + '/' + cache_folder_suffix
-    results_dir = args.result_directory + '/' + args.classifier + '/' + save_folder_suffix
+    folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
+    output_dir = args.output_directory + '/' + args.classifier + '/' + folder_suffix
+    cache_dir = args.cache_directory + '/' + args.classifier + '/' + folder_suffix
+    results_dir = args.result_directory + '/' + args.classifier + '/' + folder_suffix
 
     configuration_space = get_configuration_space(
         info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
@@ -134,7 +128,9 @@ if __name__ == '__main__':
     obtained_results = {}
     if args.result_directory is not None:
         for strategy in os.listdir(results_dir):
-            obtained_results[strategy] = obtain_sampled_parameters(os.path.join(results_dir, strategy))
+            res = obtain_sampled_parameters(os.path.join(results_dir, strategy))
+            if len(res):
+                obtained_results[strategy] = res
 
     param_priors = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters, holdout=None, bestN=10)
 
@@ -145,7 +141,8 @@ if __name__ == '__main__':
         if isinstance(current_parameter, NumericalHyperparameter):
             data = collections.OrderedDict({'gaussian_kde': priors})
             for strategy in obtained_results:
-                data[strategy] = np.array(obtained_results[strategy][param_name], dtype=np.float64)
+                strategy_name = openmlpimp.utils.plot._determine_name(strategy)
+                data[strategy_name] = np.array(obtained_results[strategy][param_name], dtype=np.float64)
             plot_numeric(current_parameter, data, output_dir + '/', param_name)
         elif isinstance(current_parameter, CategoricalHyperparameter):
             plot_categorical(priors, output_dir + '/', param_name)

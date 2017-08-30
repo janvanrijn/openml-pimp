@@ -33,7 +33,7 @@ def _determine_eligibility(strategy, include_pattern, exclude_pattern):
 
 def _determine_name(strategy):
     strategy_splitted = strategy.split('__')
-    return strategy_splitted[0] + '__' + strategy_splitted[2]
+    return strategy_splitted[0] + '__' + strategy_splitted[3]
 
 
 def to_csv_file(ranks_dict, location):
