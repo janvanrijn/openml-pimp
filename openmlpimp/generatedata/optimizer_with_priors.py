@@ -113,7 +113,7 @@ if __name__ == '__main__':
                 if isinstance(hyperparameters[param_name], NumericalHyperparameter):
                     hyperparameters[param_name].log = False
 
-        output_dir = args.output_dir + '/' + args.classifier + cache_save_folder_suffix + '/' + args.search_type + '_' + output_save_folder_suffix[1:] + '/' + str(task_id)
+        output_dir = args.output_dir + '/' + args.classifier + cache_save_folder_suffix + '/' + args.search_type + '__' + output_save_folder_suffix[1:] + '/' + str(task_id)
         try:
             os.makedirs(output_dir)
         except FileExistsError:

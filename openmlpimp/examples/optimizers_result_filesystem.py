@@ -20,9 +20,6 @@ def parse_args():
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
-    parser.add_argument('--inverse_holdout', action="store_true", default=False, help='Will only operate on the task at hand (overestimate performance)')
-    parser.add_argument('--ignore_logscale', action="store_true", default=False, help='Will only operate on the task at hand (overestimate performance)')
-    parser.add_argument('--oob_strategy', type=str, default='round', help='Way to handle priors that are out of bound')
 
     args = parser.parse_args()
     return args
@@ -30,6 +27,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    strategy_threshold = 20
 
     results_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
 
@@ -59,14 +57,21 @@ if __name__ == '__main__':
                 openmlpimp.utils.obtain_performance_curves(trace, output_indivudual, output_averaged, task)
 
                 all_taskids.add(task)
-        if strategy_count > 0:
+
+        print(strategy, "count:", strategy_count)
+        if strategy_count > strategy_threshold:
             strategy_directories[strategy] = output_directory + '/curves/' + strategy
 
-    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory + '/', output_directory + '/curves_avg')
+    # plot all ranks
+    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory + '/', output_directory + '/curves_avg', exclude_pattern=['inverse_holdout_True'])
+
+    # plot important ranks
+    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory + '/', output_directory + '/curves_avg', include_pattern=['uniform', 'kde'], exclude_pattern=['inverse_holdout_True'])
+    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory + '/', output_directory + '/curves_avg', include_pattern=['uniform', 'multivariate'], exclude_pattern=['inverse_holdout_True'])
 
     for task in all_traces.keys():
         openmlpimp.utils.boxplot_traces(all_traces[task], output_directory + '/boxplots', str(task) + '.png')
-
+    print(strategy_directories)
     for task_id in all_taskids:
-        openmlpimp.utils.plot_task(args.virtual_env, args.scripts_dir, strategy_directories, output_directory + '/plots', task_id)
+        openmlpimp.utils.plot_task(args.virtual_env, args.scripts_dir, strategy_directories, output_directory + '/plots', task_id, exclude_pattern=['inverse_holdout_True'])
 

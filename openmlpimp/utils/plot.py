@@ -7,6 +7,35 @@ import sys
 import matplotlib.pyplot as plt
 
 
+def _determine_eligibility(strategy, include_pattern, exclude_pattern):
+    if include_pattern is not None and not isinstance(include_pattern, list):
+        raise TypeError()
+    if exclude_pattern is not None and not isinstance(exclude_pattern, list):
+        raise TypeError()
+
+    # exlude strategies
+    if exclude_pattern is not None:
+        for pattern in exclude_pattern:
+            if pattern in strategy:
+                return False
+    # include strategies
+    if include_pattern is not None:
+        for pattern in include_pattern:
+            if pattern in strategy:
+                return True
+
+    # if include_pattern is None, all that was not excluded can be used.
+    if include_pattern is None:
+        return True
+    else:
+        return False
+
+
+def _determine_name(strategy):
+    strategy_splitted = strategy.split('__')
+    return strategy_splitted[0] + '__' + strategy_splitted[2]
+
+
 def to_csv_file(ranks_dict, location):
     hyperparameters = None
     for task_id, params in ranks_dict.items():
@@ -42,12 +71,16 @@ def to_csv_unpivot(ranks_dict, location):
     pass
 
 
-def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, plot_directory, task_id):
+def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, plot_directory, task_id, include_pattern=None, exclude_pattern=None):
     # make regret plot:
     script = "%s %s/plot_test_performance_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
     cmd = [script]
     for strategy, directory in strategy_directory.items():
-        cmd.append(strategy)
+        if _determine_eligibility(strategy, include_pattern, exclude_pattern) is False:
+            continue
+        strategy_name = _determine_name(strategy)
+
+        cmd.append(strategy_name)
         cmd.append(directory + '/' + str(task_id) + '/*.csv')
     try:
         os.makedirs(plot_directory)
@@ -56,7 +89,6 @@ def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, pl
 
     cmd.append('--save %s ' % os.path.join(plot_directory, 'validation_regret%s.png' %str(task_id)))
     cmd.append('--ylabel "Accuracy Loss"')
-
     subprocess.run(' '.join(cmd), shell=True)
     print('CMD: ', ' '.join(cmd))
 
@@ -82,21 +114,31 @@ def boxplot_traces(strategy_traces, save_directory, name):
     plt.close()
 
 
-def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, curves_directory):
+def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, curves_directory, include_pattern=None, exclude_pattern=None):
     script = "%s %s/plot_ranks_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
     cmd = [script]
 
     results = collections.defaultdict(dict)
     for strategy in os.listdir(curves_directory):
+        if _determine_eligibility(strategy, include_pattern, exclude_pattern) is False:
+            continue
+        strategy_name = _determine_name(strategy)
+
         for task_csv in os.listdir(os.path.join(curves_directory, strategy)):
             task_id = task_csv.split('.')[0]
-            results[task_id][strategy] = os.path.join(curves_directory, strategy, task_csv)
+            results[task_id][strategy_name] = os.path.join(curves_directory, strategy, task_csv)
 
     for task_id, strategy_file in results.items():
         for strategy, file in results[task_id].items():
             cmd.append('%s %s %s' % (str(task_id), strategy, file))
 
-    cmd.append('--save ' + output_directory + '/average_ranks.png')
+    filename = output_directory + '/average_ranks'
+    if include_pattern:
+        filename += '__inc__' + '__'.join(include_pattern)
+    if exclude_pattern:
+        filename += '__ex__' + '__'.join(exclude_pattern)
+    cmd.append('--save ' + filename + '.png')
+    print('CMD: ', cmd)
     subprocess.run(' '.join(cmd), shell=True)
 
 
@@ -109,9 +151,7 @@ def obtain_performance_curves(trace, save_directory, avg_curve_directory=None, t
             for idx in range(len(current_curve)):
                 csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
 
-
     curves = collections.defaultdict(dict)
-
     try:
         os.makedirs(save_directory)
     except FileExistsError:
