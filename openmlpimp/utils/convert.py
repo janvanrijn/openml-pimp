@@ -40,7 +40,12 @@ def classifier_to_pipeline(classifier, indices):
 def modeltype_to_classifier(model_type, params={}):
     required_params = dict()
     if model_type == 'adaboost':
-        classifier = sklearn.ensemble.AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier(), **params)
+        base_estimator_params = {}
+        for param in list(params.keys()):
+            if param.startswith('base_estimator__'):
+                base_estimator_params[param[16:]] = params.pop(param)
+
+        classifier = sklearn.ensemble.AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier(**base_estimator_params), **params)
     elif model_type == 'decision_tree':
         classifier = sklearn.tree.DecisionTreeClassifier(**params)
     elif model_type == 'libsvm_svc':

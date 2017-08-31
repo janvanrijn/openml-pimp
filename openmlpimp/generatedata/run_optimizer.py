@@ -1,4 +1,5 @@
 import argparse
+import json
 import openml
 import openmlpimp
 import random
@@ -15,7 +16,9 @@ def parse_args():
     parser.add_argument('--array_index', type=int, help='the index of job array')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
+    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
+    parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
+
     parser.add_argument('--optimizer', type=str, default='random_search')
 
     args = parser.parse_args()
@@ -39,10 +42,14 @@ if __name__ == '__main__':
         task = openml.tasks.get_task(task_id)
         indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
 
-        if args.classifier == 'random_forest':
-            pipeline = openmlpimp.utils.classifier_to_pipeline(RandomForestClassifier(random_state=1), indices)
-        else:
-            raise ValueError()
+        preset_params = {'random_state': 1}
+        if args.fixed_parameters:
+            preset_params.update(args.fixed_parameters)
+        if args.classifier == 'adaboost':
+            preset_params['base_estimator__random_state'] = 1
+        classifier, required_params = openmlpimp.utils.modeltype_to_classifier(args.classifier, preset_params)
+        pipeline = openmlpimp.utils.classifier_to_pipeline(classifier, indices)
+        pipeline.set_params(**required_params)
 
         print("task", task.task_id)
         if args.optimizer == 'random_search':

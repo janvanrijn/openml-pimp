@@ -4,6 +4,7 @@ import openmlpimp
 import sys
 
 from collections import defaultdict, OrderedDict
+from openmlstudy14.distributions import loguniform, loguniform_int
 
 
 def obtain_runids(task_ids, flow_id, classifier, param_templates):
@@ -113,6 +114,13 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False):
         param_grid['classifier__min_samples_split'] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
         param_grid['classifier__criterion'] = ['gini', 'entropy']
         param_grid['imputation__strategy'] = ['mean','median','most_frequent']
+    elif classifier == 'adaboost':
+        param_grid = OrderedDict()
+        param_grid['classifier__n_estimators'] = list(range(50, 500+1))
+        param_grid['classifier__learning_rate'] = loguniform(base=2, low=10**-2, high=2)
+        param_grid['classifier__algorithm'] = ['SAMME', 'SAMME.R']
+        param_grid['classifier__base_estimator__max_depth'] = list(range(1, 10+1))
+        param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
     else:
         raise ValueError()
 
