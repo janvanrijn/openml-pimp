@@ -2,6 +2,7 @@ import json
 import numpy as np
 import openml
 import openmlpimp
+import openmlstudy14
 import scipy
 import sys
 
@@ -117,8 +118,10 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
             dtype = np.int64
         return np.arange(min_val, max_val, stepsize, dtype)
 
-    elif isinstance(grid, loguniform):
+    elif isinstance(grid, openmlstudy14.distributions.loguniform_gen):
         return grid.logspace(steps)
+    else:
+        return ValueError()
 
 
 def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=None):
