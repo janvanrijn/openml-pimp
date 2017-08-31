@@ -2,6 +2,7 @@ import json
 import numpy as np
 import openml
 import openmlpimp
+import scipy
 import sys
 
 from collections import defaultdict, OrderedDict
@@ -99,8 +100,8 @@ def get_excluded_params(classifier, param_grid):
     return set(all_params - param_grid)
 
 
-def get_param_values(classifier, parameter):
-    param_grid = obtain_paramgrid(classifier)
+def get_param_values(classifier, parameter, fixed_parameters=None):
+    param_grid = obtain_paramgrid(classifier, fixed_parameters)
     steps = 10
     if parameter not in param_grid:
         raise ValueError()
@@ -120,7 +121,7 @@ def get_param_values(classifier, parameter):
         return grid.logspace(steps)
 
 
-def obtain_paramgrid(classifier, exclude=None, reverse=False):
+def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=None):
     if classifier == 'random_forest':
         param_grid = OrderedDict()
         param_grid['classifier__min_samples_leaf'] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
@@ -136,6 +137,35 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False):
         param_grid['classifier__algorithm'] = ['SAMME', 'SAMME.R']
         param_grid['classifier__base_estimator__max_depth'] = list(range(1, 10+1))
         param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
+    elif classifier == 'libsvm_svc':
+        if fixed_parameters['kernel'] == 'poly':
+            param_grid = OrderedDict()
+            param_grid['classifier__coef0'] = scipy.stats.uniform(loc=-1.0, scale=2.0)
+            param_grid['classifier__degree'] = range(1, 5)
+            param_grid['classifier__gamma'] = loguniform(base=2, low=2 ** -15, high=8)
+            param_grid['classifier__tol'] = loguniform(base=2, low=10 ** -5, high=0.1)
+            param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
+            param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
+            param_grid['classifier__shirking'] = [True, False]
+        elif fixed_parameters['kernel'] == 'rbf':
+            param_grid = OrderedDict()
+            param_grid['classifier__gamma'] = loguniform(base=2, low=2 ** -15, high=8)
+            param_grid['classifier__tol'] = loguniform(base=2, low=10 ** -5, high=0.1)
+            param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
+            param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
+            param_grid['classifier__shirking'] = [True, False]
+            pass
+        elif fixed_parameters['kernel'] == 'sigmoid':
+            param_grid = OrderedDict()
+            param_grid['classifier__gamma'] = loguniform(base=2, low=2 ** -15, high=8)
+            param_grid['classifier__coef0'] = scipy.stats.uniform(loc=-1.0, scale=2.0)
+            param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
+            param_grid['classifier__tol'] = loguniform(base=2, low=10 ** -5, high=0.1)
+            param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
+            param_grid['classifier__shirking'] = [True, False]
+            pass
+        else:
+            raise ValueError()
     else:
         raise ValueError()
 

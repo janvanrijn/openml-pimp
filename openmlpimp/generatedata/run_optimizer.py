@@ -5,7 +5,6 @@ import openmlpimp
 import random
 
 from sklearn.model_selection._search import RandomizedSearchCV
-from sklearn.ensemble import RandomForestClassifier
 
 
 def parse_args():
@@ -59,7 +58,7 @@ if __name__ == '__main__':
             for exclude_param in all_exclusion_sets:
                 param_distributions = openmlpimp.utils.obtain_paramgrid(args.classifier, exclude=exclude_param)
                 print("param grid", param_distributions.keys())
-                values = openmlpimp.utils.get_param_values(args.classifier, exclude_param)
+                values = openmlpimp.utils.get_param_values(args.classifier, exclude_param, args.fixed_parameters)
                 random.shuffle(values)
                 for value in values:
                     print("exclude", exclude_param, value)
