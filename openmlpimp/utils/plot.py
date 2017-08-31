@@ -140,7 +140,7 @@ def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, c
     if exclude_pattern:
         filename += '__ex__' + '__'.join(exclude_pattern)
     cmd.append('--save ' + filename + '.png')
-    print('CMD: ', cmd)
+    print('CMD: ', ' '.join(cmd))
     subprocess.run(' '.join(cmd), shell=True)
 
 
