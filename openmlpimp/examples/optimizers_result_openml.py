@@ -23,19 +23,21 @@ def parse_args():
 
 
 def create_curve_files(output_directory, runids, classifier, exclude_param):
+    # creates the curve files for (one classifier,) all tasks, one exclude parameter, all possible values
     missing = dict()
     for task_id in runids:
         all_values = openmlpimp.utils.get_param_values(classifier, exclude_param)
         unfinished = 0
         for value in all_values:
-            task_directory = output_directory + '/' + exclude_param + '/' + str(task_id) + '/' + str(value) + '/'
+            task_directory = output_directory + '/' + exclude_param + '/' + str(task_id) + '/' + str(value)
             if os.path.isdir(task_directory):
                 num_files = len(os.listdir(task_directory))
                 if num_files != 10:
                     raise ValueError('Expected %d files, obtained %d, for task: %d' %(10, num_files, task_id))
             else:
                 if value in runids[task_id]:
-                    openmlpimp.utils.obtain_performance_curves_openml(runids[task_id][value][0], task_directory)
+                    avg_task_directory = output_directory + '_avg/' + exclude_param + '/' + str(value)
+                    openmlpimp.utils.obtain_performance_curves_openml(runids[task_id][value][0], task_directory, avg_task_directory, task_id)
                 else:
                     unfinished += 1
         missing[task_id] = unfinished
@@ -46,7 +48,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     results_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
-    output_directory = args.output_directory + '/' + args.classifier + '/' + results_suffix
+    output_directory = args.output_directory + '/' + args.classifier + results_suffix
 
     openml.config.apikey = args.openml_apikey
     if args.openml_server:
@@ -79,5 +81,5 @@ if __name__ == '__main__':
     print("total missing:", sum(missing_total.values()))
 
     for task_id in all_taskids:
-        openmlpimp.utils.plot_task(plotting_virtual_env, plotting_scripts_dir, all_strategies, output_directory + 'plots/', task_id)
+        openmlpimp.utils.plot_task(plotting_virtual_env, plotting_scripts_dir, all_strategies, output_directory + '/plots/', task_id, wildcard_depth=2)
 

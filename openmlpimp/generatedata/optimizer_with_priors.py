@@ -119,8 +119,9 @@ if __name__ == '__main__':
         except FileExistsError:
             pass
 
-        if os.path.isfile(output_dir + '/trace.arff'):
-            print("Task already finished: %d %s" % (task_id, args.search_type))
+        expected_path = output_dir + '/trace.arff'
+        if os.path.isfile(expected_path):
+            print("Task already finished: %d %s (%s)" % (task_id, args.search_type, expected_path))
             continue
 
         lock_file = fasteners.InterProcessLock(output_dir + '/tmp.lock')

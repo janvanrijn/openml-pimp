@@ -9,6 +9,7 @@ import pickle
 import warnings
 
 from astroML.density_estimation import EmpiricalDistribution
+from sklearn.neighbors import KernelDensity
 from scipy.stats import gaussian_kde, rv_discrete, uniform
 from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter, UniformFloatHyperparameter, UniformIntegerHyperparameter
 from openmlstudy14.distributions import loguniform, loguniform_int
@@ -34,8 +35,9 @@ class rv_discrete_wrapper(object):
 
     def rvs(self, *args, **kwargs):
         # assumes a samplesize of 1, for random search
-        sample = self.distrib.rvs()
+        sample = self.distrib.rvs(*args, **kwargs)
         value = list(self.X_prime.keys())[sample]
+
         if value in ['True', 'False']:
             return bool(value)
         elif self._is_castable_to(value, int):
@@ -46,67 +48,68 @@ class rv_discrete_wrapper(object):
             return str(value)
 
 
-class empirical_distribution_wrapper(object):
-
-    def __init__(self, hyperparameter, priors):
-        self.hyperparameter = hyperparameter
-        self.distrib = EmpiricalDistribution(priors)
-
-    def rvs(self, *args, **kwargs):
-        # assumes a samplesize of 1, for random search
-        sample = self.distrib.rvs(1)[0]
-        if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-            return int(sample)
-        return sample
+# class empirical_distribution_wrapper(object):
+#
+#     def __init__(self, hyperparameter, priors):
+#         self.hyperparameter = hyperparameter
+#         self.distrib = EmpiricalDistribution(priors)
+#
+#     def rvs(self, *args, **kwargs):
+#         # assumes a samplesize of 1, for random search
+#         sample = self.distrib.rvs(1)[0]
+#         if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+#             return int(sample)
+#         return sample
 
 
 class gaussian_kde_wrapper(object):
-    def __init__(self, hyperparameter, param_name, data, oob_strategy='resample'):
+    def __init__(self, hyperparameter, param_name, data, oob_strategy='resample', bandwith=0.4):
         if oob_strategy not in ['resample', 'round', 'ignore']:
             raise ValueError()
         self.oob_strategy = oob_strategy
         self.param_name = param_name
-        self.const = False
         self.hyperparameter = hyperparameter
-        if self.hyperparameter.log:
-            self.distrib = gaussian_kde(np.log2(data))
-            if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-                self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
-        else:
-            self.distrib = gaussian_kde(data)
-            if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-                self.probabilities = {val: self.distrib.pdf(val)[0] for val in range(self.hyperparameter.lower, self.hyperparameter.upper + 1)}
+        reshaped = np.reshape(data, (len(data), 1))
 
-                # normalize the dict
-                factor = 1.0 / sum(self.probabilities.values())
-                for k in self.probabilities:
-                    self.probabilities[k] *= factor
+        if self.hyperparameter.log:
+            if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+                # self.probabilities = {val: self.distrib.pdf(np.log2(val)) for val in range(self.hyperparameter.lower, self.hyperparameter.upper)}
+                raise ValueError('Log Integer hyperparameter not supported: %s' %param_name)
+            # self.distrib = gaussian_kde(np.log2(data))
+            # self.distrib = KernelDensity(kernel='gaussian').fit(np.log2(np.reshape(data, (len(data), 1))))
+            self.distrib = KernelDensity(kernel='gaussian', bandwidth=bandwith).fit(np.log2(reshaped))
+        else:
+            # self.distrib = gaussian_kde(data)
+            self.distrib = KernelDensity(kernel='gaussian', bandwidth=bandwith).fit(reshaped)
+        pass
 
     def pdf(self, x):
-        if self.const:
-            raise ValueError('No pdf available for constant value')
+        x = np.reshape(x, (len(x), 1))
         if self.hyperparameter.log:
-            return self.distrib.pdf(np.log2(x))
-        else:
-            return self.distrib.pdf(x)
+            x = np.log2(x)
+        log_dens = self.distrib.score_samples(x)
+        return np.exp(log_dens)
 
     def rvs(self, *args, **kwargs):
         # assumes a samplesize of 1, for random search
-        if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
-            values = list(self.probabilities.keys())
-            probs = list(self.probabilities.values())
-            # cast to int, because of np serializability
-            return int(np.random.choice(a=values, p=probs))
         while True:
-            sample = self.distrib.resample(size=1)[0][0]
+            sample = self.distrib.sample(n_samples=1, random_state=kwargs['random_state'])[0][0]
             if self.hyperparameter.log:
                 value = np.power(2, sample)
             else:
                 value = sample
+            if isinstance(self.hyperparameter, UniformIntegerHyperparameter):
+                value = int(round(value))
 
             if self.hyperparameter.lower <= value <= self.hyperparameter.upper:
                 return value
             elif self.oob_strategy == 'ignore':
+                # TODO: hacky fail safe for some hyperparameters
+                if hasattr(self.hyperparameter, 'lower_hard') and self.hyperparameter.lower_hard > value:
+                    continue
+                if hasattr(self.hyperparameter, 'upper_hard') and self.hyperparameter.upper_hard < value:
+                    continue
+
                 return value
             elif self.oob_strategy == 'round':
                 if value < self.hyperparameter.lower:

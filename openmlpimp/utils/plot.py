@@ -73,7 +73,7 @@ def to_csv_unpivot(ranks_dict, location):
     pass
 
 
-def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, plot_directory, task_id, include_pattern=None, exclude_pattern=None):
+def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, plot_directory, task_id, include_pattern=None, exclude_pattern=None, wildcard_depth=1):
     # make regret plot:
     script = "%s %s/plot_test_performance_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
     cmd = [script]
@@ -83,7 +83,7 @@ def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, pl
         strategy_name = _determine_name(strategy)
 
         cmd.append(strategy_name)
-        cmd.append(directory + '/' + str(task_id) + '/*.csv')
+        cmd.append(directory + '/' + str(task_id) + ('/*' * wildcard_depth) + '.csv')
     try:
         os.makedirs(plot_directory)
     except FileExistsError:

@@ -76,6 +76,8 @@ def configspace_to_relevantparams(configuration_space):
         if parameter.name == 'classifier:random_forest:max_features':
             hyperparameters[splittedname[-1]].lower = 0.1
             hyperparameters[splittedname[-1]].upper = 0.9
+            hyperparameters[splittedname[-1]].lower_hard = 0.1
+            hyperparameters[splittedname[-1]].upper_hard = 0.9
     return hyperparameters
 
 
