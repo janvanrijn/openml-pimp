@@ -111,17 +111,17 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
         if len(grid) < steps:
             return grid
         min_val = min(grid)
-        max_val = max(grid) + 1
+        max_val = max(grid)
         dtype = np.float64
         stepsize = np.ceil((max_val - min_val) / steps)
         if all(isinstance(item, int) for item in grid):
             dtype = np.int64
-        return np.arange(min_val, max_val, stepsize, dtype)
+        return np.arange(min_val, max_val + 1, stepsize, dtype)
 
-    elif isinstance(grid, openmlstudy14.distributions.loguniform_gen):
-        return grid.logspace(steps)
+    elif hasattr(grid.dist, 'logspace') and hasattr(grid.dist, 'rvs'):
+        return grid.dist.logspace(steps)
     else:
-        return ValueError()
+        raise ValueError('Illegal param grid: %s %s' %(classifier, parameter))
 
 
 def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=None):
