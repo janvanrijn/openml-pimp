@@ -33,6 +33,8 @@ def _determine_eligibility(strategy, include_pattern, exclude_pattern):
 
 def _determine_name(strategy):
     strategy_splitted = strategy.split('__')
+    if len(strategy_splitted) < 3:
+        return strategy
     return strategy_splitted[0] + '__' + strategy_splitted[3]
 
 
@@ -192,11 +194,11 @@ def obtain_performance_curves(trace, save_directory, avg_curve_directory=None, t
         save_curve(save_directory + '/%d_%d.csv' %(repeat, fold))
 
 
-def obtain_performance_curves_openml(run_id, save_directory, improvements=True):
+def obtain_performance_curves_openml(run_id, save_directory, avg_curve_directory=None, task_id=None, improvements=True):
     try:
         trace = openml.runs.get_run_trace(run_id)
     except Exception as e:
         sys.stderr.write(e.message)
         return
-    obtain_performance_curves(trace, save_directory, improvements)
+    obtain_performance_curves(trace, save_directory, avg_curve_directory=avg_curve_directory, task_id=task_id, improvements=improvements)
 

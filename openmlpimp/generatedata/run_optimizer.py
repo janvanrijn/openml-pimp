@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
-    all_classifiers = ['adaboost', 'random_forest']
+    all_classifiers = ['adaboost', 'random_forest', 'libsvm_svc']
     parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search')
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--array_index', type=int, help='the index of job array')

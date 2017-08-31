@@ -1,4 +1,5 @@
 import json
+import numpy as np
 import openml
 import openmlpimp
 import sys
@@ -100,9 +101,23 @@ def get_excluded_params(classifier, param_grid):
 
 def get_param_values(classifier, parameter):
     param_grid = obtain_paramgrid(classifier)
+    steps = 10
     if parameter not in param_grid:
         raise ValueError()
-    return param_grid[parameter]
+    grid = param_grid[parameter]
+    if isinstance(grid, list):
+        if len(grid) < steps:
+            return grid
+        min_val = min(grid)
+        max_val = max(grid) + 1
+        dtype = np.float64
+        stepsize = np.ceil((max_val - min_val) / steps)
+        if all(isinstance(item, int) for item in grid):
+            dtype = np.int64
+        return np.arange(min_val, max_val, stepsize, dtype)
+
+    elif isinstance(grid, loguniform):
+        return grid.logspace(steps)
 
 
 def obtain_paramgrid(classifier, exclude=None, reverse=False):

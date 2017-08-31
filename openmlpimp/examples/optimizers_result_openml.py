@@ -1,4 +1,5 @@
 import argparse
+import json
 import openml
 import os
 import openmlpimp
@@ -12,7 +13,10 @@ def parse_args():
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, default=None, help='the apikey to authenticate to OpenML')
-    parser.add_argument('--flowid', type=int, required=True, help="Flow id of optimizer") # 7089 beam_search(rf); 7096/7097 random_search(rf)
+    parser.add_argument('--flowid', type=int, default=7096, help="Flow id of optimizer") # 7089 beam_search(rf); 7096/7097 random_search(rf), 7116
+    parser.add_argument('--classifier', type=str, default='random_forest', help="Classifier associated with the flow")
+    parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
+    parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/optimizers/randomsearch', help='the directory to store the results to')
 
     args = parser.parse_args()
     return args
@@ -24,7 +28,7 @@ def create_curve_files(output_directory, runids, classifier, exclude_param):
         all_values = openmlpimp.utils.get_param_values(classifier, exclude_param)
         unfinished = 0
         for value in all_values:
-            task_directory = output_directory + exclude_param + '/' + str(task_id) + '/' + str(value) + '/'
+            task_directory = output_directory + '/' + exclude_param + '/' + str(task_id) + '/' + str(value) + '/'
             if os.path.isdir(task_directory):
                 num_files = len(os.listdir(task_directory))
                 if num_files != 10:
@@ -39,36 +43,36 @@ def create_curve_files(output_directory, runids, classifier, exclude_param):
 
 
 if __name__ == '__main__':
-    output_directory = '/home/vanrijn/experiments/optimizers/randomsearch/'
     args = parse_args()
+
+    results_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
+    output_directory = args.output_directory + '/' + args.classifier + '/' + results_suffix
+
     openml.config.apikey = args.openml_apikey
     if args.openml_server:
         openml.config.server = args.openml_server
 
     study = openml.study.get_study(args.openml_study)
-    classifier = 'random_forest'  # TODO
 
-    # param_templates = {'normal': obtain_paramgrid(classifier, reverse=False),
-    #                    'reverse': obtain_paramgrid(classifier, reverse=True)}
     param_templates = dict()
-    for param in openmlpimp.utils.obtain_parameters(classifier):
-        param_templates[param] = openmlpimp.utils.obtain_paramgrid(classifier, exclude=param)
+    for param in openmlpimp.utils.obtain_parameters(args.classifier):
+        param_templates[param] = openmlpimp.utils.obtain_paramgrid(args.classifier, exclude=param)
 
-    results = openmlpimp.utils.obtain_runids(study.tasks, args.flowid, classifier, param_templates)
+    results = openmlpimp.utils.obtain_runids(study.tasks, args.flowid, args.classifier, param_templates)
 
     all_taskids = set()
     all_strategies = dict()
     missing_total = dict()
     for name, param_template in results.items():
         print(results[name])
-        missing = create_curve_files(output_directory, results[name], classifier, name)
+        missing = create_curve_files(output_directory + '/curves', results[name], args.classifier, name)
         for task_id in missing:
             if task_id not in missing_total:
                 missing_total[task_id] = 0
             missing_total[task_id] += missing[task_id]
 
         all_taskids |= set(results[name].keys())
-        all_strategies[name] = output_directory + name + '/'
+        all_strategies[name] = output_directory + '/curves/' + name
 
     for task_id in missing_total:
         print(task_id, missing_total[task_id])
