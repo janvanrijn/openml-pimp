@@ -119,17 +119,20 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
         stepsize = np.ceil((max_val - min_val) / steps)
         if all(isinstance(item, int) for item in grid):
             dtype = int
-        res = np.arange(min_val, max_val + 1, stepsize, dtype)
-        return [dtype(val) for val in res]  # TODO: hacky
+        result = np.arange(min_val, max_val + 1, stepsize, dtype)
     elif hasattr(grid, 'dist') and isinstance(grid.dist, openmlstudy14.distributions.loguniform_gen):
-        return grid.dist.logspace(steps)
+        dtype = float
+        result = grid.dist.logspace(steps)
     elif hasattr(grid, 'dist') and isinstance(grid.dist, scipy.stats._discrete_distns.randint_gen):
-        return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=int)
+        dtype = int
+        result = np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=dtype)
     elif hasattr(grid, 'dist') and isinstance(grid.dist, scipy.stats._continuous_distns.uniform_gen):
-        return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=float)
+        dtype = float
+        result = np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=dtype)
     else:
         raise ValueError('Illegal param grid: %s %s' %(classifier, parameter))
 
+    return [dtype(val) for val in result]  # TODO: hacky
 
 def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=None):
     if classifier == 'random_forest':
