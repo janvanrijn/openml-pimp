@@ -52,11 +52,11 @@ if __name__ == '__main__':
 
         print("task", task.task_id)
         if args.optimizer == 'random_search':
-            all_exclusion_sets = list(openmlpimp.utils.obtain_parameters(args.classifier))
+            all_exclusion_sets = list(openmlpimp.utils.obtain_parameters(args.classifier, args.fixed_parameters))
 
             random.shuffle(all_exclusion_sets)
             for exclude_param in all_exclusion_sets:
-                param_distributions = openmlpimp.utils.obtain_paramgrid(args.classifier, exclude=exclude_param)
+                param_distributions = openmlpimp.utils.obtain_paramgrid(args.classifier, exclude=exclude_param, fixed_parameters=args.fixed_parameters)
                 print("param grid", param_distributions.keys())
                 values = openmlpimp.utils.get_param_values(args.classifier, exclude_param, args.fixed_parameters)
                 random.shuffle(values)

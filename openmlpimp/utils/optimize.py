@@ -77,8 +77,8 @@ def obtain_runids(task_ids, flow_id, classifier, param_templates):
     return results
 
 
-def obtain_parameters(classifier):
-    return set(obtain_paramgrid(classifier).keys())
+def obtain_parameters(classifier, fixed_parameters=None):
+    return set(obtain_paramgrid(classifier, fixed_parameters=fixed_parameters).keys())
 
 
 def obtain_parameter_combinations(classifier, num_params):
@@ -102,7 +102,7 @@ def get_excluded_params(classifier, param_grid):
 
 
 def get_param_values(classifier, parameter, fixed_parameters=None):
-    param_grid = obtain_paramgrid(classifier, fixed_parameters)
+    param_grid = obtain_paramgrid(classifier, fixed_parameters=fixed_parameters)
     steps = 10
     if parameter not in param_grid:
         raise ValueError()
@@ -151,14 +151,14 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=N
             param_grid['classifier__tol'] = loguniform(base=2, low=10 ** -5, high=0.1)
             param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
             param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
-            param_grid['classifier__shirking'] = [True, False]
+            param_grid['classifier__shrinking'] = [True, False]
         elif fixed_parameters['kernel'] == 'rbf':
             param_grid = dict()
             param_grid['classifier__gamma'] = loguniform(base=2, low=2 ** -15, high=8)
             param_grid['classifier__tol'] = loguniform(base=2, low=10 ** -5, high=0.1)
             param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
             param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
-            param_grid['classifier__shirking'] = [True, False]
+            param_grid['classifier__shrinking'] = [True, False]
             pass
         elif fixed_parameters['kernel'] == 'sigmoid':
             param_grid = dict()
@@ -167,7 +167,7 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=N
             param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
             param_grid['classifier__tol'] = loguniform(base=2, low=10 ** -5, high=0.1)
             param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
-            param_grid['classifier__shirking'] = [True, False]
+            param_grid['classifier__shrinking'] = [True, False]
             pass
         else:
             raise ValueError()
