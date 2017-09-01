@@ -118,9 +118,9 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
             dtype = np.int64
         return np.arange(min_val, max_val + 1, stepsize, dtype)
 
-    elif isinstance(grid.dist, openmlstudy14.distributions.loguniform_gen):
+    elif hasattr(grid, 'dist') and isinstance(grid.dist, openmlstudy14.distributions.loguniform_gen):
         return grid.dist.logspace(steps)
-    elif isinstance(grid.dist, scipy.stats._discrete_distns.randint_gen):
+    elif hasattr(grid, 'dist') and isinstance(grid.dist, scipy.stats._discrete_distns.randint_gen):
         return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=np.int64)
     else:
         raise ValueError('Illegal param grid: %s %s' %(classifier, parameter))
@@ -146,7 +146,7 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=N
         if fixed_parameters['kernel'] == 'poly':
             param_grid = dict()
             param_grid['classifier__coef0'] = scipy.stats.uniform(loc=-1.0, scale=2.0)
-            param_grid['classifier__degree'] = range(1, 5)
+            param_grid['classifier__degree'] = [1, 2, 3, 4]
             param_grid['classifier__gamma'] = loguniform(base=2, low=2 ** -15, high=8)
             param_grid['classifier__tol'] = loguniform(base=2, low=10 ** -5, high=0.1)
             param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
