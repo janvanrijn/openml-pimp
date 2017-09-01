@@ -122,6 +122,8 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
         return grid.dist.logspace(steps)
     elif hasattr(grid, 'dist') and isinstance(grid.dist, scipy.stats._discrete_distns.randint_gen):
         return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=np.int64)
+    elif hasattr(grid, 'dist') and isinstance(grid.dist, scipy.stats._continuous_distns.uniform_gen):
+        return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=np.float64)
     else:
         raise ValueError('Illegal param grid: %s %s' %(classifier, parameter))
 
