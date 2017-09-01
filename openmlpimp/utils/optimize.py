@@ -9,7 +9,6 @@ import sys
 from collections import defaultdict, OrderedDict
 from openmlstudy14.distributions import loguniform, loguniform_int
 
-
 def obtain_runids(task_ids, flow_id, classifier, param_templates):
     """
     Obtains relevant run ids from OpenML.
@@ -60,8 +59,7 @@ def obtain_runids(task_ids, flow_id, classifier, param_templates):
 
             for idx, parameter in setups[setup_id].parameters.items():
                 if parameter.parameter_name == 'param_distributions':
-                    param_grid = json.loads(parameter.value)
-
+                    param_grid = openml.flows.flow_to_sklearn(parameter.value)
                     excluded_params = openmlpimp.utils.get_excluded_params(classifier, param_grid)
                     if len(excluded_params) > 1:
                         continue
@@ -97,6 +95,8 @@ def obtain_parameter_combinations(classifier, num_params):
 
 
 def get_excluded_params(classifier, param_grid):
+    if not isinstance(param_grid, dict):
+        raise ValueError()
     all_params = obtain_paramgrid(classifier).keys()
     return set(all_params - param_grid)
 
@@ -118,8 +118,10 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
             dtype = np.int64
         return np.arange(min_val, max_val + 1, stepsize, dtype)
 
-    elif hasattr(grid.dist, 'logspace') and hasattr(grid.dist, 'rvs'):
+    elif isinstance(grid.dist, openmlstudy14.distributions.loguniform_gen):
         return grid.dist.logspace(steps)
+    elif isinstance(grid.dist, scipy.stats._discrete_distns.randint_gen):
+        return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=np.int64)
     else:
         raise ValueError('Illegal param grid: %s %s' %(classifier, parameter))
 
@@ -134,15 +136,15 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=N
         param_grid['classifier__criterion'] = ['gini', 'entropy']
         param_grid['imputation__strategy'] = ['mean','median','most_frequent']
     elif classifier == 'adaboost':
-        param_grid = OrderedDict()
-        param_grid['classifier__n_estimators'] = list(range(50, 500+1))
+        param_grid = dict()
+        param_grid['classifier__n_estimators'] = scipy.stats.randint(low=50, high=500+1)
         param_grid['classifier__learning_rate'] = loguniform(base=2, low=10**-2, high=2)
         param_grid['classifier__algorithm'] = ['SAMME', 'SAMME.R']
         param_grid['classifier__base_estimator__max_depth'] = list(range(1, 10+1))
         param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
     elif classifier == 'libsvm_svc':
         if fixed_parameters['kernel'] == 'poly':
-            param_grid = OrderedDict()
+            param_grid = dict()
             param_grid['classifier__coef0'] = scipy.stats.uniform(loc=-1.0, scale=2.0)
             param_grid['classifier__degree'] = range(1, 5)
             param_grid['classifier__gamma'] = loguniform(base=2, low=2 ** -15, high=8)
@@ -151,7 +153,7 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=N
             param_grid['imputation__strategy'] = ['mean', 'median', 'most_frequent']
             param_grid['classifier__shirking'] = [True, False]
         elif fixed_parameters['kernel'] == 'rbf':
-            param_grid = OrderedDict()
+            param_grid = dict()
             param_grid['classifier__gamma'] = loguniform(base=2, low=2 ** -15, high=8)
             param_grid['classifier__tol'] = loguniform(base=2, low=10 ** -5, high=0.1)
             param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
@@ -159,7 +161,7 @@ def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=N
             param_grid['classifier__shirking'] = [True, False]
             pass
         elif fixed_parameters['kernel'] == 'sigmoid':
-            param_grid = OrderedDict()
+            param_grid = dict()
             param_grid['classifier__gamma'] = loguniform(base=2, low=2 ** -15, high=8)
             param_grid['classifier__coef0'] = scipy.stats.uniform(loc=-1.0, scale=2.0)
             param_grid['classifier__C'] = loguniform(base=2, low=2 ** -5, high=2 ** 15)
