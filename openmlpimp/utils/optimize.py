@@ -60,6 +60,8 @@ def obtain_runids(task_ids, flow_id, classifier, param_templates):
             for idx, parameter in setups[setup_id].parameters.items():
                 if parameter.parameter_name == 'param_distributions':
                     param_grid = openml.flows.flow_to_sklearn(parameter.value)
+                    if not isinstance(param_grid, dict):
+                        continue
                     excluded_params = openmlpimp.utils.get_excluded_params(classifier, param_grid)
                     if len(excluded_params) > 1:
                         continue
@@ -70,6 +72,7 @@ def obtain_runids(task_ids, flow_id, classifier, param_templates):
                     excluded_value = json.loads(excluded_param_openml.value)
 
                     # TODO: check if legal
+                    # TODO: fixed parameters
 
                     for name, param_template in param_templates.items():
                         if param_template == param_grid:
@@ -112,18 +115,18 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
             return grid
         min_val = min(grid)
         max_val = max(grid)
-        dtype = np.float64
+        dtype = float
         stepsize = np.ceil((max_val - min_val) / steps)
         if all(isinstance(item, int) for item in grid):
-            dtype = np.int64
-        return np.arange(min_val, max_val + 1, stepsize, dtype)
-
+            dtype = int
+        res = np.arange(min_val, max_val + 1, stepsize, dtype)
+        return [dtype(val) for val in res]  # TODO: hacky
     elif hasattr(grid, 'dist') and isinstance(grid.dist, openmlstudy14.distributions.loguniform_gen):
         return grid.dist.logspace(steps)
     elif hasattr(grid, 'dist') and isinstance(grid.dist, scipy.stats._discrete_distns.randint_gen):
-        return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=np.int64)
+        return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=int)
     elif hasattr(grid, 'dist') and isinstance(grid.dist, scipy.stats._continuous_distns.uniform_gen):
-        return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=np.float64)
+        return np.linspace(start=grid.dist.a, stop=grid.dist.b, num=steps, endpoint=True, dtype=float)
     else:
         raise ValueError('Illegal param grid: %s %s' %(classifier, parameter))
 
