@@ -44,6 +44,7 @@ if __name__ == '__main__':
 
     cache_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
 
+    print('Tasks:', task_ids)
     for task_id in task_ids:
         task = openml.tasks.get_task(task_id)
         indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
