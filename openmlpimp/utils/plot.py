@@ -4,7 +4,6 @@ import openml
 import os
 import subprocess
 import sys
-import matplotlib.pyplot as plt
 
 
 def _determine_eligibility(strategy, include_pattern, exclude_pattern):
@@ -96,6 +95,8 @@ def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, pl
 
 
 def boxplot_traces(strategy_traces, save_directory, name):
+    # only import matplotlib for this function, as meta cluster doesn't like it
+    import matplotlib.pyplot as plt
     try:
         os.makedirs(save_directory)
     except FileExistsError:
