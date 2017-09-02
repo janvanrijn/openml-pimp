@@ -15,7 +15,7 @@ from fanova.visualizer import Visualizer
 class FanovaBackend(object):
 
     @staticmethod
-    def _plot_result(fANOVA, configspace, directory):
+    def _plot_result(fANOVA, configspace, directory, fix_yaxis=False):
         vis = Visualizer(fANOVA, configspace)
 
         try: os.makedirs(directory)
@@ -30,6 +30,9 @@ class FanovaBackend(object):
                 vis.plot_categorical_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False)
             else:
                 vis.plot_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False)
+            x1, x2, _, _ = plt.axis()
+            if fix_yaxis:
+                plt.axis((x1, x2, 0, 1))
             plt.savefig(outfile_name)
         pass
 
@@ -77,7 +80,7 @@ class FanovaBackend(object):
                 with open(os.path.join(save_folder, filename), 'w') as out_file:
                     json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
                 # call plotting fn
-                FanovaBackend._plot_result(evaluator, configspace, save_folder + '/fanova')
+                FanovaBackend._plot_result(evaluator, configspace, save_folder + '/fanova', True)
                 return save_folder + "/" + filename
             except ZeroDivisionError as e:
                 if i + 1 == max_tries:
