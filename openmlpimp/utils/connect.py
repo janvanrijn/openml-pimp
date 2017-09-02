@@ -50,6 +50,21 @@ def obtain_setups_by_setup_id(setup_ids, flow):
     return setups
 
 
+def obtain_all_evaluations(**kwargs):
+    evaluations = {}
+    offset = 0
+    limit = 1000
+    while True:
+        evaluations_batch = openml.evaluations.list_evaluations(**kwargs, offset=offset, size=limit)
+        for run_id in evaluations_batch.keys():
+            evaluations[run_id] = evaluations_batch[run_id]
+
+        offset += limit
+        if len(evaluations_batch) < limit:
+            break
+    return evaluations
+
+
 def obtain_all_setups(**kwargs):
     setups = {}
     offset = 0
@@ -115,7 +130,7 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     for valid_hyperparameter in config_space._hyperparameters.keys():
         valid_hyperparameters.add(valid_hyperparameter)
 
-    evaluations = openml.evaluations.list_evaluations("predictive_accuracy", flow=[flow_id], task=[task_id])
+    evaluations = obtain_all_evaluations(function="predictive_accuracy", flow=[flow_id], task=[task_id])
     setup_ids = set()
     for run_id in evaluations.keys():
         setup_ids.add(evaluations[run_id].setup_id)
@@ -158,6 +173,8 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
             name = getattr(setups[setup_id].parameters[param_id], keyfield)
             value = openml.flows.flow_to_sklearn(setups[setup_id].parameters[param_id].value)
             if ignore_parameters is not None and name in ignore_parameters:
+                continue
+            if fixed_parameters is not None and name in fixed_parameters:
                 continue
             if name not in valid_hyperparameters:
                 continue
