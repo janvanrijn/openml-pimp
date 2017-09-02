@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
 
+    parser.add_argument('--internet_access', action="store_true", help='Uses the internet to connect to OpenML')
     parser.add_argument('--optimizer', type=str, default='random_search')
 
     args = parser.parse_args()
@@ -90,21 +91,7 @@ if __name__ == '__main__':
                         optimizer.set_params(**{'estimator__' + exclude_param: value})
                         # print(optimizer)
 
-                        run = openml.runs.run_model_on_task(task, optimizer)
-                        score = run.get_metric_fn(sklearn.metrics.accuracy_score)
-
-                        print('%s [SCORE] Data: %s; Accuracy: %0.2f' %(openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
-
-                        trace_arff = arff.dumps(run._generate_trace_arff_dict())
-                        run_xml = run._create_description_xml()
-                        predictions_arff = arff.dumps(run._generate_arff_dict())
-
-                        with open(output_dir + '/trace.arff', 'w') as f:
-                            f.write(trace_arff)
-                        with open(output_dir + '/run.xml', 'w') as f:
-                            f.write(run_xml)
-                        with open(output_dir + '/predictions.arff', 'w') as f:
-                            f.write(predictions_arff)
+                        openmlpimp.utils.do_run(task, optimizer, output_dir, args.internet_access)
                     finally:
                         if obtained_lock:
                             lock_file.release()
