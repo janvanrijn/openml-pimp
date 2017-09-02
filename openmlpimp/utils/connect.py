@@ -178,13 +178,10 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     for hyperparameter, values in param_values.items():
         if len(values) == 1:
             one_value_params.add(hyperparameter)
-
-    ignore_params = set()
-    ignore_params.update(fixed_parameters)
-    ignore_params.update(one_value_params)
-
+    if fixed_parameters is not None:
+        one_value_params.update(fixed_parameters)
     # this should update it ..
-    config_space = openmlpimp.utils.get_config_space_casualnames(model_type, ignore_params)
+    config_space = openmlpimp.utils.get_config_space_casualnames(model_type, one_value_params)
     valid_hyperparameters = config_space._hyperparameters.keys()
 
     for setup_id in applicable_setups:
