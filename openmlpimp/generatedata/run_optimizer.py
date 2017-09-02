@@ -1,12 +1,10 @@
 import argparse
-import arff
 import fasteners
 import json
 import openml
 import openmlpimp
 import os
-import random
-import sklearn
+import warnings
 
 from sklearn.model_selection._search import RandomizedSearchCV
 
@@ -23,6 +21,7 @@ def parse_args():
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
 
     parser.add_argument('--internet_access', action="store_true", help='Uses the internet to connect to OpenML')
+    parser.add_argument('--task_ids', type=int, nargs="+", default=None, help='the openml task ids to execute')
     parser.add_argument('--optimizer', type=str, default='random_search')
 
     args = parser.parse_args()
@@ -35,10 +34,17 @@ if __name__ == '__main__':
     if args.openml_server:
         openml.config.server = args.openml_server
 
-    study = openml.study.get_study(args.openml_study)
+    if args.task_ids:
+        task_ids = args.task_ids
+    else:
+        if not args.internet_access:
+            warnings.warn('No task ids given. Trying to obtain through OpenML study.. ')
+        study = openml.study.get_study(args.openml_study)
+        task_ids = study.tasks
+
     cache_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
 
-    for task_id in study.tasks:
+    for task_id in task_ids:
         task = openml.tasks.get_task(task_id)
         indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
 
