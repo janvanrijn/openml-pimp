@@ -41,12 +41,15 @@ def get_config_space(classifier):
     return config_space
 
 
-def get_config_space_casualnames(classifier):
+def get_config_space_casualnames(classifier, fixed_parameters=None):
     config_space = get_config_space(classifier)
     config_space_prime = ConfigSpace.ConfigurationSpace()
     for name, hyperparameter in config_space._hyperparameters.items():
         if name == 'classifier:__choice__':
             continue
-        hyperparameter.name = hyperparameter.name.split(':')[-1]
+        casualname = hyperparameter.name.split(':')[-1]
+        if fixed_parameters is not None and casualname in fixed_parameters:
+            continue
+        hyperparameter.name = casualname
         config_space_prime.add_hyperparameter(hyperparameter)
     return config_space_prime

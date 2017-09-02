@@ -1,9 +1,9 @@
+import collections
 import openml
 import openmlpimp
 
 import os
 import json
-import sys
 
 from openml.exceptions import OpenMLServerException
 
@@ -125,10 +125,8 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
                                       reverse=False):
     from smac.tae.execute_ta_run import StatusType
 
-    config_space = openmlpimp.utils.get_config_space_casualnames(model_type)
-    valid_hyperparameters = set()
-    for valid_hyperparameter in config_space._hyperparameters.keys():
-        valid_hyperparameters.add(valid_hyperparameter)
+    config_space = openmlpimp.utils.get_config_space_casualnames(model_type, fixed_parameters)
+    valid_hyperparameters = config_space._hyperparameters.keys()
 
     evaluations = obtain_all_evaluations(function="predictive_accuracy", flow=[flow_id], task=[task_id])
     setup_ids = set()
@@ -167,6 +165,28 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
             applicable_setups.add(config_id)
             data.append([run, performance])
 
+    # filter "constant" parameters by value
+    param_values = collections.defaultdict(set)
+    for setup_id in applicable_setups:
+        for param_id in setups[setup_id].parameters:
+            name = getattr(setups[setup_id].parameters[param_id], keyfield)
+            value = openml.flows.flow_to_sklearn(setups[setup_id].parameters[param_id].value)
+            if name in valid_hyperparameters:
+                param_values[name].add(value)
+
+    one_value_params = set()
+    for hyperparameter, values in param_values.items():
+        if len(values) == 1:
+            one_value_params.add(hyperparameter)
+
+    ignore_params = set()
+    ignore_params.update(fixed_parameters)
+    ignore_params.update(one_value_params)
+
+    # this should update it ..
+    config_space = openmlpimp.utils.get_config_space_casualnames(model_type, ignore_params)
+    valid_hyperparameters = config_space._hyperparameters.keys()
+
     for setup_id in applicable_setups:
         config = {}
         for param_id in setups[setup_id].parameters:
@@ -183,19 +203,6 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
                 value = str(value)
             config[name] = value
         configs[setup_id] = config
-
-    # TODO: we could obtain the intended behaviour by initializing a "default flow",
-    # which is in https://github.com/openml/openml-python/pull/300
-    classifier, _ = openmlpimp.utils.modeltype_to_classifier(model_type)
-    pipeline = openmlpimp.utils.classifier_to_pipeline(classifier, indices=[])
-    pipeline_params = pipeline.get_params()
-    default_params = dict()
-
-    for param, value in pipeline_params.items():
-        shortname = param.split('__')[-1]
-        if shortname in default_params:
-            sys.stderr.write('Duplicate param name: %s' %shortname)
-        default_params[shortname] = value
 
     run_history = {"data": data, "configs": configs}
 
