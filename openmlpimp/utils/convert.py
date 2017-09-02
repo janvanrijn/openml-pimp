@@ -60,27 +60,6 @@ def modeltype_to_classifier(model_type, params={}):
     return classifier, required_params
 
 
-def configspace_to_relevantparams(configuration_space):
-    hyperparameters = {}
-    for parameter in configuration_space.get_hyperparameters():
-        splittedname = parameter.name.split(':')
-        if splittedname[0] not in ['classifier', 'imputation']:
-            continue
-        if isinstance(parameter, Constant):
-            continue
-        if isinstance(parameter, CategoricalHyperparameter):
-            if len(parameter.choices) <= 1:
-                continue
-        hyperparameters[splittedname[-1]] = parameter
-
-        if parameter.name == 'classifier:random_forest:max_features':
-            hyperparameters[splittedname[-1]].lower = 0.1
-            hyperparameters[splittedname[-1]].upper = 0.9
-            hyperparameters[splittedname[-1]].lower_hard = 0.1
-            hyperparameters[splittedname[-1]].upper_hard = 0.9
-    return hyperparameters
-
-
 def config_to_classifier(config, indices):
     parameter_settings = config.get_dictionary()
     model_type = None
@@ -89,7 +68,8 @@ def config_to_classifier(config, indices):
         param_name = None
         splitted = param.split(':')
         if splitted[0] not in ['imputation', 'classifier']:
-            continue
+            raise ValueError()  # for now ..
+
         elif splitted[1] == '__choice__':
             if splitted[0] == 'classifier':
                 model_type = value

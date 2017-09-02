@@ -106,10 +106,14 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
                                       keyfield='parameter_name',
                                       required_setups=None,
                                       fixed_parameters=None,
-                                      logscale_parameters=None,
                                       ignore_parameters=None,
                                       reverse=False):
     from smac.tae.execute_ta_run import StatusType
+
+    config_space = openmlpimp.utils.get_config_space_casualnames(model_type)
+    valid_hyperparameters = set()
+    for valid_hyperparameter in config_space._hyperparameters.keys():
+        valid_hyperparameters.add(valid_hyperparameter)
 
     evaluations = openml.evaluations.list_evaluations("predictive_accuracy", flow=[flow_id], task=[task_id])
     setup_ids = set()
@@ -155,6 +159,8 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
             value = openml.flows.flow_to_sklearn(setups[setup_id].parameters[param_id].value)
             if ignore_parameters is not None and name in ignore_parameters:
                 continue
+            if name not in valid_hyperparameters:
+                continue
             # TODO: hack
             if isinstance(value, bool):
                 value = str(value)
@@ -173,18 +179,6 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
         if shortname in default_params:
             sys.stderr.write('Duplicate param name: %s' %shortname)
         default_params[shortname] = value
-
-    relevant_setups = {k: setups[k] for k in applicable_setups}
-    config_space, constants = openmlpimp.utils.setups_to_configspace(relevant_setups,
-                                                                     default_params,
-                                                                     keyfield=keyfield,
-                                                                     logscale_parameters=logscale_parameters,
-                                                                     ignore_parameters=ignore_parameters)
-
-    # remove the constants from runhistory TODO: make optional
-    for config_id in configs:
-        for constant in constants:
-            configs[config_id].pop(constant, None)
 
     run_history = {"data": data, "configs": configs}
 
@@ -209,7 +203,6 @@ def cache_runhistory_configspace(save_folder, flow_id, task_id, model_type, reve
         runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id, model_type,
                                                                                      required_setups=args.required_setups,
                                                                                      fixed_parameters=args.fixed_parameters,
-                                                                                     logscale_parameters=args.logscale_parameters,
                                                                                      ignore_parameters=args.ignore_parameters,
                                                                                      reverse=reverse)
 

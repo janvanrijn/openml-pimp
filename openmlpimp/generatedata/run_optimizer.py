@@ -4,6 +4,7 @@ import json
 import openml
 import openmlpimp
 import os
+import random
 import warnings
 
 from sklearn.model_selection._search import RandomizedSearchCV
@@ -17,10 +18,11 @@ def parse_args():
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_apikey', type=str, required=True, default=None, help='the apikey to authenticate to OpenML')
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
+    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
 
     parser.add_argument('--internet_access', action="store_true", help='Uses the internet to connect to OpenML')
+    parser.add_argument('--random_order', action="store_true", help='Iterates the tasks in a random order')
     parser.add_argument('--task_ids', type=int, nargs="+", default=None, help='the openml task ids to execute')
     parser.add_argument('--optimizer', type=str, default='random_search')
 
@@ -41,6 +43,9 @@ if __name__ == '__main__':
             warnings.warn('No task ids given. Trying to obtain through OpenML study.. ')
         study = openml.study.get_study(args.openml_study)
         task_ids = study.tasks
+
+    if args.random_order:
+        random.shuffle(task_ids)
 
     cache_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
 

@@ -15,14 +15,14 @@ if type == 'rf':
     results_file = '/home/vanrijn/publications/AutoML2017/plot/data/rf_ranks.csv'
     colors = OrderedDict([('min. samples leaf', 'm'), ('max. features', 'b'), ('bootstrap', 'c'), ('split criterion', 'g'), ('min. samples split', 'y'), ('imputation', 'r')])
 elif type == 'rbf':
-    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_08_19_15:06:53/ranks.csv'
-    colors = {'tol':'m', 'strategy': 'c', 'shrinking': 'b', 'gamma': 'g', 'C': 'r'}
+    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_09_01_18:19:52/ranks.csv'
+    colors = OrderedDict([('gamma', 'm'), ('tol', 'b'), ('C', 'g'), ('strategy', 'y'), ('shrinking', 'r')])
 elif type == 'poly':
-    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_08_19_15:07:16/ranks.csv'
-    colors =  {'degree': 'k', 'C': 'y', 'coef0': 'm', 'tol': 'c', 'strategy': 'b', 'gamma': 'g', 'shrinking': 'r'}
+    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_09_01_18:19:59/ranks.csv'
+    colors = OrderedDict([('degree', 'm'), ('coef0', 'mediumpurple'), ('gamma', 'c'), ('tol', 'g'), ('C', 'limegreen'), ('imputation', 'y'), ('shrinking', 'r')])
 elif type == 'sigmoid':
-    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_08_19_15:07:25/ranks.csv'
-    colors = {'shrinking': 'r', 'C': 'g', 'strategy': 'b', 'coef0': 'm', 'tol': 'k', 'gamma': 'c'}
+    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_09_01_18:19:04/ranks.csv'
+    colors = OrderedDict([('gamma', 'm'), ('coef0', 'b'), ('tol', 'c'), ('C', 'g'), ('strategy', 'y'), ('shrinking', 'r')])
 else:
     results_file = '/home/vanrijn/publications/AutoML2017/plot/data/ada_ranks.csv'
     colors = OrderedDict([('max. depth', 'm'),  ('learning rate', 'b'), ('algorithm', 'g'), ('iterations', 'y'), ('imputation', 'r')])
@@ -84,4 +84,4 @@ plt.axis((450,100000,3,2100))
 
 plt.xlabel(x_axis_label, fontsize='xx-large')
 plt.ylabel(y_axis_label, fontsize='xx-large')
-plt.savefig('result.pdf', bbox_inches='tight')
+plt.savefig('result_%s.pdf' %type, bbox_inches='tight')

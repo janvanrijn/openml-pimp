@@ -27,14 +27,12 @@ def read_cmd():
     parser.add_argument("-V", "--verbose_level", default=logging.INFO, choices=["INFO", "DEBUG"], help="verbosity")
     parser.add_argument("-C", "--table", action='store_true', help="Save result table")
     parser.add_argument("-R", "--required_setups", default=100, help="Minimal number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6952, help="The OpenML flow id to use")
-    parser.add_argument("--model_type", default="libsvm_svc")
+    parser.add_argument("-F", "--flow_id", default=6970, help="The OpenML flow id to use")
+    parser.add_argument("--model_type", default="adaboost")
     parser.add_argument("-T", "--openml_studyid", default="14", help="The OpenML tag for obtaining tasks")
-    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default={'kernel': 'sigmoid'},
+    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
-    parser.add_argument('-L', '--logscale_parameters', type=json.loads,
-                        default={'learning_rate': ''},
-                        help='Parameters that are on a logscale')
+
     parser.add_argument('-I', '--ignore_parameters', type=json.loads,
                         default={'random_state': '', 'sparse': '', 'verbose': ''},
                         help='Parameters to ignore')
@@ -46,8 +44,6 @@ def read_cmd():
 
     args_, misc = parser.parse_known_args()
 
-    if args_.logscale_parameters is not None:
-        args_.logscale_parameters = set(args_.logscale_parameters.keys())
     if args_.ignore_parameters is not None:
         args_.ignore_parameters = set(args_.ignore_parameters.keys())
 
