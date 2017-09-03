@@ -63,11 +63,11 @@ if __name__ == '__main__':
             strategy_directories[strategy] = output_directory + '/curves/' + strategy
 
     # plot all ranks
-    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory + '/', output_directory + '/curves_avg', exclude_pattern=['inverse_holdout_True'])
+    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory, output_directory + '/curves_avg', exclude_pattern=['inverse_holdout_True'])
 
     # plot important ranks
-    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory + '/', output_directory + '/curves_avg', include_pattern=['uniform', 'kde'], exclude_pattern=['inverse_holdout_True'])
-    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory + '/', output_directory + '/curves_avg', include_pattern=['uniform', 'multivariate'], exclude_pattern=['inverse_holdout_True'])
+    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory, output_directory + '/curves_avg', include_pattern=['uniform', 'kde'], exclude_pattern=['inverse_holdout_True'])
+    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory, output_directory + '/curves_avg', include_pattern=['uniform', 'multivariate'], exclude_pattern=['inverse_holdout_True'])
 
     for task in all_traces.keys():
         openmlpimp.utils.boxplot_traces(all_traces[task], output_directory + '/boxplots', str(task) + '.png')

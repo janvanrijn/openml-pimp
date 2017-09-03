@@ -29,7 +29,7 @@ class FanovaBackend(object):
             if isinstance(hp, (CategoricalHyperparameter)):
                 vis.plot_categorical_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False)
             else:
-                vis.plot_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False)
+                vis.plot_marginal(configspace.get_idx_by_hyperparameter_name(param), resolution=1000, show=False)
             x1, x2, _, _ = plt.axis()
             if fix_yaxis:
                 plt.axis((x1, x2, 0, 1))
