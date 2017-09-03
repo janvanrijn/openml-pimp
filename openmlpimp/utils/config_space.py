@@ -50,6 +50,13 @@ def get_config_space_casualnames(classifier, fixed_parameters=None):
         casualname = hyperparameter.name.split(':')[-1]
         if fixed_parameters is not None and casualname in fixed_parameters:
             continue
-        hyperparameter.name = casualname
-        config_space_prime.add_hyperparameter(hyperparameter)
+
+        if isinstance(hyperparameter, ConfigSpace.CategoricalHyperparameter):
+            config_space_prime.add_hyperparameter(ConfigSpace.CategoricalHyperparameter(casualname, hyperparameter.choices, default=hyperparameter.default))
+        elif isinstance(hyperparameter, ConfigSpace.UniformIntegerHyperparameter):
+            config_space_prime.add_hyperparameter(ConfigSpace.UniformIntegerHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default=hyperparameter.default))
+        elif isinstance(hyperparameter, ConfigSpace.UniformFloatHyperparameter):
+            config_space_prime.add_hyperparameter(ConfigSpace.UniformFloatHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default=hyperparameter.default))
+        else:
+            raise ValueError()
     return config_space_prime
