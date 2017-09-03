@@ -1,6 +1,5 @@
 import argparse
 import arff
-import copy
 import json
 import openml
 import openmlpimp
@@ -9,8 +8,6 @@ import sklearn
 import fasteners
 import warnings
 
-import autosklearn.constants
-from autosklearn.util.pipeline import get_configuration_space
 from sklearn.model_selection._search import RandomizedSearchCV
 from ConfigSpace.hyperparameters import NumericalHyperparameter
 
@@ -85,10 +82,12 @@ if __name__ == '__main__':
     cache_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
     cache_dir = args.cache_dir + '/' + args.classifier + '/' + cache_save_folder_suffix
 
-    configuration_space = get_configuration_space(
-        info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
-        include_estimators=[args.classifier],
-        include_preprocessors=['no_preprocessing'])
+    configuration_space = openmlpimp.utils.get_config_space_casualnames(args.classifier, args.fixed_parameters)
+    hyperparameters = dict(configuration_space._hyperparameters.items())
+    if args.ignore_logscale:
+        for param_name in hyperparameters.keys():
+            if isinstance(hyperparameters[param_name], NumericalHyperparameter):
+                hyperparameters[param_name].log = False
 
     print("classifier %s; flow id: %d; fixed_parameters: %s" %(args.classifier, args.flow_id, args.fixed_parameters))
     print("%s Tasks: %s" %(openmlpimp.utils.get_time(), str(all_task_ids)))
@@ -106,12 +105,6 @@ if __name__ == '__main__':
         pipe = openmlpimp.utils.classifier_to_pipeline(base, indices)
         if required_params is not None:
             pipe.set_params(**required_params)
-
-        hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
-        if args.ignore_logscale:
-            for param_name in hyperparameters.keys():
-                if isinstance(hyperparameters[param_name], NumericalHyperparameter):
-                    hyperparameters[param_name].log = False
 
         output_dir = args.output_dir + '/' + args.classifier + cache_save_folder_suffix + '/' + args.search_type + '__' + output_save_folder_suffix[1:] + '/' + str(task_id)
         try:

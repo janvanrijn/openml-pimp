@@ -8,9 +8,8 @@ import os
 import pickle
 import warnings
 
-from astroML.density_estimation import EmpiricalDistribution
 from sklearn.neighbors import KernelDensity
-from scipy.stats import gaussian_kde, rv_discrete, uniform
+from scipy.stats import gaussian_kde, rv_discrete, uniform, randint
 from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter, UniformFloatHyperparameter, UniformIntegerHyperparameter
 from openmlstudy14.distributions import loguniform, loguniform_int
 
@@ -269,12 +268,12 @@ def get_uniform_paramgrid(hyperparameters, fixed_parameters):
             if hyperparameter.log:
                 param_grid[param_name] = loguniform(base=2, low=hyperparameter.lower, high=hyperparameter.upper)
             else:
-                param_grid[param_name] = uniform(loc=hyperparameter.lower, scale=hyperparameter.upper)
+                param_grid[param_name] = uniform(loc=hyperparameter.lower, scale=hyperparameter.upper-hyperparameter.lower)
         elif isinstance(hyperparameter, UniformIntegerHyperparameter):
             if hyperparameter.log:
                 param_grid[param_name] = loguniform_int(base=2, low=hyperparameter.lower, high=hyperparameter.upper)
             else:
-                param_grid[param_name] = list(range(hyperparameter.lower, hyperparameter.upper))
+                param_grid[param_name] = randint(low=hyperparameter.lower, high=hyperparameter.upper+1)
         else:
             raise ValueError()
     return param_grid

@@ -21,10 +21,10 @@ def parse_args():
                        'k_nearest_neighbors', 'lda', 'liblinear_svc', 'libsvm_svc', 'multinomial_nb', 'passive_aggressive',
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'random_forest']
-    parser.add_argument('--flow_id', type=int, default=6969, help='the OpenML flow id')
+    parser.add_argument('--flow_id', type=int, default=6952, help='the OpenML flow id')
     parser.add_argument('--study_id', type=str, default='OpenML100', help='the OpenML study id')
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='random_forest', help='the classifier to execute')
-    parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
+    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='libsvm_svc', help='the classifier to execute')
+    parser.add_argument('--fixed_parameters', type=json.loads, default={'kernel': 'sigmoid'}, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--cache_directory', type=str, default=os.path.expanduser('~') + '/experiments/cache_kde', help="Directory containing cache files")
     parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/pdf', help="Directory to save the result files")
     parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/priorbased_experiments', help="Adds samples obtained from a result directory")
@@ -70,30 +70,36 @@ def plot_categorical(X, output_dir, parameter_name):
     plt.close()
 
 
-def plot_numeric(hyperparameter, data, output_dir, parameter_name):
+def plot_numeric(hyperparameter, data, histo_keys, output_dir, parameter_name, resolution=100):
     try:
         os.makedirs(output_dir)
     except FileExistsError:
         pass
 
     factor = 1.0
-    lines = ['r', 'b', 'g', 'c', 'm', 'y', 'k', 'w']
+    colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k', 'w']
     min = np.power(hyperparameter.lower, factor)
     max = np.power(hyperparameter.upper, factor)
     if max < hyperparameter.upper:
         max = hyperparameter.upper * factor
-    X_values_plot = np.linspace(min, max, 1000)
     fig, axes = plt.subplots(2, figsize=(8, 12), sharex=True)
 
     for index, name in enumerate(data):
-        # plot pdfs
-        distribution = openmlpimp.utils.priors.gaussian_kde_wrapper(hyperparameter, hyperparameter.name, data[name])
-        axes[0].plot(X_values_plot, distribution.pdf(X_values_plot), lines[index]+'-', lw=5, alpha=0.6, label=name)
+        if name in histo_keys:
+            pass
+            # axes[0].hist(data[name], resolution, normed=True, facecolor=colors[index], alpha=0.75)
+        else:
+            X_values_plot = np.linspace(min, max, resolution)
+
+            # plot pdfs
+            distribution = openmlpimp.utils.priors.gaussian_kde_wrapper(hyperparameter, hyperparameter.name, data[name])
+            axes[0].plot(X_values_plot, distribution.pdf(X_values_plot), colors[index]+'-', lw=5, alpha=0.6, label=name)
 
         # plot cdfs
         sorted = np.sort(np.array(data[name]))
         yvals = np.arange(1, len(sorted) + 1) / float(len(sorted))
-        axes[1].step(sorted, yvals, linewidth=1, c=lines[index], label=name)
+        axes[1].step(sorted, yvals, linewidth=1, c=colors[index], label=name)
+
 
 
     # add original data points
@@ -119,12 +125,11 @@ if __name__ == '__main__':
     cache_dir = args.cache_directory + '/' + args.classifier + '/' + folder_suffix
     results_dir = args.result_directory + '/' + args.classifier + '/' + folder_suffix
 
-    configuration_space = get_configuration_space(
-        info={'task': autosklearn.constants.MULTICLASS_CLASSIFICATION, 'is_sparse': 0},
-        include_estimators=[args.classifier],
-        include_preprocessors=['no_preprocessing'])
+    configspace = openmlpimp.utils.get_config_space_casualnames(args.classifier, args.fixed_parameters)
+    hyperparameters = {}
+    for name, hyperparameter in configspace._hyperparameters.items():
+        hyperparameters[name] = hyperparameter
 
-    hyperparameters = openmlpimp.utils.configspace_to_relevantparams(configuration_space)
     obtained_results = {}
     if args.result_directory is not None:
         for strategy in os.listdir(results_dir):
@@ -138,11 +143,13 @@ if __name__ == '__main__':
         if all(x == priors[0] for x in priors):
             continue
         current_parameter = hyperparameters[param_name]
+        histo_keys = set()
         if isinstance(current_parameter, NumericalHyperparameter):
             data = collections.OrderedDict({'gaussian_kde': priors})
             for strategy in obtained_results:
                 strategy_name = openmlpimp.utils.plot._determine_name(strategy)
                 data[strategy_name] = np.array(obtained_results[strategy][param_name], dtype=np.float64)
-            plot_numeric(current_parameter, data, output_dir + '/', param_name)
+                histo_keys.add(strategy_name)
+            plot_numeric(current_parameter, data, histo_keys, output_dir + '/', param_name)
         elif isinstance(current_parameter, CategoricalHyperparameter):
             plot_categorical(priors, output_dir + '/', param_name)

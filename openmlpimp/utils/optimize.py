@@ -134,6 +134,7 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
 
     return [dtype(val) for val in result]  # TODO: hacky
 
+
 def obtain_paramgrid(classifier, exclude=None, reverse=False, fixed_parameters=None):
     if classifier == 'random_forest':
         param_grid = OrderedDict()
