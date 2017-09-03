@@ -32,7 +32,7 @@ def _determine_eligibility(strategy, include_pattern, exclude_pattern):
 
 def _determine_name(strategy):
     strategy_splitted = strategy.split('__')
-    if len(strategy_splitted) < 3:
+    if len(strategy_splitted) < 4:
         return strategy
     return strategy_splitted[0] + '__' + strategy_splitted[3]
 
@@ -72,7 +72,7 @@ def to_csv_unpivot(ranks_dict, location):
     pass
 
 
-def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, plot_directory, task_id, include_pattern=None, exclude_pattern=None, wildcard_depth=1):
+def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, plot_directory, task_id, include_pattern=None, exclude_pattern=None):
     # make regret plot:
     script = "%s %s/plot_test_performance_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
     cmd = [script]
@@ -82,7 +82,7 @@ def plot_task(plotting_virtual_env, plotting_scripts_dir, strategy_directory, pl
         strategy_name = _determine_name(strategy)
 
         cmd.append(strategy_name)
-        cmd.append(directory + '/' + str(task_id) + ('/*' * wildcard_depth) + '.csv')
+        cmd.append(directory + '/' + str(task_id) + '/*' + '.csv')
     try:
         os.makedirs(plot_directory)
     except FileExistsError:
@@ -140,19 +140,22 @@ def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, c
         filename += '__inc__' + '__'.join(include_pattern)
     if exclude_pattern:
         filename += '__ex__' + '__'.join(exclude_pattern)
+    cmd.append('--xlabel "number of iterations"')
     cmd.append('--save ' + filename + '.png')
     print('CMD: ', ' '.join(cmd))
     subprocess.run(' '.join(cmd), shell=True)
 
 
-def obtain_performance_curves(trace, save_directory, avg_curve_directory=None, task_id=None, improvements=True):
-    def save_curve(filename):
+def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, task_id=None, improvements=True):
+    def save_curve(current_curve, filename):
         with open(filename, 'w') as csvfile:
-            current_curve = curves[(repeat, fold)]
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
             for idx in range(len(current_curve)):
                 csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
+
+    if isinstance(traces, openml.runs.OpenMLRunTrace):
+        traces = [traces]
 
     curves = collections.defaultdict(dict)
     try:
@@ -160,9 +163,10 @@ def obtain_performance_curves(trace, save_directory, avg_curve_directory=None, t
     except FileExistsError:
         pass
 
-    for itt in trace.trace_iterations:
-        cur = trace.trace_iterations[itt]
-        curves[(cur.repeat, cur.fold)][cur.iteration] = cur.evaluation
+    for idx, trace in enumerate(traces):
+        for itt in trace.trace_iterations:
+            cur = trace.trace_iterations[itt]
+            curves[(idx, cur.repeat, cur.fold)][cur.iteration] = cur.evaluation
 
     for curve in curves.keys():
         current_curve = curves[curve]
@@ -184,15 +188,15 @@ def obtain_performance_curves(trace, save_directory, avg_curve_directory=None, t
         except FileExistsError:
             pass
 
-        average_curve = list(range(0, len(curves[(0, 0)])))
+        average_curve = list(range(0, len(curves[(0, 0, 0)])))
         # assumes all curves have same nr of iterations :)
-        for (repeat, fold), currentcurve in curves.items():
+        for (idx, repeat, fold), currentcurve in curves.items():
             for itt, value in enumerate(currentcurve):
                 average_curve[itt] += value / len(curves)
-        save_curve(avg_curve_directory + '/%s.csv' % str(task_id))
+        save_curve(average_curve, avg_curve_directory + '/%s.csv' % str(task_id))
 
-    for repeat, fold in curves.keys():
-        save_curve(save_directory + '/%d_%d.csv' %(repeat, fold))
+    for idx, repeat, fold in curves.keys():
+        save_curve(curves[(idx, repeat, fold)], save_directory + '/%d_%d_%d.csv' %(idx, repeat, fold))
 
 
 def obtain_performance_curves_openml(run_id, save_directory, avg_curve_directory=None, task_id=None, improvements=True):
