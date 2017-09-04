@@ -63,6 +63,7 @@ if __name__ == '__main__':
                 output_averaged = output_directory + '/curves_avg/' + name
                 openmlpimp.utils.obtain_performance_curves(traces, output_indivudual, output_averaged, task)
 
+    print(args.classifier, args.fixed_parameters)
     print(task_missing)
     print('Incomplete tasks:', len(task_missing))
     print('Total missing', missing)
