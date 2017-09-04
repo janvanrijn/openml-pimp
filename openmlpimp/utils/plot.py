@@ -1,6 +1,7 @@
 import collections
 import csv
 import openml
+import openmlpimp
 import os
 import subprocess
 import sys
@@ -37,10 +38,10 @@ def _determine_name(strategy):
     return strategy_splitted[0] + '__' + strategy_splitted[3]
 
 
-def to_csv_file(ranks_dict, location):
+def to_csv_file(ranks_dict, classifier, location):
     hyperparameters = None
     for task_id, params in ranks_dict.items():
-        hyperparameters = set(params)
+        hyperparameters = set([openmlpimp.utils.name_mapping(classifier, param) for param in params.keys()])
 
     with open(location, 'w') as csvfile:
         fieldnames = ['task_id']
@@ -49,14 +50,13 @@ def to_csv_file(ranks_dict, location):
         writer.writeheader()
 
         for task_id, param_values in ranks_dict.items():
-            result = {}
-            result.update(param_values)
+            result = {openmlpimp.utils.name_mapping(classifier, param): score for param, score in param_values.items()}
             result['task_id'] = 'Task %d' %task_id
             writer.writerow(result)
     pass
 
 
-def to_csv_unpivot(ranks_dict, location):
+def to_csv_unpivot(ranks_dict, classifier, location):
     with open(location, 'w') as csvfile:
         fieldnames = ['task_id', 'param_id', 'param_name', 'variance_contribution']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -64,9 +64,10 @@ def to_csv_unpivot(ranks_dict, location):
         for task_id, param_values in ranks_dict.items():
 
             for param_name, variance_contribution in param_values.items():
+                realname = openmlpimp.utils.name_mapping(classifier, param_name)
                 result = {'task_id' : task_id,
-                          'param_id': param_name,
-                          'param_name': param_name,
+                          'param_id': realname,
+                          'param_name': realname,
                           'variance_contribution': variance_contribution}
                 writer.writerow(result)
     pass
@@ -117,7 +118,7 @@ def boxplot_traces(strategy_traces, save_directory, name):
     plt.close()
 
 
-def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, curves_directory, include_pattern=None, exclude_pattern=None):
+def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, curves_directory, include_pattern=None, exclude_pattern=None, ylabel=None):
     script = "%s %s/plot_ranks_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
     cmd = [script]
 
@@ -141,7 +142,9 @@ def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, c
     if exclude_pattern:
         filename += '__ex__' + '__'.join(exclude_pattern)
     cmd.append('--xlabel "number of iterations"')
-    cmd.append('--save ' + filename + '.png')
+    if ylabel:
+        cmd.append('--ylabel "%s"' %ylabel)
+    cmd.append('--save ' + filename + '.pdf')
     print('CMD: ', ' '.join(cmd))
     subprocess.run(' '.join(cmd), shell=True)
 

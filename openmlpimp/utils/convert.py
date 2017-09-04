@@ -1,6 +1,8 @@
-import sklearn
+import copy
+import numpy as np
 import openmlpimp
 import random
+import sklearn
 import sys
 
 from openml.flows import flow_to_sklearn
@@ -207,6 +209,26 @@ def reverse_runhistory(runhistory):
             raise ValueError('score should be <= 1.0')
         runhistory['data'][idx][1][0] = 1.0 - score
 
+
+def scale_configspace_to_log(configspace):
+    configspace_prime = ConfigurationSpace()
+    for hyperparameter in configspace.get_hyperparameters():
+        if isinstance(hyperparameter, CategoricalHyperparameter):
+            prime = copy.deepcopy(hyperparameter)
+            configspace_prime.add_hyperparameter(prime)
+        elif isinstance(hyperparameter, UniformIntegerHyperparameter) or isinstance(hyperparameter, UniformFloatHyperparameter):
+            if hyperparameter.log:
+                lower = np.log(hyperparameter.lower)
+                upper = np.log(hyperparameter.upper)
+                default = np.log(hyperparameter.default)
+                prime = UniformFloatHyperparameter(name=hyperparameter.name, lower=lower, upper=upper, default=default, log=False)
+                configspace_prime.add_hyperparameter(prime)
+            else:
+                prime = copy.deepcopy(hyperparameter)
+                configspace_prime.add_hyperparameter(prime)
+        else:
+            raise ValueError()
+    return configspace_prime
 
 def runhistory_to_trajectory(runhistory, maximize):
     trajectory_lines = []

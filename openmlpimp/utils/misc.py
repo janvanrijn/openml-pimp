@@ -51,3 +51,40 @@ def do_run(task, optimizer, output_dir, internet_access=True):
             f.write(trace_arff)
         with open(output_dir + '/predictions.arff', 'w') as f:
             f.write(predictions_arff)
+
+
+def name_mapping(classifier, name, replace_underscores=True):
+    splitted = name.split('__')
+    if len(splitted) > 1:
+        relevant = splitted[1]
+    else:
+        relevant = name
+
+    if name == 'imputation__strategy' or name == 'strategy':
+        return 'imputation'
+    if classifier == 'adaboost':
+        if relevant == 'n_estimators':
+            return 'iterations'
+        if len(splitted) == 3 and splitted[2] == 'max_depth':
+            if replace_underscores:
+                return 'max. depth'
+            else:
+                return 'max._depth'
+    elif classifier == 'libsvm_svc':
+        if relevant == 'C':
+            return 'complexity'
+        elif relevant == 'tol':
+            return 'tolerance'
+        # elif splitted[1] == 'coef0':
+        #    return 'tolerance'
+
+    parts = relevant.split('_')
+    for idx in range(len(parts)):
+        if parts[idx] == 'max':
+            parts[idx] = 'max.'
+        elif parts[idx] == 'min':
+            parts[idx] = 'min.'
+    if replace_underscores:
+        return ' '.join(parts)
+    else:
+        return '_'.join(parts)

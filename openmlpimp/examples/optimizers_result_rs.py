@@ -37,9 +37,12 @@ if __name__ == '__main__':
     all_exclude_params = os.listdir(result_directory)
     strategy_directories = {}
 
+    missing = 0
+    task_missing = collections.defaultdict(int)
     for task in study.tasks:
         for exclude_param in all_exclude_params:
-            strategy_directories[exclude_param] = os.path.join(output_directory + '/curves', exclude_param)
+            name = openmlpimp.utils.name_mapping(args.classifier, exclude_param, replace_underscores=False)
+            strategy_directories[name] = os.path.join(output_directory + '/curves', name)
             expected_values = openmlpimp.utils.get_param_values(args.classifier, exclude_param, args.fixed_parameters)
             all_exclude_values = os.listdir(os.path.join(result_directory, exclude_param))
             trace_count = 0
@@ -51,14 +54,21 @@ if __name__ == '__main__':
                     with open(arff_file, 'r') as fp:
                         trace_arff = arff.load(fp)
                     traces.append(openml.runs.functions._create_trace_from_arff(trace_arff))
+                else:
+                    missing += 1
+                    task_missing[task] += 1
 
             if len(traces) == len(expected_values):
-                output_indivudual = output_directory + '/curves/' + exclude_param + '/' + str(task)
-                output_averaged = output_directory + '/curves_avg/' + exclude_param
+                output_indivudual = output_directory + '/curves/' + name + '/' + str(task)
+                output_averaged = output_directory + '/curves_avg/' + name
                 openmlpimp.utils.obtain_performance_curves(traces, output_indivudual, output_averaged, task)
 
+    print(task_missing)
+    print('Incomplete tasks:', len(task_missing))
+    print('Total missing', missing)
+
     # plot all ranks
-    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory, output_directory + '/curves_avg')
+    openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory, output_directory + '/curves_avg', ylabel="Average Rank")
 
     for task_id in study.tasks:
         openmlpimp.utils.plot_task(args.virtual_env, args.scripts_dir, strategy_directories, output_directory + '/plots', task_id)

@@ -118,5 +118,5 @@ if __name__ == '__main__':
             traceback.print_exc()
     total_ranks = openmlpimp.utils.divide_dict_values(total_ranks, nr_tasks)
     print("TOTAL RANKS:", total_ranks, "("+str(nr_tasks)+")")
-    openmlpimp.utils.to_csv_unpivot(all_ranks, save_folder + '/ranks_plain.csv')
-    openmlpimp.utils.to_csv_file(all_ranks, save_folder + '/ranks.csv')
+    openmlpimp.utils.to_csv_unpivot(all_ranks, args.model_type, save_folder + '/ranks_plain.csv')
+    openmlpimp.utils.to_csv_file(all_ranks, args.model_type, save_folder + '/ranks.csv')

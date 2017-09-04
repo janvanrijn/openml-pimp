@@ -10,24 +10,25 @@ x_axis_label = 'Number of Data Points'
 y_axis_feature = 'NumberOfFeatures'
 y_axis_label = 'Number of Features'
 
-type = 'sigmoid'
+type = 'rf'
 if type == 'rf':
-    results_file = '/home/vanrijn/publications/AutoML2017/plot/data/rf_ranks.csv'
-    colors = OrderedDict([('min. samples leaf', 'm'), ('max. features', 'b'), ('bootstrap', 'c'), ('split criterion', 'g'), ('min. samples split', 'y'), ('imputation', 'r')])
+    results_file = '/home/vanrijn/experiments/archive/20170904/rf/ranks.csv'
+    colors = OrderedDict([('min. samples leaf', 'm'), ('max. features', 'b'), ('bootstrap', 'c'), ('criterion', 'g'), ('min. samples split', 'y'), ('strategy', 'r')])
 elif type == 'rbf':
-    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_09_01_18:19:52/ranks.csv'
-    colors = OrderedDict([('gamma', 'm'), ('tol', 'b'), ('C', 'g'), ('strategy', 'y'), ('shrinking', 'r')])
+    results_file = '/home/vanrijn/experiments/archive/20170904/rbf/ranks.csv'
+    colors = OrderedDict([('gamma', 'm'), ('complexity', 'b'), ('tolerance', 'g'), ('strategy', 'y'), ('shrinking', 'r')])
 elif type == 'poly':
-    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_09_01_18:19:59/ranks.csv'
-    colors = OrderedDict([('degree', 'm'), ('coef0', 'mediumpurple'), ('gamma', 'c'), ('tol', 'g'), ('C', 'limegreen'), ('imputation', 'y'), ('shrinking', 'r')])
+    results_file = '/home/vanrijn/experiments/archive/20170904/poly/ranks.csv'
+    colors = OrderedDict([('gamma', 'm'), ('coef0', 'mediumpurple'), ('complexity', 'c'), ('degree', 'green'), ('tolerance', 'limegreen'), ('imputation', 'y'), ('shrinking', 'r')])
 elif type == 'sigmoid':
-    results_file = '/home/vanrijn/experiments/PIMP_flow6952_2017_09_01_18:19:04/ranks.csv'
-    colors = OrderedDict([('gamma', 'm'), ('coef0', 'b'), ('tol', 'c'), ('C', 'g'), ('strategy', 'y'), ('shrinking', 'r')])
+    results_file = '/home/vanrijn/experiments/archive/20170904/sigmoid/ranks.csv'
+    colors = OrderedDict([('gamma', 'm'), ('complexity', 'b'),  ('coef0', 'c'), ('tolerance', 'g'), ('strategy', 'y'), ('shrinking', 'r')])
 else:
-    results_file = '/home/vanrijn/publications/AutoML2017/plot/data/ada_ranks.csv'
-    colors = OrderedDict([('max. depth', 'm'),  ('learning rate', 'b'), ('algorithm', 'g'), ('iterations', 'y'), ('imputation', 'r')])
+    results_file = '/home/vanrijn/experiments/archive/20170904/adaboost/ranks.csv'
+    colors = OrderedDict([('max. depth', 'm'),  ('learning rate', 'b'), ('algorithm', 'g'), ('iterations', 'y'), ('strategy', 'r')])
 
-
+print(type, results_file)
+print(colors)
 x_vals = {}
 y_vals = {}
 area = {}
@@ -59,8 +60,9 @@ with open(results_file, 'r') as csvfile:
 # maintans a list of the params that were at least once most important
 all_params = set(x_vals.keys())
 
-if len(all_params - colors.keys()) > 0:
-    raise ValueError()
+undefined = all_params - colors.keys()
+if len(undefined) > 0:
+    raise ValueError('undefined parameters:', undefined)
 
 plotted_items = []
 legend_keys = []
