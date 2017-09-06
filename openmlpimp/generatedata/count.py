@@ -9,8 +9,8 @@ import openmlpimp
 def parse_args():
   parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
   parser.add_argument('--study_id', type=int, default=14, help='the tag to obtain the tasks from')
-  parser.add_argument('--flow_id', type=int, default=6969, help='the classifier to execute')  # 6952, 6969, 6970
-  parser.add_argument('--fixed_parameter', type=str, default=None, help='parameter to split out')
+  parser.add_argument('--flow_id', type=int, default=6952, help='the classifier to execute')  # 6952, 6969, 6970
+  parser.add_argument('--fixed_parameter', type=str, default={'kernel'}, help='parameter to split out')
   return parser.parse_args()
 
 
@@ -44,10 +44,10 @@ print("std", np.array(list(task_ids.values())).std())
 if args.fixed_parameter:
     setups = openmlpimp.utils.obtain_setups_by_setup_id(list(setups), args.flow_id)
 
-    values = collections.defaultdict(dict)
+    values = collections.defaultdict(int)
     for id, setup in setups.items():
 
         for param_id, param in setup.parameters.items():
             if param.parameter_name == args.fixed_parameter:
-                values[param.parameter_name] += 1
+                values[param.value] += 1
 print(values)
