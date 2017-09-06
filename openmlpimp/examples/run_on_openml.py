@@ -32,23 +32,27 @@ def read_cmd():
     parser.add_argument("-T", "--openml_studyid", default="14", help="The OpenML tag for obtaining tasks")
     parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
-
-    parser.add_argument('-I', '--ignore_parameters', type=json.loads,
-                        default={'random_state': '', 'sparse': '', 'verbose': ''},
-                        help='Parameters to ignore')
-    parser.add_argument('-Q', '--use_quantiles', action="store_true",
-                        default=True,
+    parser.add_argument('-Q', '--use_quantiles', action="store_true", default=True,
                         help='Use quantile information instead of full range')
     parser.add_argument('-M', '--modus', type=str, choices=['ablation', 'fanova'],
                         default='fanova', help='Whether to use ablation or fanova')
 
     args_, misc = parser.parse_known_args()
 
-    if args_.ignore_parameters is not None:
-        args_.ignore_parameters = set(args_.ignore_parameters.keys())
-
     return args_
 
+
+def fixed_parameters_to_ignore_parameters(fixed_parameters):
+    ignore_parameters = {'random_state', 'sparse', 'verbose'}
+    if fixed_parameters is None:
+        return ignore_parameters
+    if 'kernel' in fixed_parameters:
+        if fixed_parameters['kernel'] == 'rbf':
+            ignore_parameters.add('coef0')
+            ignore_parameters.add('degree')
+        elif fixed_parameters['kernel'] == 'sigmoid':
+            ignore_parameters.add('degree')
+    return ignore_parameters
 
 if __name__ == '__main__':
     args = read_cmd()
@@ -71,12 +75,15 @@ if __name__ == '__main__':
             task_cache_folder = cache_folder + "/" + str(task_id)
 
             # TODO: make the default!
+            ignore_parameters = fixed_parameters_to_ignore_parameters(args.fixed_parameters)
             runhistory_path, configspace_path = openmlpimp.utils.cache_runhistory_configspace(task_cache_folder,
                                                                                               args.flow_id,
                                                                                               task_id,
                                                                                               model_type=args.model_type,
+                                                                                              required_setups=args.required_setups,
                                                                                               reverse=False,
-                                                                                              args=args)
+                                                                                              fixed_parameters=args.fixed_parameters,
+                                                                                              ignore_parameters=ignore_parameters)
 
             if total_ranks is None:
                 with open(configspace_path) as configspace_file:

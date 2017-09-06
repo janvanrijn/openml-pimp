@@ -109,7 +109,7 @@ def boxplot_traces(strategy_traces, save_directory, name):
     for strategy, trace in strategy_traces.items():
         current = [trace_item.evaluation for trace_item in trace.trace_iterations.values()]
         data.append(current)
-        label_names.append(strategy)
+        label_names.append(strategy.split('__')[0])
 
     plt.figure()
     plt.boxplot(data)
@@ -155,6 +155,8 @@ def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, 
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
             for idx in range(len(current_curve)):
+                if current_curve[idx] < 0 or current_curve[idx] > 1:
+                    raise ValueError()
                 csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
 
     if isinstance(traces, openml.runs.OpenMLRunTrace):
@@ -191,22 +193,12 @@ def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, 
         except FileExistsError:
             pass
 
-        average_curve = list(range(0, len(curves[(0, 0, 0)])))
+        average_curve = [0] * len(curves[(0, 0, 0)])
         # assumes all curves have same nr of iterations :)
-        for (idx, repeat, fold), currentcurve in curves.items():
+        for _, currentcurve in curves.items():
             for itt, value in enumerate(currentcurve):
                 average_curve[itt] += value / len(curves)
         save_curve(average_curve, avg_curve_directory + '/%s.csv' % str(task_id))
 
     for idx, repeat, fold in curves.keys():
         save_curve(curves[(idx, repeat, fold)], save_directory + '/%d_%d_%d.csv' %(idx, repeat, fold))
-
-
-def obtain_performance_curves_openml(run_id, save_directory, avg_curve_directory=None, task_id=None, improvements=True):
-    try:
-        trace = openml.runs.get_run_trace(run_id)
-    except Exception as e:
-        sys.stderr.write(e.message)
-        return
-    obtain_performance_curves(trace, save_directory, avg_curve_directory=avg_curve_directory, task_id=task_id, improvements=improvements)
-

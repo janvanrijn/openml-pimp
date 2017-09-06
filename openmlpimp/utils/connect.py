@@ -1,4 +1,4 @@
-import collections
+import copy
 import openml
 import openmlpimp
 
@@ -125,7 +125,11 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
                                       reverse=False):
     from smac.tae.execute_ta_run import StatusType
 
-    config_space = openmlpimp.utils.get_config_space_casualnames(model_type, fixed_parameters)
+    all_fixed_parameters = copy.deepcopy(ignore_parameters)
+    if fixed_parameters is not None:
+        all_fixed_parameters.update(fixed_parameters)
+
+    config_space = openmlpimp.utils.get_config_space_casualnames(model_type, all_fixed_parameters)
     valid_hyperparameters = config_space._hyperparameters.keys()
 
     evaluations = obtain_all_evaluations(function="predictive_accuracy", flow=[flow_id], task=[task_id])
@@ -165,25 +169,6 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
             applicable_setups.add(config_id)
             data.append([run, performance])
 
-    # filter "constant" parameters by value
-    param_values = collections.defaultdict(set)
-    for setup_id in applicable_setups:
-        for param_id in setups[setup_id].parameters:
-            name = getattr(setups[setup_id].parameters[param_id], keyfield)
-            value = openml.flows.flow_to_sklearn(setups[setup_id].parameters[param_id].value)
-            if name in valid_hyperparameters:
-                param_values[name].add(value)
-
-    one_value_params = set()
-    for hyperparameter, values in param_values.items():
-        if len(values) == 1:
-            one_value_params.add(hyperparameter)
-    if fixed_parameters is not None:
-        one_value_params.update(fixed_parameters)
-    # this should update it ..
-    config_space = openmlpimp.utils.get_config_space_casualnames(model_type, one_value_params)
-    valid_hyperparameters = config_space._hyperparameters.keys()
-
     for setup_id in applicable_setups:
         config = {}
         for param_id in setups[setup_id].parameters:
@@ -209,9 +194,9 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     return run_history, config_space
 
 
-def cache_runhistory_configspace(save_folder, flow_id, task_id, model_type, reverse, args):
-    if args.fixed_parameters:
-        save_folder_suffix = [param + '_' + value for param, value in args.fixed_parameters.items()]
+def cache_runhistory_configspace(save_folder, flow_id, task_id, model_type, required_setups, reverse=False, fixed_parameters=None, ignore_parameters=None):
+    if fixed_parameters:
+        save_folder_suffix = [param + '_' + value for param, value in fixed_parameters.items()]
         save_folder_suffix = '/' + '__'.join(save_folder_suffix)
     else:
         save_folder_suffix = '/vanilla'
@@ -222,9 +207,9 @@ def cache_runhistory_configspace(save_folder, flow_id, task_id, model_type, reve
 
     if not os.path.isfile(runhistory_path) or not os.path.isfile(configspace_path):
         runhistory, configspace = openmlpimp.utils.obtain_runhistory_and_configspace(flow_id, task_id, model_type,
-                                                                                     required_setups=args.required_setups,
-                                                                                     fixed_parameters=args.fixed_parameters,
-                                                                                     ignore_parameters=args.ignore_parameters,
+                                                                                     required_setups=required_setups,
+                                                                                     fixed_parameters=fixed_parameters,
+                                                                                     ignore_parameters=ignore_parameters,
                                                                                      reverse=reverse)
 
         try: os.makedirs(save_folder + save_folder_suffix)
