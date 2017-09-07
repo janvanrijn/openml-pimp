@@ -1,6 +1,7 @@
 import argparse
 import collections
 import csv
+import numpy as np
 import openml
 import openmlpimp
 import operator
@@ -21,6 +22,15 @@ def strategy_name(full_name):
     return full_name.split('__')[0]
 
 
+def name_mapping(classifier):
+    names = classifier.split('__')
+    if names[1] == 'vanilla':
+        return names[0].replace('_', ' ')
+    if names[0] == 'libsvm_svc':
+        return 'SVM(' + names[1].split('_')[1] + ')'
+    raise ValueError()
+
+
 def obtain_complete_tasks(results, tasks, classifiers=None):
     if classifiers is None:
         classifiers = results.keys()
@@ -29,7 +39,7 @@ def obtain_complete_tasks(results, tasks, classifiers=None):
     for task_id in tasks.keys():
         in_all = True
         for classifier in classifiers:
-            for strategy in results[clf_params]:
+            for strategy in results[classifier]:
                 if task_id not in results[classifier][strategy]:
                     in_all = False
         if in_all:
@@ -37,42 +47,65 @@ def obtain_complete_tasks(results, tasks, classifiers=None):
     return complete_tasks
 
 
-def bar_plots(results, all_tasks, classifiers=None):
+def bar_plots(results, all_tasks, classifiers=None, num_plots=1):
+    if not isinstance(classifiers, list):
+        raise ValueError()
+
     if classifiers is None:
-        classifiers = results.keys()
+        classifiers = list(results.keys())
+    print(classifiers)
+    classifier_names = list()
+    for classifier in classifiers:
+        classifier_names.append(name_mapping(classifier))
 
     current_tasks = obtain_complete_tasks(results, all_tasks, classifiers)
-    all_tasks_sorted = collections.OrderedDict(sorted(all_tasks.items(), key=operator.itemgetter(1)))
+    all_tasks_sorted = np.array(list(collections.OrderedDict(sorted(all_tasks.items(), key=operator.itemgetter(1))).keys()))
 
     colors = ['red', 'blue', 'green', 'magenta']
 
-    plt.figure()
-    for idx, clf_params in enumerate(classifiers):
-        current_strategies = sorted(list(results[clf_params].keys()))
+    results_per_plot = np.ceil(all_tasks_sorted.size / num_plots)
+    for plotidx in range(num_plots):
+        plt.figure()
+        legend_bars = []
+        for idx, clf_params in enumerate(classifiers):
+            current_strategies = sorted(list(results[clf_params].keys()))
 
-        barplot_data = []
-        barplotlabel_names = []
+            barplot_data = []
+            barplotlabel_names = []
 
-        for task_id in all_tasks_sorted:
-            if task_id not in current_tasks:
-                continue
-            score0 = results[clf_params][current_strategies[0]][task_id]
-            score1 = results[clf_params][current_strategies[1]][task_id]
-            current_dif = score0 - score1
-            barplot_data.append(current_dif)
-            barplotlabel_names.append(taskid_datasetname[task_id])
+            start_idx = int(results_per_plot * plotidx)
+            end_idx = int(min(start_idx + results_per_plot, len(all_tasks_sorted)))
+            for task_id in all_tasks_sorted[start_idx:end_idx]:
+                if task_id not in current_tasks:
+                    continue
+                score0 = results[clf_params][current_strategies[0]][task_id]
+                score1 = results[clf_params][current_strategies[1]][task_id]
+                current_dif = score0 - score1
+                barplot_data.append(current_dif)
+                barplotlabel_names.append(taskid_datasetname[task_id])
 
-        width = 1 / len(classifiers)
-        x_pos = list(range(len(barplot_data)))
-        for i in range(len(x_pos)):
-            x_pos[i] += idx * width
+            width = 0.9 / len(classifiers)
 
-        # creates the bar plot
-        plt.bar(x_pos, barplot_data, width=width, color=colors[idx])
+            if len(classifiers) % 2 == 0:
+                offset = -1 * ((len(classifiers) - 0.5) / 2) * width
+            else:
+                offset = -1 * ((len(classifiers) - 1) / 2) * width
 
-    plt.xticks(list(range(len(barplotlabel_names))), barplotlabel_names, fontsize=6, rotation=45, ha='right')
-    plt.savefig(os.path.join(args.result_directory, '__'.join(classifiers) + '_bars.pdf'), figsize=(32, 48), bbox_inches='tight')
-    plt.close()
+            x_pos = list(range(len(barplot_data)))
+            for i in range(len(x_pos)):
+                x_pos[i] += offset + idx * width
+            # print(x_pos, ",", offset, ",", classifiers[idx])
+
+            # creates the bar plot
+            res = plt.bar(x_pos, barplot_data, width=width, color=colors[idx])
+            legend_bars.append(res)
+
+        # print(list(range(len(barplotlabel_names))))
+        plt.xticks(list(range(len(barplotlabel_names))), barplotlabel_names, fontsize=6, rotation=45, ha='right')
+        plt.legend(legend_bars, classifier_names)
+        plt.savefig(os.path.join(args.result_directory, '__'.join(classifiers) + '_bars%d.pdf' %plotidx), figsize=(32, 48), bbox_inches='tight')
+        plt.close()
+
 
 def box_plots(results, all_tasks, clf_params):
     boxplotlabel_names = []
@@ -126,6 +159,6 @@ if __name__ == '__main__':
                     # row now contains the last row of the csv file
                     results[clf_params][strategy][task_id] = float(row['evaluation'])
 
-        box_plots(results, all_tasks, clf_params)
-        bar_plots(results, all_tasks, clf_params)
-    bar_plots(results, all_tasks, results.keys())
+        #box_plots(results, all_tasks, clf_params)
+        #bar_plots(results, all_tasks, [clf_params])
+    bar_plots(results, all_tasks, list(results.keys()), 2)
