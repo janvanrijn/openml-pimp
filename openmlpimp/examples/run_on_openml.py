@@ -60,8 +60,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.verbose_level)
     ts = time.time()
     ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
-    cache_folder = '/home/vanrijn/experiments/PIMP_flow%d_cache' %args.flow_id
-    save_folder = '/home/vanrijn/experiments/PIMP_flow%d_%s' % (args.flow_id, ts)
+    cache_folder = '/home/vanrijn/experiments/fanova/PIMP_flow%d_cache' %args.flow_id
+    save_folder = '/home/vanrijn/experiments/fanova/PIMP_flow%d_%s' % (args.flow_id, ts)
 
     study = openml.study.get_study(args.openml_studyid, 'tasks')
     print("Tasks: ", list(study.tasks), "(%d)" %len(study.tasks))
@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
             if args.modus == 'fanova':
                 print('Running FANOVA backend on task %d' %task_id)
-                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path)
+                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path, use_percentiles=args.use_quantiles)
             else:
                 print('Running PIMP backend [%s] on task %d' %(args.modus, task_id))
                 results_file = PimpBackend.execute(task_save_folder, runhistory_path, configspace_path, modus=args.modus)

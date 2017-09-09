@@ -14,15 +14,22 @@ from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
     UniformIntegerHyperparameter, CategoricalHyperparameter, Constant
 
 
-def obtain_classifier(configuration_space, indices, max_attempts=5):
-    for i in range(max_attempts):
-        try:
-            configuration = configuration_space.sample_configuration(1)
-            classifier = openmlpimp.utils.config_to_classifier(configuration, indices)
-            return classifier
-        except ValueError as e:
-            if i == max_attempts - 1:
-                raise e
+def obtain_classifier(configuration_space, indices, classifier=None, fixed_parameters=None):
+        configuration = configuration_space.sample_configuration(1)
+        if fixed_parameters is not None:
+            while True:
+                complies = True
+                for parameter, value in fixed_parameters.items():
+                    all = configuration.get_dictionary()
+                    name = 'classifier:' + classifier + ':' + parameter
+                    if all[name] != value:
+                        complies = False
+                if complies:
+                    break
+                # resample
+                configuration = configuration_space.sample_configuration(1)
+        classifier = openmlpimp.utils.config_to_classifier(configuration, indices)
+        return classifier
 
 
 def classifier_to_pipeline(classifier, indices):

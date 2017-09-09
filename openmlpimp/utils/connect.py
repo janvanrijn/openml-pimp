@@ -65,6 +65,21 @@ def obtain_all_evaluations(**kwargs):
     return evaluations
 
 
+def obtain_all_runs(**kwargs):
+    runs = {}
+    offset = 0
+    limit = 1000
+    while True:
+        runs_batch = openml.runs.list_runs(**kwargs, offset=offset, size=limit)
+        for run_id in runs_batch.keys():
+            runs[run_id] = runs_batch[run_id]
+
+        offset += limit
+        if len(runs_batch) < limit:
+            break
+    return runs
+
+
 def obtain_all_setups(**kwargs):
     setups = {}
     offset = 0

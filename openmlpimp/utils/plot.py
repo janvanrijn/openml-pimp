@@ -141,7 +141,7 @@ def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, c
         filename += '__inc__' + '__'.join(include_pattern)
     if exclude_pattern:
         filename += '__ex__' + '__'.join(exclude_pattern)
-    cmd.append('--xlabel "number of iterations"')
+    cmd.append('--xlabel "Number of Iterations"')
     if ylabel:
         cmd.append('--ylabel "%s"' %ylabel)
     cmd.append('--save ' + filename + '.pdf')
@@ -155,7 +155,7 @@ def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, 
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
             for idx in range(len(current_curve)):
-                if current_curve[idx] < 0 or current_curve[idx] > 1:
+                if current_curve[idx] < -0.0000001 or current_curve[idx] > 1.0000001:
                     raise ValueError()
                 csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
 

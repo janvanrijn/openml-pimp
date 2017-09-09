@@ -71,12 +71,14 @@ class FanovaBackend(object):
         if manual_logtransform:
             configspace = openmlpimp.utils.scale_configspace_to_log(configspace)
 
+        cutoffs = (-np.inf, np.inf)
         if use_percentiles:
             p75 = np.percentile(y, 75.0)
             p100 = np.percentile(y, 100.0)
+            cutoffs = (p75, p100)
 
         # start the evaluator
-        evaluator = fanova_pyrfr(X=X, Y=y, config_space=configspace, config_on_hypercube=False, cutoffs=(p75, p100))
+        evaluator = fanova_pyrfr(X=X, Y=y, config_space=configspace, config_on_hypercube=False, cutoffs=cutoffs)
         # obtain the results
         params = configspace.get_hyperparameters()
         result = {}
@@ -96,24 +98,24 @@ class FanovaBackend(object):
             yrange = (p75, p100)
         FanovaBackend._plot_result(evaluator, configspace, save_folder + '/fanova', yrange)
 
-        # if interaction_effect:
-        #     result_interaction = {}
-        #     for idx, param in enumerate(params):
-        #         for idx2, param2 in enumerate(params):
-        #             if idx2 == idx:
-        #                 continue
-        #             interaction = evaluator.quantify_importance([idx, idx2])[(idx,idx2)]['total importance']
-        #             interaction -= result[param.name]
-        #             interaction -= result[param2.name]
-        #             if interaction < 0.0:
-        #                 raise ValueError()
-        #             result_interaction[param.name + '__' + param2.name] = interaction
-        #             result_interaction[param2.name + '__' + param.name] = interaction
-        #
-        #     # store interaction effects to disk
-        #     with open(os.path.join(save_folder, 'pimp_values_fanova_interaction.json'), 'w') as out_file:
-        #         json.dump(result_interaction, out_file, sort_keys=True, indent=4, separators=(',', ': '))
-        #     # vis = Visualizer(evaluator, configspace)
-        #     # vis.create_most_important_pairwise_marginal_plots(save_folder + '/fanova')
+        if interaction_effect:
+            result_interaction = {}
+            for idx, param in enumerate(params):
+                for idx2, param2 in enumerate(params):
+                    if idx2 == idx:
+                        continue
+                    interaction = evaluator.quantify_importance([idx, idx2])[(idx,idx2)]['total importance']
+                    interaction -= result[param.name]
+                    interaction -= result[param2.name]
+                    if interaction < 0.0:
+                        raise ValueError()
+                    result_interaction[param.name + '__' + param2.name] = interaction
+                    result_interaction[param2.name + '__' + param.name] = interaction
+
+            # store interaction effects to disk
+            with open(os.path.join(save_folder, 'pimp_values_fanova_interaction.json'), 'w') as out_file:
+                json.dump(result_interaction, out_file, sort_keys=True, indent=4, separators=(',', ': '))
+            vis = Visualizer(evaluator, configspace)
+            vis.create_most_important_pairwise_marginal_plots(save_folder + '/fanova')
 
         return save_folder + "/" + filename

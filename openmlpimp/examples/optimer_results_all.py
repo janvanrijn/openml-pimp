@@ -65,7 +65,7 @@ def bar_plots(results, all_tasks, classifiers=None, num_plots=1):
 
     results_per_plot = np.ceil(all_tasks_sorted.size / num_plots)
     for plotidx in range(num_plots):
-        plt.figure()
+        plt.figure(figsize=(14, 4))
         legend_bars = []
         for idx, clf_params in enumerate(classifiers):
             current_strategies = sorted(list(results[clf_params].keys()))
@@ -86,10 +86,9 @@ def bar_plots(results, all_tasks, classifiers=None, num_plots=1):
 
             width = 0.9 / len(classifiers)
 
-            if len(classifiers) % 2 == 0:
-                offset = -1 * ((len(classifiers) - 0.5) / 2) * width
-            else:
-                offset = -1 * ((len(classifiers) - 1) / 2) * width
+            offset = -1 * ((len(classifiers) - 1) / 2) * width
+            #if len(classifiers) % 2 == 0:
+            #    offset += .5 * width
 
             x_pos = list(range(len(barplot_data)))
             for i in range(len(x_pos)):
@@ -101,9 +100,11 @@ def bar_plots(results, all_tasks, classifiers=None, num_plots=1):
             legend_bars.append(res)
 
         # print(list(range(len(barplotlabel_names))))
-        plt.xticks(list(range(len(barplotlabel_names))), barplotlabel_names, fontsize=6, rotation=45, ha='right')
-        plt.legend(legend_bars, classifier_names)
-        plt.savefig(os.path.join(args.result_directory, '__'.join(classifiers) + '_bars%d.pdf' %plotidx), figsize=(32, 48), bbox_inches='tight')
+        # plt.axes().set_aspect(70)
+        plt.xticks(list(range(len(barplotlabel_names))), barplotlabel_names, fontsize=9, rotation=45, ha='right')
+        if plotidx == 0:
+            plt.legend(legend_bars, classifier_names)
+        plt.savefig(os.path.join(args.result_directory, '__'.join(classifiers) + '_bars%d.pdf' %plotidx), bbox_inches='tight')
         plt.close()
 
 
