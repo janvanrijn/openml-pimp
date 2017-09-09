@@ -4,6 +4,7 @@ import json
 import openml
 import openmlpimp
 import os
+import random
 import sklearn
 import fasteners
 import warnings
@@ -69,6 +70,7 @@ if __name__ == '__main__':
         all_task_ids = [args.openml_taskid]
     elif isinstance(args.openml_taskid, list):
         all_task_ids = args.openml_taskid
+        random.shuffle(all_task_ids)
     else:
         raise ValueError()
 
@@ -207,10 +209,7 @@ if __name__ == '__main__':
             optimizer.set_params(**fixed_param_values)
             print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
 
-            res = openml.runs.functions._run_task_get_arffcontent(optimizer, task, task.class_labels)
-            run = openml.runs.OpenMLRun(task_id=task.task_id, dataset_id=None, flow_id=None,
-                                        model=optimizer)
-            run.data_content, run.trace_content, run.trace_attributes, run.fold_evaluations, _ = res
+            run = openmlpimp.utils.do_run(task, pipe, output_dir, False)
             score = run.get_metric_fn(sklearn.metrics.accuracy_score)
 
             print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
