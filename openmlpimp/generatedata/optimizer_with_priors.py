@@ -34,6 +34,7 @@ def parse_args():
     parser.add_argument('--ignore_logscale', action="store_true", help='Will only use hyperparameters that are not on a logscale')
     parser.add_argument('--oob_strategy', type=str, default='ignore', help='Way to handle priors that are out of bound')
     parser.add_argument('--n_executions', type=int, default=None, help='Max bound, for example for cluster jobs. ')
+    parser.add_argument('--random_order', action="store_true", help='Iterates the tasks in a random order')
 
     args = parser.parse_args()
 
@@ -71,9 +72,11 @@ if __name__ == '__main__':
         all_task_ids = [args.openml_taskid]
     elif isinstance(args.openml_taskid, list):
         all_task_ids = args.openml_taskid
-        random.shuffle(all_task_ids)
     else:
         raise ValueError()
+
+    if args.random_order:
+        random.shuffle(all_task_ids)
 
     optimizer_parameters = {}
     optimizer_parameters['bestN'] = args.bestN
@@ -216,9 +219,6 @@ if __name__ == '__main__':
 
             print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
 
-            trace_arff = arff.dumps(run._generate_trace_arff_dict())
-            with open(output_dir + '/trace.arff', 'w') as f:
-                f.write(trace_arff)
             executions_done += 1
             if args.n_executions is not None:
                 if executions_done >= args.n_executions:
