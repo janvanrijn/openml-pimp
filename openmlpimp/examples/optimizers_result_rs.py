@@ -18,8 +18,8 @@ def parse_args():
     parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/optimizers/random_search/', help='the directory to store the results to')
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
 
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='libsvm_svc', help='the classifier to execute')
-    parser.add_argument('--fixed_parameters', type=json.loads, default={'kernel': 'sigmoid'}, help='Will only use configurations that have these parameters fixed')
+    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
+    parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
 
     args = parser.parse_args()
     return args
@@ -71,6 +71,6 @@ if __name__ == '__main__':
     # plot all ranks
     openmlpimp.utils.average_rank(args.virtual_env, args.scripts_dir, output_directory, output_directory + '/curves_avg', ylabel="Average Rank")
 
-    for task_id in study.tasks:
-        openmlpimp.utils.plot_task(args.virtual_env, args.scripts_dir, strategy_directories, output_directory + '/plots', task_id)
-
+    # for task_id in study.tasks:
+    #     openmlpimp.utils.plot_task(args.virtual_env, args.scripts_dir, strategy_directories, output_directory + '/plots', task_id)
+    #

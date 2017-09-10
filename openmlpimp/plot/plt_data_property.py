@@ -10,21 +10,21 @@ x_axis_label = 'Number of Data Points'
 y_axis_feature = 'NumberOfFeatures'
 y_axis_label = 'Number of Features'
 
-type = 'rf'
+type = 'rbf'
 if type == 'rf':
-    results_file = '/home/vanrijn/experiments/archive/20170904/rf/ranks.csv'
+    results_file = '/home/vanrijn/experiments/archive/20170908/rf/ranks.csv'
     colors = OrderedDict([('min. samples leaf', 'm'), ('max. features', 'b'), ('bootstrap', 'c'), ('criterion', 'g'), ('min. samples split', 'y'), ('strategy', 'r')])
 elif type == 'rbf':
-    results_file = '/home/vanrijn/experiments/archive/20170904/rbf/ranks.csv'
+    results_file = '/home/vanrijn/experiments/archive/20170908/rbf/ranks.csv'
     colors = OrderedDict([('gamma', 'm'), ('complexity', 'b'), ('tolerance', 'g'), ('strategy', 'y'), ('shrinking', 'r')])
-elif type == 'poly':
-    results_file = '/home/vanrijn/experiments/archive/20170904/poly/ranks.csv'
-    colors = OrderedDict([('gamma', 'm'), ('coef0', 'mediumpurple'), ('complexity', 'c'), ('degree', 'green'), ('tolerance', 'limegreen'), ('imputation', 'y'), ('shrinking', 'r')])
+# elif type == 'poly':
+#     results_file = '/home/vanrijn/experiments/archive/20170904/poly/ranks.csv'
+#     colors = OrderedDict([('gamma', 'm'), ('coef0', 'mediumpurple'), ('complexity', 'c'), ('degree', 'green'), ('tolerance', 'limegreen'), ('imputation', 'y'), ('shrinking', 'r')])
 elif type == 'sigmoid':
-    results_file = '/home/vanrijn/experiments/archive/20170904/sigmoid/ranks.csv'
+    results_file = '/home/vanrijn/experiments/archive/20170908/sigmoid/ranks.csv'
     colors = OrderedDict([('gamma', 'm'), ('complexity', 'b'),  ('coef0', 'c'), ('tolerance', 'g'), ('strategy', 'y'), ('shrinking', 'r')])
 else:
-    results_file = '/home/vanrijn/experiments/archive/20170904/adaboost/ranks.csv'
+    results_file = '/home/vanrijn/experiments/archive/20170908/adaboost/ranks.csv'
     colors = OrderedDict([('max. depth', 'm'),  ('learning rate', 'b'), ('algorithm', 'g'), ('iterations', 'y'), ('strategy', 'r')])
 
 print(type, results_file)

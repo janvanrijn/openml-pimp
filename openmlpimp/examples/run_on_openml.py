@@ -34,6 +34,7 @@ def read_cmd():
                         help='Will only use configurations that have these parameters fixed')
     parser.add_argument('-Q', '--use_quantiles', action="store_true", default=True,
                         help='Use quantile information instead of full range')
+    parser.add_argument('-I', '--interaction_effect', action="store_true", default=False)
     parser.add_argument('-M', '--modus', type=str, choices=['ablation', 'fanova'],
                         default='fanova', help='Whether to use ablation or fanova')
 
@@ -92,7 +93,7 @@ if __name__ == '__main__':
 
             if args.modus == 'fanova':
                 print('Running FANOVA backend on task %d' %task_id)
-                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path, use_percentiles=args.use_quantiles)
+                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path, use_percentiles=args.use_quantiles, interaction_effect=args.interaction_effect)
             else:
                 print('Running PIMP backend [%s] on task %d' %(args.modus, task_id))
                 results_file = PimpBackend.execute(task_save_folder, runhistory_path, configspace_path, modus=args.modus)

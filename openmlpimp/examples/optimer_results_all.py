@@ -129,7 +129,6 @@ def box_plots(results, all_tasks, clf_params):
     plt.close()
 
 
-
 if __name__ == '__main__':
     args = parse_args()
     results = collections.defaultdict(lambda: collections.defaultdict(dict))

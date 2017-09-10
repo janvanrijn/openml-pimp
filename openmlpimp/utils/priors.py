@@ -117,7 +117,16 @@ class gaussian_kde_wrapper(object):
                     return self.hyperparameter.upper
 
 
-def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
+def _get_best_setups(task_setup_scores, holdout, bestN):
+    task_setups = dict()
+    for task, setup_scores in task_setup_scores.items():
+        if (holdout is None or task not in holdout) and len(setup_scores) < bestN * 4:
+            raise Warning('Not enough setups for task %d. Need %d, expected at least %d, got %d' % (task, bestN, bestN * 4, len(setup_scores)))
+        task_setups[task] = dict(sorted(setup_scores.items(), key=operator.itemgetter(1), reverse=True)[:bestN]).keys()
+    return task_setups
+
+
+def cache_priors(cache_directory, study_id, flow_id, fixed_parameters, bestN):
     study = openml.study.get_study(study_id, 'tasks')
     setups = openmlpimp.utils.obtain_all_setups(flow=flow_id)
 
@@ -127,12 +136,22 @@ def cache_priors(cache_directory, study_id, flow_id, fixed_parameters):
         for run in runs.values():
             if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name', fixed_parameters):
                 task_setup_scores[task_id][run.setup_id] = run.value
-
-                # if len(best_setupids) > 10: break
     try:
         os.makedirs(cache_directory)
     except FileExistsError:
         pass
+
+    task_setups = _get_best_setups(task_setup_scores, holdout=None, bestN=bestN)
+    all_setup_ids = set()
+    for setups in task_setups.values():
+        all_setup_ids |= setups
+
+    setups = openmlpimp.utils.obtain_setups_by_setup_id(setup_ids=list(all_setup_ids), flow=flow_id)
+    if set(setups.keys()) != all_setup_ids:
+        raise ValueError()
+
+    with open(cache_directory + '/setup_list_best%d.pkl' %bestN, 'wb') as f:
+        pickle.dump(setups, f, pickle.HIGHEST_PROTOCOL)
 
     with open(cache_directory + '/best_setup_per_task.pkl', 'wb') as f:
         pickle.dump(task_setup_scores, f, pickle.HIGHEST_PROTOCOL)
@@ -171,25 +190,33 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     X : dict[str, list[mixed]]
         Mapping from hyperparameter name to a list of the best values.
     """
-    filename = cache_directory + '/best_setup_per_task.pkl'
-    if not os.path.isfile(filename):
-        print('%s No cache file for setups (expected: %s), will create one ... ' %(openmlpimp.utils.get_time(), filename))
-        cache_priors(cache_directory, study_id, flow_id, fixed_parameters)
-        print('%s Cache created. Available in: %s' %(openmlpimp.utils.get_time(),filename))
+    priors_cache_file = cache_directory + '/best_setup_per_task.pkl'
+    setups_cache_file = cache_directory + '/setup_list_best%d.pkl' %bestN
 
-    with open(filename, 'rb') as f:
+    if not os.path.isfile(priors_cache_file) or not os.path.isfile(setups_cache_file):
+        print('%s No cache file for setups (expected: %s and %s), will create one ... ' %(openmlpimp.utils.get_time(), priors_cache_file, setups_cache_file))
+        cache_priors(cache_directory, study_id, flow_id, fixed_parameters, bestN)
+        print('%s Cache created. Available in: %s' %(openmlpimp.utils.get_time(), priors_cache_file))
+
+    with open(priors_cache_file, 'rb') as f:
         task_setup_scores = pickle.load(f)
-    task_setups = dict()
-    all_setups = set()
-    for task, setup_scores in task_setup_scores.items():
-        if (holdout is None or task not in holdout) and len(setup_scores) < bestN * 4:
-            warnings.warn('Not enough setups for task %d. Need %d, expected at least %d, got %d' %(task, bestN, bestN*4, len(setup_scores)))
-            continue
-        task_setups[task] = dict(sorted(setup_scores.items(), key=operator.itemgetter(1), reverse=True)[:bestN]).keys()
-        all_setups |= set(task_setups[task])
+    with open(setups_cache_file, 'rb') as f:
+        setups = pickle.load(f)
+
+    task_setups = _get_best_setups(task_setup_scores, holdout, bestN)
+    all_setup_ids = set()
+    for setup_id in task_setups.values():
+        all_setup_ids |= setup_id
+
+    if set(setups.keys()) != all_setup_ids:
+        mismatch1 = all_setup_ids - set(setups.keys())
+        mismatch2 = set(setups.keys()) - all_setup_ids
+        print(mismatch1) # TODO: JvR fix me
+        print(mismatch2)
+        if len(mismatch1) > 0:
+            raise ValueError('Missing setups:', mismatch1)
 
     X = {parameter: list() for parameter in hyperparameters.keys()}
-    setups = openmlpimp.utils.obtain_setups_by_setup_id(setup_ids=list(all_setups), flow=flow_id)
 
     for task_id, best_setups in task_setups.items():
         if holdout is not None and task_id in holdout:
@@ -201,7 +228,10 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
             for param_name, parameter in hyperparameters.items():
                 param = setups[setup_id].parameters[paramname_paramidx[param_name]]
                 if isinstance(parameter, NumericalHyperparameter):
-                    X[param_name].append(float(param.value))
+                    try:
+                        X[param_name].append(float(param.value))
+                    except ValueError:
+                        X[param_name].append(json.loads(param.value))
                 elif isinstance(parameter, CategoricalHyperparameter):
                     X[param_name].append(json.loads(param.value))
                 else:
