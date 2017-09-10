@@ -41,13 +41,14 @@ if __name__ == '__main__':
         indices = task.get_dataset().get_features_by_type('nominal', [task.target_name])
         base, required_params = openmlpimp.utils.modeltype_to_classifier(args.classifier, {'random_state': 1})
         pipe = openmlpimp.utils.classifier_to_pipeline(base, indices)
+        print(pipe)
 
         if args.fixed_parameters is not None:
             fixed_param_prefix = {"classifier__" + param: value for param, value in args.fixed_parameters.items()}
             required_params.update(fixed_param_prefix)
         pipe.set_params(**required_params)
         output_dir = args.output_dir + '/' + args.classifier + output_save_folder_suffix + '/' + str(task_id)
-
+        print(required_params)
         try:
             os.makedirs(output_dir)
         except FileExistsError:
@@ -74,6 +75,7 @@ if __name__ == '__main__':
                     relevant = e.message[len(expected_text):-1]
                     run_ids = relevant.split(', ')
                     run = openml.runs.get_run(int(run_ids[0]))
+                    # TODO: save it!
                 else:
                     raise e
 

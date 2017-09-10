@@ -33,6 +33,7 @@ def parse_args():
     parser.add_argument('--inverse_holdout', action="store_true", help='Will only operate on the task at hand (overestimate performance)')
     parser.add_argument('--ignore_logscale', action="store_true", help='Will only use hyperparameters that are not on a logscale')
     parser.add_argument('--oob_strategy', type=str, default='ignore', help='Way to handle priors that are out of bound')
+    parser.add_argument('--n_executions', type=int, default=None, help='Max bound, for example for cluster jobs. ')
 
     args = parser.parse_args()
 
@@ -93,6 +94,7 @@ if __name__ == '__main__':
 
     print("classifier %s; flow id: %d; fixed_parameters: %s" %(args.classifier, args.flow_id, args.fixed_parameters))
     print("%s Tasks: %s" %(openmlpimp.utils.get_time(), str(all_task_ids)))
+    executions_done = 0
     for task_id in all_task_ids:
         task = openml.tasks.get_task(task_id)
         data_name = task.get_dataset().name
@@ -217,6 +219,11 @@ if __name__ == '__main__':
             trace_arff = arff.dumps(run._generate_trace_arff_dict())
             with open(output_dir + '/trace.arff', 'w') as f:
                 f.write(trace_arff)
+            executions_done += 1
+            if args.n_executions is not None:
+                if executions_done >= args.n_executions:
+                    break
         finally:
             if obtained_lock:
                 lock_file.release()
+    print("%s Executions done: %d" % (openmlpimp.utils.get_time(), executions_done))
