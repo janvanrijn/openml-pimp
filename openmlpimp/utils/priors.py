@@ -117,11 +117,11 @@ class gaussian_kde_wrapper(object):
                     return self.hyperparameter.upper
 
 
-def _get_best_setups(task_setup_scores, holdout, bestN):
+def _get_best_setups(task_setup_scores, holdout, bestN, factor=4):
     task_setups = dict()
     for task, setup_scores in task_setup_scores.items():
-        if (holdout is None or task not in holdout) and len(setup_scores) < bestN * 4:
-            raise Warning('Not enough setups for task %d. Need %d, expected at least %d, got %d' % (task, bestN, bestN * 4, len(setup_scores)))
+        if (holdout is None or task not in holdout) and len(setup_scores) < bestN * factor:
+            raise Warning('Not enough setups for task %d. Need %d, expected at least %d, got %d' % (task, bestN, bestN * factor, len(setup_scores)))
         task_setups[task] = dict(sorted(setup_scores.items(), key=operator.itemgetter(1), reverse=True)[:bestN]).keys()
     return task_setups
 
@@ -141,14 +141,15 @@ def cache_priors(cache_directory, study_id, flow_id, fixed_parameters, bestN):
     except FileExistsError:
         pass
 
-    task_setups = _get_best_setups(task_setup_scores, holdout=None, bestN=bestN)
+    task_setups = _get_best_setups(task_setup_scores, holdout=None, bestN=bestN*5, factor=1)
     all_setup_ids = set()
     for setups in task_setups.values():
         all_setup_ids |= setups
 
     setups = openmlpimp.utils.obtain_setups_by_setup_id(setup_ids=list(all_setup_ids), flow=flow_id)
-    if set(setups.keys()) != all_setup_ids:
-        raise ValueError()
+    missing = all_setup_ids - set(setups.keys())
+    if len(missing) > 0:
+        raise ValueError('Missing:', missing)
 
     with open(cache_directory + '/setup_list_best%d.pkl' %bestN, 'wb') as f:
         pickle.dump(setups, f, pickle.HIGHEST_PROTOCOL)
@@ -214,7 +215,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
         print(mismatch1) # TODO: JvR fix me
         print(mismatch2)
         if len(mismatch1) > 0:
-            raise ValueError('Missing setups:', mismatch1)
+            raise ValueError('FIX ME. old serialization bug still active.')
 
     X = {parameter: list() for parameter in hyperparameters.keys()}
 
