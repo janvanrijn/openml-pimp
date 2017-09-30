@@ -8,6 +8,8 @@ import json
 from openml.exceptions import OpenMLServerException
 
 from ConfigSpace.io.pcs_new import write
+from ConfigSpace.hyperparameters import CategoricalHyperparameter, UniformFloatHyperparameter, \
+    UniformIntegerHyperparameter
 
 
 def task_counts(flow_id):
@@ -108,6 +110,35 @@ def setup_complies_to_fixed_parameters(setup, keyfield, fixed_parameters):
         value_request = fixed_parameters[parameter]
         if value_online != value_request:
             return False
+    return True
+
+
+def setup_complies_to_config_space(setup, keyfield, hyperparameters):
+    setup_parameters = {getattr(setup.parameters[param_id], keyfield): setup.parameters[param_id].value for param_id in
+                        setup.parameters}
+    for name, parameter in hyperparameters.items():
+        if name not in setup_parameters.keys():
+            raise ValueError('Required parameter %s not in setup parameter for setup %d' % (parameter, setup.setup_id))
+        value_online = openml.flows.flow_to_sklearn(setup_parameters[parameter.name])
+        if isinstance(parameter, CategoricalHyperparameter):
+            # if value_online not in parameter.choices:
+            #     print('Illegal setup:',parameter.name, setup_parameters)
+            #     return False
+            continue
+        elif isinstance(parameter, UniformIntegerHyperparameter):
+            if not isinstance(value_online, int):
+                print('Illegal setup, non-integer value:',parameter.name, value_online)
+                return False
+            elif value_online > parameter.upper or value_online < parameter.lower:
+                print('Illegal setup, value out of range [%d-%d]:' %(parameter.lower, parameter.upper), parameter.name, value_online)
+                return False
+        elif isinstance(parameter, UniformFloatHyperparameter):
+            if not isinstance(value_online, float):
+                print('Illegal setup, non-float value:',parameter.name, value_online)
+                return False
+            elif value_online > parameter.upper or value_online < parameter.lower:
+                print('Illegal setup, value out of range [%f-%f]:' %(parameter.lower, parameter.upper), parameter.name, value_online)
+                return False
     return True
 
 

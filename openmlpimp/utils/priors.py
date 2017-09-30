@@ -126,22 +126,34 @@ def _get_best_setups(task_setup_scores, holdout, bestN, factor=4):
     return task_setups
 
 
-def cache_priors(cache_directory, study_id, flow_id, fixed_parameters, bestN):
-    study = openml.study.get_study(study_id, 'tasks')
-    setups = openmlpimp.utils.obtain_all_setups(flow=flow_id)
-
-    task_setup_scores = collections.defaultdict(dict)
-    for task_id in study.tasks:
-        runs = openml.evaluations.list_evaluations("predictive_accuracy", task=[task_id], flow=[flow_id])
-        for run in runs.values():
-            if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name', fixed_parameters):
-                task_setup_scores[task_id][run.setup_id] = run.value
+def cache_setups(cache_directory, flow_id, bestN):
     try:
         os.makedirs(cache_directory)
     except FileExistsError:
         pass
 
-    task_setups = _get_best_setups(task_setup_scores, holdout=None, bestN=bestN*5, factor=1)
+    setups = openmlpimp.utils.obtain_all_setups(flow=flow_id)
+    with open(cache_directory + '/setup_list_best%d.pkl' %bestN, 'wb') as f:
+        pickle.dump(setups, f, pickle.HIGHEST_PROTOCOL)
+
+
+def cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_parameters, hyperparameters, bestN):
+    # print(setups.keys())
+    task_setup_scores = collections.defaultdict(dict)
+    for task_id in study.tasks:
+        runs = openml.evaluations.list_evaluations("predictive_accuracy", task=[task_id], flow=[flow_id])
+        for run in runs.values():
+            if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name',
+                                                                   fixed_parameters):
+                if openmlpimp.utils.setup_complies_to_config_space(setups[run.setup_id], 'parameter_name',
+                                                                   hyperparameters):
+                    task_setup_scores[task_id][run.setup_id] = run.value
+    try:
+        os.makedirs(cache_directory)
+    except FileExistsError:
+        pass
+
+    task_setups = _get_best_setups(task_setup_scores, holdout=None, bestN=bestN * 5, factor=1)
     all_setup_ids = set()
     for setups in task_setups.values():
         all_setup_ids |= setups
@@ -150,9 +162,6 @@ def cache_priors(cache_directory, study_id, flow_id, fixed_parameters, bestN):
     missing = all_setup_ids - set(setups.keys())
     if len(missing) > 0:
         raise ValueError('Missing:', missing)
-
-    with open(cache_directory + '/setup_list_best%d.pkl' %bestN, 'wb') as f:
-        pickle.dump(setups, f, pickle.HIGHEST_PROTOCOL)
 
     with open(cache_directory + '/best_setup_per_task.pkl', 'wb') as f:
         pickle.dump(task_setup_scores, f, pickle.HIGHEST_PROTOCOL)
@@ -194,15 +203,23 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     priors_cache_file = cache_directory + '/best_setup_per_task.pkl'
     setups_cache_file = cache_directory + '/setup_list_best%d.pkl' %bestN
 
-    if not os.path.isfile(priors_cache_file) or not os.path.isfile(setups_cache_file):
-        print('%s No cache file for setups (expected: %s and %s), will create one ... ' %(openmlpimp.utils.get_time(), priors_cache_file, setups_cache_file))
-        cache_priors(cache_directory, study_id, flow_id, fixed_parameters, bestN)
-        print('%s Cache created. Available in: %s' %(openmlpimp.utils.get_time(), priors_cache_file))
+    if not os.path.isfile(setups_cache_file):
+        print('%s No cache file for setups (expected: %s), will create one ... ' %(openmlpimp.utils.get_time(), setups_cache_file))
+        cache_setups(cache_directory, flow_id, bestN)
+        print('%s Cache created. Available in: %s' %(openmlpimp.utils.get_time(), setups_cache_file))
+
+    with open(setups_cache_file, 'rb') as f:
+        setups = pickle.load(f)
+
+    if not os.path.isfile(priors_cache_file):
+        print('%s No cache file for task setup scores (expected: %s), will create one ... ' % (openmlpimp.utils.get_time(), priors_cache_file))
+        study = openml.study.get_study(study_id, 'tasks')
+        cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_parameters, hyperparameters, bestN)
+        print('%s Cache created. Available in: %s' % (openmlpimp.utils.get_time(), priors_cache_file))
 
     with open(priors_cache_file, 'rb') as f:
         task_setup_scores = pickle.load(f)
-    with open(setups_cache_file, 'rb') as f:
-        setups = pickle.load(f)
+
 
     task_setups = _get_best_setups(task_setup_scores, holdout, bestN)
     all_setup_ids = set()
@@ -212,9 +229,9 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     if set(setups.keys()) != all_setup_ids:
         mismatch1 = all_setup_ids - set(setups.keys())
         mismatch2 = set(setups.keys()) - all_setup_ids
-        print(mismatch1) # TODO: JvR fix me
-        print(mismatch2)
         if len(mismatch1) > 0:
+            print(mismatch1) # TODO: JvR fix me
+            print(mismatch2)
             raise ValueError('FIX ME. old serialization bug still active.')
 
     X = {parameter: list() for parameter in hyperparameters.keys()}

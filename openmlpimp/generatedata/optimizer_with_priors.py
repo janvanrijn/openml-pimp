@@ -214,7 +214,7 @@ if __name__ == '__main__':
             optimizer.set_params(**fixed_param_values)
             print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
 
-            run = openmlpimp.utils.do_run(task, pipe, output_dir, False)
+            run = openmlpimp.utils.do_run(task, optimizer, output_dir, False)
             score = run.get_metric_fn(sklearn.metrics.accuracy_score)
 
             print('%s [SCORE] Data: %s; Accuracy: %0.2f' % (openmlpimp.utils.get_time(), task.get_dataset().name, score.mean()))
