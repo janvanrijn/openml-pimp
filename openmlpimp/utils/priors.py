@@ -141,7 +141,7 @@ def cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_param
     # print(setups.keys())
     task_setup_scores = collections.defaultdict(dict)
     for task_id in study.tasks:
-        runs = openml.evaluations.list_evaluations("predictive_accuracy", task=[task_id], flow=[flow_id])
+        runs = openmlpimp.utils.obtain_all_evaluations(function="predictive_accuracy", task=[task_id], flow=[flow_id])
         for run in runs.values():
             if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name',
                                                                    fixed_parameters):
