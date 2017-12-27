@@ -39,7 +39,9 @@ def classifier_to_pipeline(classifier, indices):
                                                categorical_features=indices,
                                                strategy_nominal='most_frequent')),
              ('hotencoding', sklearn.preprocessing.OneHotEncoder(handle_unknown='ignore',
-                                                                 categorical_features=indices)),
+                                                                 categorical_features=indices,
+                                                                 sparse=False),
+             ('scaling', sklearn.preprocessing.StandardScaler()),
              ('variencethreshold', sklearn.feature_selection.VarianceThreshold()),
              ('classifier', classifier)]
     pipeline = sklearn.pipeline.Pipeline(steps=steps)
