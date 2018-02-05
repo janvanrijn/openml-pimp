@@ -1,5 +1,4 @@
 import argparse
-import arff
 import json
 import openml
 import openmlpimp
@@ -10,6 +9,7 @@ import fasteners
 import warnings
 
 from sklearn.model_selection._search import RandomizedSearchCV
+from openmlpimp.utils import SuccessiveHalving
 from ConfigSpace.hyperparameters import NumericalHyperparameter
 
 
@@ -27,7 +27,6 @@ def parse_args():
     parser.add_argument('--openml_taskid', type=int, nargs="+", default=None, help='the openml task id to execute')
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='adaboost', help='the classifier to execute')
     parser.add_argument('--search_type', type=str, choices=['kde', 'uniform', 'empirical', 'multivariate'], default='kde', help='the way to apply the search')
-    parser.add_argument('--n_iters', type=int, default=50, help='number of runs to be executed in case of random search')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--inverse_holdout', action="store_true", help='Will only operate on the task at hand (overestimate performance)')
@@ -35,6 +34,8 @@ def parse_args():
     parser.add_argument('--oob_strategy', type=str, default='ignore', help='Way to handle priors that are out of bound')
     parser.add_argument('--n_executions', type=int, default=None, help='Max bound, for example for cluster jobs. ')
     parser.add_argument('--random_order', action="store_true", help='Iterates the tasks in a random order')
+    parser.add_argument('--eta', type=int, default=2, help='successive halving parameter')
+    parser.add_argument('--successive_halving_steps', type=int, default=5, help='successive halving parameter')
 
     args = parser.parse_args()
 
@@ -206,11 +207,12 @@ if __name__ == '__main__':
                     fixed_param_values[param_name] = value
 
             if optimizer is None:
-                optimizer = RandomizedSearchCV(estimator=pipe,
-                                               param_distributions=param_distributions,
-                                               n_iter=args.n_iters,
-                                               random_state=1,
-                                               n_jobs=-1)
+                optimizer = SuccessiveHalving(estimator=pipe,
+                                              param_distributions=param_distributions,
+                                              random_state=1,
+                                              n_jobs=-1,
+                                              eta=args.eta,
+                                              successive_halving_steps=args.successive_halving_steps)
             optimizer.set_params(**fixed_param_values)
             print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
 

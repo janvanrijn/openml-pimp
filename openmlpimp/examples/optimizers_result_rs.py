@@ -1,14 +1,14 @@
 import argparse
 import arff
-import copy
 import collections
 import json
+import io
 import os
 import openml
 import openmlpimp
 
 
-# Mounting CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 nemo/
+# Mounting CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 ~/nemo/
 def parse_args():
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
@@ -38,7 +38,9 @@ if __name__ == '__main__':
     strategy_directories = {}
 
     missing = 0
+    flow_id = None
     task_missing = collections.defaultdict(int)
+
     for task in study.tasks:
         for exclude_param in all_exclude_params:
             name = openmlpimp.utils.name_mapping(args.classifier, exclude_param, replace_underscores=False)
@@ -48,9 +50,17 @@ if __name__ == '__main__':
             trace_count = 0
             traces = []
             for value in all_exclude_values:
+                xml_file = os.path.join(result_directory, exclude_param, value, str(task), 'run.xml')
                 arff_file = os.path.join(result_directory, exclude_param, value, str(task), 'trace.arff')
-                if os.path.isfile(arff_file):
+                if os.path.isfile(arff_file) and os.path.isfile(xml_file):
                     trace_count += 1
+                    with open(xml_file, 'r') as fp:
+                        with io.open(xml_file, encoding='utf8') as fh:
+                            run = openml.runs.functions._create_run_from_xml(xml=fh.read())
+                        if flow_id is None:
+                            flow_id = run.flow_id
+                        if flow_id != run.flow_id:
+                            raise ValueError('Flow ids do not match: %d vs %d' %(flow_id, run.flow_id))
                     with open(arff_file, 'r') as fp:
                         trace_arff = arff.load(fp)
                     traces.append(openml.runs.functions._create_trace_from_arff(trace_arff))
@@ -64,6 +74,7 @@ if __name__ == '__main__':
                 openmlpimp.utils.obtain_performance_curves(traces, output_indivudual, output_averaged, task)
 
     print(args.classifier, args.fixed_parameters)
+    print('Flow id: %d' %flow_id)
     print(task_missing)
     print('Incomplete tasks:', len(task_missing))
     print('Total missing', missing)
