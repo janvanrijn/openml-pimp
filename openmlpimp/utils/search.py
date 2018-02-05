@@ -54,7 +54,7 @@ class BaseSearchBandits(BaseSearchCV):
             sample_size = int(len(X) / eta ** sample_idx)
 
             if groups is not None:
-                X_resampled, y_resampled, groups_resampled = resample(X, y, groups, n_samples=sample_size, replace=False)
+                X_resampled, y_resampled, groups_resampled = resample(X, y, groups, n_samples=sample_size, replace=False, random_state=self.random_state)
             else:
                 X_resampled, y_resampled = resample(X, y, n_samples=sample_size, replace=False)
                 groups_resampled = None
@@ -135,8 +135,14 @@ class BaseSearchBandits(BaseSearchCV):
             _store('score_time', score_time)
             _store('sample_sizes', sample_sizes)
 
-            best_index = np.flatnonzero(results["rank_test_score"] == 1)[0]
+            best_index = np.flatnonzero(results["rank_test_score"][-n_candidates:] == 1)[0]
             best_parameters = candidate_params[best_index]
+
+            # prepare parameter iterable for next round
+            parameter_iterable = []
+            order = np.argsort(results['mean_test_score'][-n_candidates:] * -1)
+            for i in range(int(n_candidates / eta)):
+                parameter_iterable.append(candidate_params[order[i]])
 
             # Use one MaskedArray and mask all the places where the param is not
             # applicable for that candidate. Use defaultdict as each candidate may
@@ -164,12 +170,6 @@ class BaseSearchBandits(BaseSearchCV):
                 results['params'] = candidate_params
             else:
                 results['params'] = results['params'] + candidate_params
-
-            # prepare parameter iterable for next round
-            parameter_iterable = []
-            order = np.argsort(results['mean_test_score'][-n_candidates:] * -1)
-            for i in range(int(n_candidates / eta)):
-                parameter_iterable.append(candidate_params[order[i]])
 
         self.cv_results_ = results
         self.best_index_ = best_index
