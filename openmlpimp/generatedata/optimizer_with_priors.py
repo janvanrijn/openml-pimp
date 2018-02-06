@@ -9,7 +9,7 @@ import fasteners
 import warnings
 
 from sklearn.model_selection._search import RandomizedSearchCV
-from openmlpimp.utils import SuccessiveHalving
+from openmlpimp.utils import SuccessiveHalving, HyperBand
 from ConfigSpace.hyperparameters import NumericalHyperparameter
 
 
@@ -36,6 +36,7 @@ def parse_args():
     parser.add_argument('--random_order', action="store_true", help='Iterates the tasks in a random order')
     parser.add_argument('--eta', type=int, default=2, help='successive halving parameter')
     parser.add_argument('--successive_halving_steps', type=int, default=5, help='successive halving parameter')
+    parser.add_argument('--num_brackets', type=int, default=5, help='successive halving parameter')
 
     args = parser.parse_args()
 
@@ -207,12 +208,12 @@ if __name__ == '__main__':
                     fixed_param_values[param_name] = value
 
             if optimizer is None:
-                optimizer = SuccessiveHalving(estimator=pipe,
-                                              param_distributions=param_distributions,
-                                              random_state=1,
-                                              n_jobs=-1,
-                                              eta=args.eta,
-                                              successive_halving_steps=args.successive_halving_steps)
+                optimizer = HyperBand(estimator=pipe,
+                                      param_distributions=param_distributions,
+                                      random_state=1,
+                                      n_jobs=-1,
+                                      eta=args.eta,
+                                      num_brackets=args.num_brackets)
             optimizer.set_params(**fixed_param_values)
             print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
             print("%s Steps: " %openmlpimp.utils.get_time(), optimizer.estimator.steps)

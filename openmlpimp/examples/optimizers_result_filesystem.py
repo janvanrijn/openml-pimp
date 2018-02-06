@@ -8,7 +8,7 @@ import openml
 import openmlpimp
 
 
-# Mounting CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 nemo/
+# Mounting CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 ~/nemo/
 def parse_args():
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')

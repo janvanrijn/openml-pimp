@@ -124,22 +124,7 @@ class BaseSearchBandits(BaseSearchCV):
 
         return results, new_parameter_iterable, best_index, best_parameters
 
-    def _fit(self, X, y, groups, parameter_iterable, eta, successive_halving_steps):
-        """Actual fitting,  performing the search over parameters."""
-
-        estimator = self.estimator
-        cv = check_cv(self.cv, y, classifier=is_classifier(estimator))
-        self.scorer_ = check_scoring(self.estimator, scoring=self.scoring)
-
-        X, y, groups = indexable(X, y, groups)
-        n_splits = cv.get_n_splits(X, y, groups)
-        if self.verbose > 0 and isinstance(parameter_iterable, Sized):
-            n_candidates = len(parameter_iterable)
-            print("Fitting {0} folds for each of {1} candidates, totalling"
-                  " {2} fits".format(n_splits, n_candidates,
-                                     n_candidates * n_splits))
-
-        base_estimator = clone(self.estimator)
+    def _successive_halving(self, X, y, groups, parameter_iterable, cv, eta, successive_halving_steps):
         results = dict()
         best_index = None
 
@@ -169,22 +154,7 @@ class BaseSearchBandits(BaseSearchCV):
                 else:
                     results[key] = np.append(results[key], values)
 
-
-        self.cv_results_ = results
-        self.best_index_ = best_index
-        self.n_splits_ = n_splits
-
-        if self.refit:
-            # fit the best estimator using the entire dataset
-            # clone first to work around broken estimators
-            best_estimator = clone(base_estimator).set_params(
-                **best_parameters)
-            if y is not None:
-                best_estimator.fit(X, y, **self.fit_params)
-            else:
-                best_estimator.fit(X, **self.fit_params)
-            self.best_estimator_ = best_estimator
-        return self
+        return results, best_index, best_parameters
 
 
 class KdeSampler(object):
@@ -269,7 +239,6 @@ class MultivariateKdeSearch(BaseSearchCV):
         return self._fit(X, y, groups, self._get_param_iterator())
 
 
-
 class SuccessiveHalving(BaseSearchBandits):
 
     def __init__(self, estimator, param_distributions, successive_halving_steps,
@@ -286,25 +255,123 @@ class SuccessiveHalving(BaseSearchBandits):
              pre_dispatch=pre_dispatch, error_score=error_score,
              return_train_score=return_train_score)
 
-    def fit(self, X, y=None, groups=None):
-        """Run fit on the estimator with randomly drawn parameters.
-
-        Parameters
-        ----------
-        X : array-like, shape = [n_samples, n_features]
-            Training vector, where n_samples in the number of samples and
-            n_features is the number of features.
-
-        y : array-like, shape = [n_samples] or [n_samples, n_output], optional
-            Target relative to X for classification or regression;
-            None for unsupervised learning.
-
-        groups : array-like, with shape (n_samples,), optional
-            Group labels for the samples used while splitting the dataset into
-            train/test set.
-        """
+    def fit(self, X, y, groups=None):
+        """Actual fitting,  performing the search over parameters."""
         num_arms = self.eta ** (self.successive_halving_steps - 1)
-        sampled_params = ParameterSampler(self.param_distributions,
-                                          num_arms,
-                                          random_state=self.random_state)
-        return self._fit(X, y, groups, sampled_params, self.eta, self.successive_halving_steps)
+        parameter_iterable = ParameterSampler(self.param_distributions,
+                                              num_arms,
+                                              random_state=self.random_state)
+
+        estimator = self.estimator
+        cv = check_cv(self.cv, y, classifier=is_classifier(estimator))
+        self.scorer_ = check_scoring(self.estimator, scoring=self.scoring)
+
+        X, y, groups = indexable(X, y, groups)
+        n_splits = cv.get_n_splits(X, y, groups)
+        if self.verbose > 0 and isinstance(parameter_iterable, Sized):
+            n_candidates = len(parameter_iterable)
+            print("Fitting {0} folds for each of {1} candidates, totalling"
+                  " {2} fits".format(n_splits, n_candidates,
+                                     n_candidates * n_splits))
+
+        base_estimator = clone(self.estimator)
+
+        results, best_index, best_parameters = self._successive_halving(X, y, groups, parameter_iterable, cv, self.eta, self.successive_halving_steps)
+
+        self.cv_results_ = results
+        self.best_index_ = best_index
+        self.n_splits_ = n_splits
+
+        if self.refit:
+            # fit the best estimator using the entire dataset
+            # clone first to work around broken estimators
+            best_estimator = clone(base_estimator).set_params(
+                **best_parameters)
+            if y is not None:
+                best_estimator.fit(X, y, **self.fit_params)
+            else:
+                best_estimator.fit(X, **self.fit_params)
+            self.best_estimator_ = best_estimator
+        return self
+
+
+
+class HyperBand(BaseSearchBandits):
+
+    def __init__(self, estimator, param_distributions, num_brackets,
+                 eta, scoring=None, fit_params=None, n_jobs=1, iid=True, refit=True, cv=None,
+                 verbose=0, pre_dispatch='2*n_jobs', random_state=None,
+                 error_score='raise', return_train_score=True):
+        self.param_distributions = param_distributions
+        self.random_state = random_state
+        self.num_brackets = num_brackets
+        self.eta = eta
+        super(HyperBand, self).__init__(
+             estimator=estimator, scoring=scoring, fit_params=fit_params,
+             n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
+             pre_dispatch=pre_dispatch, error_score=error_score,
+             return_train_score=return_train_score)
+
+    def fit(self, X, y, groups=None):
+        """Actual fitting,  performing the search over parameters."""
+        results = dict()
+
+        best_index = None
+        best_parameters = None
+
+        for bracket_idx in range(self.num_brackets - 1, -1, -1):
+            successive_halving_steps = bracket_idx + 1
+            # TODO: num_arms should be different
+            num_arms = self.eta ** (successive_halving_steps - 1)
+            parameter_iterable = ParameterSampler(self.param_distributions,
+                                                  num_arms,
+                                                  random_state=self.random_state)
+
+            estimator = self.estimator
+            cv = check_cv(self.cv, y, classifier=is_classifier(estimator))
+            self.scorer_ = check_scoring(self.estimator, scoring=self.scoring)
+
+            X, y, groups = indexable(X, y, groups)
+            n_splits = cv.get_n_splits(X, y, groups)
+            if self.verbose > 0 and isinstance(parameter_iterable, Sized):
+                n_candidates = len(parameter_iterable)
+                print("Fitting {0} folds for each of {1} candidates, totalling"
+                      " {2} fits".format(n_splits, n_candidates,
+                                         n_candidates * n_splits))
+
+            base_estimator = clone(self.estimator)
+
+            arms_pulled = 0
+            if 'mean_test_score' in results:
+                arms_pulled = len(results['mean_test_score'])
+
+            res = self._successive_halving(X, y, groups, parameter_iterable, cv, self.eta, successive_halving_steps)
+            bracket_results, bracket_best_index, bracket_best_parameters = res
+            for key, values in bracket_results.items():
+                if key not in results:
+                    results[key] = values
+                else:
+                    results[key] = np.append(results[key], values)
+
+            if best_index is None:
+                best_index = bracket_best_index + arms_pulled
+                best_parameters = bracket_best_parameters
+            elif bracket_results['mean_test_score'][bracket_best_index] > results['mean_test_score'][best_index]:
+                best_index = bracket_best_index + arms_pulled
+                best_parameters = bracket_best_parameters
+
+        self.cv_results_ = results
+        self.best_index_ = best_index
+        self.n_splits_ = n_splits
+
+        if self.refit:
+            # fit the best estimator using the entire dataset
+            # clone first to work around broken estimators
+            best_estimator = clone(base_estimator).set_params(
+                **best_parameters)
+            if y is not None:
+                best_estimator.fit(X, y, **self.fit_params)
+            else:
+                best_estimator.fit(X, **self.fit_params)
+            self.best_estimator_ = best_estimator
+        return self
