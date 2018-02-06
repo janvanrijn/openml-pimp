@@ -127,6 +127,10 @@ class BaseSearchBandits(BaseSearchCV):
             test_sample_counts = np.array(test_sample_counts[:n_splits],
                                           dtype=np.int)
 
+            pulled_arms = 0
+            if 'mean_test_score' in results:
+                pulled_arms = len(results['mean_test_score']) # measure amount of pulled arms before ..
+
             _store('test_score', test_scores, splits=True, rank=True,
                    weights=test_sample_counts if self.iid else None)
             if self.return_train_score:
@@ -135,8 +139,10 @@ class BaseSearchBandits(BaseSearchCV):
             _store('score_time', score_time)
             _store('sample_sizes', sample_sizes)
 
-            best_index = np.flatnonzero(results["rank_test_score"][-n_candidates:] == 1)[0]
-            best_parameters = candidate_params[best_index]
+            best_index_in_batch = np.flatnonzero(results["rank_test_score"][-n_candidates:] == 1)[0]
+            best_parameters = candidate_params[best_index_in_batch]
+            best_index = pulled_arms + best_index_in_batch
+
 
             # prepare parameter iterable for next round
             parameter_iterable = []
