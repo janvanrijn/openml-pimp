@@ -215,6 +215,7 @@ if __name__ == '__main__':
                                               successive_halving_steps=args.successive_halving_steps)
             optimizer.set_params(**fixed_param_values)
             print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
+            print("%s Steps: " %openmlpimp.utils.get_time(), optimizer.estimator.steps)
 
             run = openmlpimp.utils.do_run(task, optimizer, output_dir, False)
             score = run.get_metric_fn(sklearn.metrics.accuracy_score)

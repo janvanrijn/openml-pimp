@@ -168,6 +168,7 @@ def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, 
     except FileExistsError:
         pass
 
+    # each trace represents a different task (unique idx, although this is not the task_id)
     for idx, trace in enumerate(traces):
         for itt in trace.trace_iterations:
             cur = trace.trace_iterations[itt]

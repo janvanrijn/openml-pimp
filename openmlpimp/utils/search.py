@@ -6,8 +6,6 @@ from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
 
 from scipy.stats import gaussian_kde
 
-
-
 from sklearn.model_selection._search import BaseSearchCV
 from sklearn.model_selection._search import ParameterSampler
 
