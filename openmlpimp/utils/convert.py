@@ -43,6 +43,11 @@ def classifier_to_pipeline(classifier, indices):
              ('scaling', sklearn.preprocessing.StandardScaler(with_mean=False)),
              ('variencethreshold', sklearn.feature_selection.VarianceThreshold()),
              ('classifier', classifier)]
+
+    # TODO: Also scaling on Tree based models?
+    if isinstance(classifier, sklearn.ensemble.RandomForestClassifier) or isinstance(classifier, sklearn.ensemble.AdaBoostClassifier):
+        del steps[2]
+
     pipeline = sklearn.pipeline.Pipeline(steps=steps)
     return pipeline
 
