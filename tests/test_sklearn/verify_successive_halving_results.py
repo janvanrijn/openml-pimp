@@ -1,4 +1,6 @@
 
+import unittest
+
 import arff
 import argparse
 import math
@@ -6,106 +8,118 @@ import numpy as np
 import openmlpimp
 import os
 
-def parse_args():
-    all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
-    parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
-    parser.add_argument('--virtual_env', type=str, default=os.path.expanduser('~') + '/projects/pythonvirtual/plot2/bin/python', help='python virtual env for plotting')
-    parser.add_argument('--scripts_dir', type=str, default=os.path.expanduser('~') + '/projects/plotting_scripts/scripts', help='directory to Katha\'s plotting scripts')
-    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/priorbased_experiments/', help='the directory to load the experiments from')
 
-    return parser.parse_args()
+class VerifySuccessiveHalvingRunTest(unittest.TestCase):
 
+    @staticmethod
+    def obtain_config(data_point, param_indices):
+        # data_points = list<mixed>
+        # param_indices = dict<int, str>
+        config = []
+        for key in sorted(param_indices):
+            config.append(data_point[key])
+        return tuple(config)
 
-def obtain_config(data_point, param_indices):
-    # data_points = list<mixed>
-    # param_indices = dict<int, str>
-    config = []
-    for key in sorted(param_indices):
-        config.append(data_point[key])
-    return tuple(config)
+    @staticmethod
+    def check_sh_iteration(data_points, param_indices, eval_idx):
+        # data_points = list<list<mixed>>
+        # param_indices = dict<int, str>
 
+        num_steps = int(math.log(len(data_points), 2))
 
-def check_iteration(data_points, param_indices, eval_idx):
-    # data_points = list<list<mixed>>
-    # param_indices = dict<int, str>
+        # enumerates over trace backwards, checking whether
+        # - configs in a step also appeared in the previous step
+        # - these configs were indeed amongst the best half
 
-    num_steps = int(math.log(len(data_points), 2))
+        next_step_configs = {VerifySuccessiveHalvingRunTest.obtain_config(data_points[-1], param_indices)}
+        for step in range(num_steps):
 
-    # enumerates over trace backwards, checking whether
-    # - configs in a step also appeared in the previous step
-    # - these configs were indeed amongst the best half
+            current_configs = []
+            current_scores = []
+            for arms in range(2**(step+1), 2**(step+2)):
+                current_configs.append(VerifySuccessiveHalvingRunTest.obtain_config(data_points[-arms], param_indices))
+                current_scores.append(float(data_points[-arms][eval_idx]))
 
-    next_step_configs = {obtain_config(data_points[-1], param_indices)}
-    for step in range(num_steps):
+            possible_continue_arms = set()
+            current_scores = np.array(current_scores, dtype=np.float)
+            sorted = np.argsort(current_scores * -1)
+            num_continue_arms = int(len(current_configs) / 2)
+            for i in range(len(current_configs)):
+                if i < num_continue_arms or current_scores[sorted[i]] == current_scores[sorted[num_continue_arms-1]]:
+                    possible_continue_arms.add(current_configs[sorted[i]])
 
-        current_configs = []
-        current_scores = []
-        for arms in range(2**(step+1), 2**(step+2)):
-            current_configs.append(obtain_config(data_points[-arms], param_indices))
-            current_scores.append(float(data_points[-arms][eval_idx]))
+            for config in next_step_configs:
+                if config not in current_configs:
+                    raise ValueError('Could not find config %s' %str(config))
 
-        possible_continue_arms = set()
-        current_scores = np.array(current_scores, dtype=np.float)
-        sorted = np.argsort(current_scores * -1)
-        num_continue_arms = int(len(current_configs) / 2)
-        for i in range(len(current_configs)):
-            if i < num_continue_arms or current_scores[sorted[i]] == current_scores[sorted[num_continue_arms-1]]:
-                possible_continue_arms.add(current_configs[sorted[i]])
+            if len(next_step_configs - possible_continue_arms) > 0:
+                raise ValueError('Not correct arms continued. ')
 
-        for config in next_step_configs:
-            if config not in current_configs:
-                raise ValueError('Could not find config %s' %str(config))
+            next_step_configs = set(current_configs)
 
-        if len(next_step_configs - possible_continue_arms) > 0:
-            raise ValueError('Not correct arms continued. ')
+    @staticmethod
+    def process_arff_file(file, num_brackets=None):
+        arff_data = arff.load(open(file, 'r'))
 
-        next_step_configs = set(current_configs)
+        param_indices = dict()
+        eval_index = None
+        for idx, attribute in enumerate(arff_data['attributes']):
+            if attribute[0].startswith('parameter_'):
+                param_indices[idx] = attribute[0]
+            elif attribute[0] == 'evaluation':
+                eval_index = idx
 
+        if len(param_indices) < 5:
+            raise ValueError()
 
-def run():
-    args = parse_args()
+        # assumes order in the trace file..
+        current_repeat = 0
+        current_fold = 0
+        current_points = []
+        for datapoint in arff_data['data']:
+            repeat = int(datapoint[0])
+            fold = int(datapoint[1])
+            if repeat != current_repeat or fold != current_fold:
+                print('Checking %d %d with %d curves' % (repeat, fold, len(current_points)))
+                if num_brackets is None:
+                    VerifySuccessiveHalvingRunTest.check_sh_iteration(current_points, param_indices, eval_index)
+                else:
+                    # this only handles 'vanilla' hyperband
+                    for i in range(num_brackets):
+                        num_data_points = 2 ** (num_brackets - i) - 1
+                        current_bracket_points = current_points[:num_data_points]
+                        print('size', len(current_bracket_points))
+                        current_points = current_points[num_data_points:]
 
-    for classifier in os.listdir(args.result_directory):
-        if os.path.isfile(os.path.join(args.result_directory, classifier)):
-            continue
-        for fixed_parameters in os.listdir(os.path.join(args.result_directory, classifier)):
-            print(openmlpimp.utils.get_time(), 'classifier:', classifier, fixed_parameters)
-            directory = os.path.join(args.result_directory, classifier, fixed_parameters)
-            clf_params = classifier + '__' + fixed_parameters
-            for strategy in os.listdir(directory):
-                for task_directory in os.listdir(os.path.join(directory, strategy)):
-                    file = os.path.join(directory, strategy, task_directory, 'trace.arff')
-                    task_id = int(task_directory)
+                current_repeat = repeat
+                current_fold = fold
+                current_points = []
+            current_points.append(datapoint)
 
-                    if os.path.isfile(file):
-                        arff_data = arff.load(open(file, 'r'))
+    def test_correct_successive_halving(self):
+        directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data/hyperband/')
+        VerifySuccessiveHalvingRunTest.process_arff_file(os.path.join(directory, 'successive_halving_correct.arff'))
+        pass
 
-                        param_indices = dict()
-                        eval_index = None
-                        for idx, attribute in enumerate(arff_data['attributes']):
-                            if attribute[0].startswith('parameter_'):
-                                param_indices[idx] = attribute[0]
-                            elif attribute[0] == 'evaluation':
-                                eval_index = idx
+    def test_incorrect_successive_halving(self):
+        directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data/hyperband/')
+        with self.assertRaises(ValueError):
+            VerifySuccessiveHalvingRunTest.process_arff_file(os.path.join(directory, 'successive_halving_incorrect.arff'))
+        pass
 
-                        if len(param_indices) < 5:
-                            raise ValueError()
+    def test_results_directory(self):
+        result_directory = os.path.expanduser('~') + '/nemo/experiments/20180206priorbased_experiments/'
 
-                        # assumes order in the trace file..
-                        current_repeat = 0
-                        current_fold = 0
-                        current_points = []
-                        for datapoint in arff_data['data']:
-                            repeat = int(datapoint[0])
-                            fold = int(datapoint[1])
-                            if repeat != current_repeat or fold != current_fold:
-                                print('Checking %d %d with %d curves' % (repeat, fold, len(current_points)))
-                                check_iteration(current_points, param_indices, eval_index)
-                                current_repeat = repeat
-                                current_fold = fold
-                                current_points = []
-                            current_points.append(datapoint)
+        for classifier in os.listdir(result_directory):
+            if os.path.isfile(os.path.join(result_directory, classifier)):
+                continue
+            for fixed_parameters in os.listdir(os.path.join(result_directory, classifier)):
+                print(openmlpimp.utils.get_time(), 'classifier:', classifier, fixed_parameters)
+                directory = os.path.join(result_directory, classifier, fixed_parameters)
 
+                for strategy in os.listdir(directory):
+                    for task_directory in os.listdir(os.path.join(directory, strategy)):
+                        file = os.path.join(directory, strategy, task_directory, 'trace.arff')
 
-if __name__ == '__main__':
-    run()
+                        if os.path.isfile(file):
+                            VerifySuccessiveHalvingRunTest.process_arff_file(file)
