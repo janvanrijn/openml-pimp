@@ -20,7 +20,7 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
         return tuple(config)
 
     @staticmethod
-    def check_sh_iteration(data_points, param_indices, eval_idx):
+    def check_sh_iteration(data_points, param_indices, eval_idx, file=None):
         # data_points = list<list<mixed>>
         # param_indices = dict<int, str>
 
@@ -34,7 +34,6 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
         next_step_configs = {VerifySuccessiveHalvingRunTest.obtain_config(data_points[-1], param_indices)}
 
         for step in range(num_steps):
-
             current_configs = []
             current_scores = []
             for arms in range(2**(step+1), 2**(step+2)):
@@ -53,12 +52,24 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
 
             for config in next_step_configs:
                 if config not in current_configs:
-                    raise ValueError('Could not find config %s' %str(config))
+                    raise ValueError('Could not find config %s for file %s' %(str(config), file))
 
             if len(next_step_configs - possible_continue_arms) > 0:
                 raise ValueError('Not correct arms continued. ')
 
             next_step_configs = set(current_configs)
+
+    @staticmethod
+    def check_hyperband_iteration(current_points, param_indices, eval_index, num_brackets, file):
+        if num_brackets is None:
+            VerifySuccessiveHalvingRunTest.check_sh_iteration(current_points, param_indices, eval_index, file)
+        else:
+            # this only handles 'vanilla' hyperband
+            for i in range(num_brackets):
+                num_data_points = 2 ** (num_brackets - i) - 1
+                current_bracket_points = current_points[:num_data_points]
+                current_points = current_points[num_data_points:]
+                VerifySuccessiveHalvingRunTest.check_sh_iteration(current_bracket_points, param_indices, eval_index, file)
 
     @staticmethod
     def process_arff_file(file, num_brackets=None):
@@ -84,22 +95,14 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
             fold = int(datapoint[1])
             if repeat != current_repeat or fold != current_fold:
                 print('Checking %d %d with %d curves' % (repeat, fold, len(current_points)))
-                if num_brackets is None:
-                    VerifySuccessiveHalvingRunTest.check_sh_iteration(current_points, param_indices, eval_index)
-                else:
-                    # this only handles 'vanilla' hyperband
-                    for i in range(num_brackets):
-                        num_data_points = 2 ** (num_brackets - i) - 1
-                        current_bracket_points = current_points[:num_data_points]
-                        current_points = current_points[num_data_points:]
-                        VerifySuccessiveHalvingRunTest.check_sh_iteration(current_bracket_points, param_indices, eval_index)
+                VerifySuccessiveHalvingRunTest.check_hyperband_iteration(current_points, param_indices, eval_index, num_brackets, file)
 
                 current_repeat = repeat
                 current_fold = fold
                 current_points = []
             current_points.append(datapoint)
         # verify the last batch
-        VerifySuccessiveHalvingRunTest.check_sh_iteration(current_points, param_indices, eval_index)
+        VerifySuccessiveHalvingRunTest.check_hyperband_iteration(current_points, param_indices, eval_index, num_brackets, file)
 
     @staticmethod
     def traverse_experiment_directory(result_directory, num_brackets):
@@ -139,4 +142,4 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
 
     def test_results_directory_hyperband(self):
         result_directory = os.path.expanduser('~') + '/nemo/experiments/priorbased_experiments/'
-        VerifySuccessiveHalvingRunTest.traverse_experiment_directory(result_directory, 4)
+        VerifySuccessiveHalvingRunTest.traverse_experiment_directory(result_directory, 5)
