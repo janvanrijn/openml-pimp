@@ -30,8 +30,12 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
         # enumerates over trace backwards, checking whether
         # - configs in a step also appeared in the previous step
         # - these configs were indeed amongst the best half
+        # - the last one was selected as the best
 
         next_step_configs = {VerifySuccessiveHalvingRunTest.obtain_config(data_points[-1], param_indices)}
+        if data_points[-1][4] != 'true':
+            raise ValueError('Wrong incumbent')
+
         for step in range(num_steps):
 
             current_configs = []
@@ -88,13 +92,14 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
                     for i in range(num_brackets):
                         num_data_points = 2 ** (num_brackets - i) - 1
                         current_bracket_points = current_points[:num_data_points]
-                        print('size', len(current_bracket_points))
                         current_points = current_points[num_data_points:]
 
                 current_repeat = repeat
                 current_fold = fold
                 current_points = []
             current_points.append(datapoint)
+        # verify the last batch
+        VerifySuccessiveHalvingRunTest.check_sh_iteration(current_points, param_indices, eval_index)
 
     def test_correct_successive_halving(self):
         directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data/hyperband/')
@@ -103,9 +108,14 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
 
     def test_incorrect_successive_halving(self):
         directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data/hyperband/')
-        with self.assertRaises(ValueError):
-            VerifySuccessiveHalvingRunTest.process_arff_file(os.path.join(directory, 'successive_halving_incorrect.arff'))
-        pass
+        files = ['successive_halving_incorrect-1.arff',
+                 'successive_halving_incorrect-2.arff',
+                 'successive_halving_incorrect-3.arff',
+                 'successive_halving_incorrect-4.arff']
+
+        for file in files:
+            with self.assertRaises(ValueError):
+                VerifySuccessiveHalvingRunTest.process_arff_file(os.path.join(directory, file))
 
     def test_results_directory(self):
         result_directory = os.path.expanduser('~') + '/nemo/experiments/20180206priorbased_experiments/'

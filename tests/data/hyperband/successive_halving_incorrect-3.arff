@@ -1,0 +1,47 @@
+@RELATION openml_task_3_predictions
+
+@ATTRIBUTE repeat NUMERIC
+@ATTRIBUTE fold NUMERIC
+@ATTRIBUTE iteration NUMERIC
+@ATTRIBUTE evaluation NUMERIC
+@ATTRIBUTE selected {true, false}
+@ATTRIBUTE parameter_classifier__algorithm STRING
+@ATTRIBUTE parameter_classifier__base_estimator__max_depth STRING
+@ATTRIBUTE parameter_classifier__learning_rate STRING
+@ATTRIBUTE parameter_classifier__n_estimators STRING
+@ATTRIBUTE parameter_imputation__strategy STRING
+
+@DATA
+0,0,0,0.916201117318,false,'\"SAMME\"',6,0.6214464503202547,232,'\"median\"'
+0,0,1,0.932960893855,false,'\"SAMME\"',3,0.01968728385030779,346,'\"most_frequent\"'
+0,0,2,0.927374301676,false,'\"SAMME\"',6,0.0592495648501985,319,'\"most_frequent\"'
+0,0,3,0.882681564246,false,'\"SAMME.R\"',4,0.19593419545512436,494,'\"median\"'
+0,0,4,0.921787709497,false,'\"SAMME.R\"',10,0.0403952332160915,393,'\"most_frequent\"'
+0,0,5,0.921787709497,false,'\"SAMME\"',9,1.0003318855831729,326,'\"median\"'
+0,0,6,0.921787709497,false,'\"SAMME\"',10,0.45021615825129985,223,'\"most_frequent\"'
+0,0,7,0.921787709497,false,'\"SAMME\"',8,0.07081286659621869,314,'\"most_frequent\"'
+0,0,8,0.932960893855,false,'\"SAMME\"',2,0.8505072033047062,424,'\"mean\"'
+0,0,9,0.921787709497,false,'\"SAMME.R\"',10,0.6457034006129682,154,'\"most_frequent\"'
+0,0,10,0.921787709497,false,'\"SAMME.R\"',8,0.13406714335968334,383,'\"median\"'
+0,0,11,0.921787709497,false,'\"SAMME\"',8,1.3678348355271408,104,'\"mean\"'
+0,0,12,0.893854748603,false,'\"SAMME.R\"',4,0.012372213902866079,343,'\"median\"'
+0,0,13,0.949720670391,false,'\"SAMME\"',6,0.021572848762200756,93,'\"median\"'
+0,0,14,0.921787709497,false,'\"SAMME.R\"',10,0.8116178225804113,319,'\"most_frequent\"'
+0,0,15,0.921787709497,false,'\"SAMME\"',4,1.5476146605963848,409,'\"median\"'
+0,0,16,0.933147632312,false,'\"SAMME\"',6,0.021572848762200756,93,'\"median\"'
+0,0,17,0.935933147632,false,'\"SAMME\"',3,0.01968728385030779,346,'\"most_frequent\"'
+0,0,18,0.958217270195,false,'\"SAMME\"',2,0.8505072033047062,424,'\"mean\"'
+0,0,19,0.955431754875,false,'\"SAMME\"',6,0.0592495648501985,319,'\"most_frequent\"'
+0,0,20,0.905292479109,false,'\"SAMME.R\"',10,0.0403952332160915,393,'\"most_frequent\"'
+0,0,21,0.902506963788,false,'\"SAMME\"',9,1.0003318855831729,326,'\"median\"'
+0,0,22,0.905292479109,false,'\"SAMME\"',10,0.45021615825129985,223,'\"most_frequent\"'
+0,0,23,0.924791086351,false,'\"SAMME\"',8,0.07081286659621869,314,'\"most_frequent\"'
+0,0,24,0.973574408901,false,'\"SAMME\"',2,0.8505072033047062,424,'\"mean\"'
+0,0,25,0.986091794159,false,'\"SAMME\"',6,0.0592495648501985,319,'\"most_frequent\"'
+0,0,26,0.94297635605,false,'\"SAMME\"',3,0.01968728385030779,346,'\"most_frequent\"'
+0,0,27,0.980528511822,false,'\"SAMME\"',6,0.021572848762200756,93,'\"median\"'
+0,0,28,0.990959666203,false,'\"SAMME\"',6,0.0592495648501985,319,'\"most_frequent\"'
+0,0,29,0.973574408901,false,'\"SAMME\"',6,0.021572848762200756,93,'\"median\"'
+% 
+% 
+% 
