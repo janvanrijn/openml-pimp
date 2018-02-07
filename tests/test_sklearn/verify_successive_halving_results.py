@@ -2,7 +2,6 @@
 import unittest
 
 import arff
-import argparse
 import math
 import numpy as np
 import openmlpimp
@@ -33,14 +32,14 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
         # - the last one was selected as the best
 
         next_step_configs = {VerifySuccessiveHalvingRunTest.obtain_config(data_points[-1], param_indices)}
-        if data_points[-1][4] != 'true':
-            raise ValueError('Wrong incumbent')
 
         for step in range(num_steps):
 
             current_configs = []
             current_scores = []
             for arms in range(2**(step+1), 2**(step+2)):
+                if data_points[-arms][4] != 'false':
+                    raise ValueError('Wrong incumbent')
                 current_configs.append(VerifySuccessiveHalvingRunTest.obtain_config(data_points[-arms], param_indices))
                 current_scores.append(float(data_points[-arms][eval_idx]))
 
@@ -93,6 +92,7 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
                         num_data_points = 2 ** (num_brackets - i) - 1
                         current_bracket_points = current_points[:num_data_points]
                         current_points = current_points[num_data_points:]
+                        VerifySuccessiveHalvingRunTest.check_sh_iteration(current_bracket_points, param_indices, eval_index)
 
                 current_repeat = repeat
                 current_fold = fold
@@ -100,6 +100,22 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
             current_points.append(datapoint)
         # verify the last batch
         VerifySuccessiveHalvingRunTest.check_sh_iteration(current_points, param_indices, eval_index)
+
+    @staticmethod
+    def traverse_experiment_directory(result_directory, num_brackets):
+        for classifier in os.listdir(result_directory):
+            if os.path.isfile(os.path.join(result_directory, classifier)):
+                continue
+            for fixed_parameters in os.listdir(os.path.join(result_directory, classifier)):
+                print(openmlpimp.utils.get_time(), 'classifier:', classifier, fixed_parameters)
+                directory = os.path.join(result_directory, classifier, fixed_parameters)
+
+                for strategy in os.listdir(directory):
+                    for task_directory in os.listdir(os.path.join(directory, strategy)):
+                        file = os.path.join(directory, strategy, task_directory, 'trace.arff')
+
+                        if os.path.isfile(file):
+                            VerifySuccessiveHalvingRunTest.process_arff_file(file, num_brackets=num_brackets)
 
     def test_correct_successive_halving(self):
         directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data/hyperband/')
@@ -117,19 +133,10 @@ class VerifySuccessiveHalvingRunTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 VerifySuccessiveHalvingRunTest.process_arff_file(os.path.join(directory, file))
 
-    def test_results_directory(self):
+    def test_results_directory_sh(self):
         result_directory = os.path.expanduser('~') + '/nemo/experiments/20180206priorbased_experiments/'
+        VerifySuccessiveHalvingRunTest.traverse_experiment_directory(result_directory, None)
 
-        for classifier in os.listdir(result_directory):
-            if os.path.isfile(os.path.join(result_directory, classifier)):
-                continue
-            for fixed_parameters in os.listdir(os.path.join(result_directory, classifier)):
-                print(openmlpimp.utils.get_time(), 'classifier:', classifier, fixed_parameters)
-                directory = os.path.join(result_directory, classifier, fixed_parameters)
-
-                for strategy in os.listdir(directory):
-                    for task_directory in os.listdir(os.path.join(directory, strategy)):
-                        file = os.path.join(directory, strategy, task_directory, 'trace.arff')
-
-                        if os.path.isfile(file):
-                            VerifySuccessiveHalvingRunTest.process_arff_file(file)
+    def test_results_directory_hyperband(self):
+        result_directory = os.path.expanduser('~') + '/nemo/experiments/priorbased_experiments/'
+        VerifySuccessiveHalvingRunTest.traverse_experiment_directory(result_directory, 4)
