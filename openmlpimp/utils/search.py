@@ -12,6 +12,7 @@ from sklearn.model_selection._search import ParameterSampler
 from collections import Sized, defaultdict
 from functools import partial
 
+import math
 import numpy as np
 
 from sklearn.utils import resample
@@ -100,7 +101,7 @@ class BaseSearchBandits(BaseSearchCV):
 
         new_parameter_iterable = []
         order = np.argsort(results['mean_test_score'][-n_candidates:] * -1)
-        for i in range(int(n_candidates / eta)):
+        for i in range(int(len(parameter_iterable) / eta)):
             new_parameter_iterable.append(candidate_params[order[i]])
 
         # Use one MaskedArray and mask all the places where the param is not
@@ -124,12 +125,21 @@ class BaseSearchBandits(BaseSearchCV):
 
         return results, new_parameter_iterable, best_index, best_parameters
 
-    def _successive_halving(self, X, y, groups, parameter_iterable, cv, eta, successive_halving_steps):
+    def _successive_halving(self, X, y, groups, cv, eta, hyperband_s, hyperband_smax=None):
         results = dict()
         best_index = None
 
-        for sample_idx in range(successive_halving_steps - 1, -1, -1):
-            sample_size = int(len(X) / eta ** sample_idx)
+        hyperband_B = hyperband_smax + 1 if hyperband_smax is not None else hyperband_s
+        print(hyperband_B, eta, hyperband_s, (hyperband_s + 1))
+        hyperband_n = math.ceil(hyperband_B * eta ** hyperband_s / (hyperband_s + 1))
+        print('- bracket %d; B = %d, n = %d' %(hyperband_s, hyperband_B, hyperband_n))
+
+        parameter_iterable = ParameterSampler(self.param_distributions,
+                                              hyperband_n,
+                                              random_state=self.random_state + hyperband_s)
+
+        for hyperband_i in range(0, hyperband_s + 1):
+            sample_size = int(len(X) * (eta ** -(hyperband_s - hyperband_i)))
 
             arms_pulled = 0
             if 'mean_test_score' in results:
@@ -141,6 +151,7 @@ class BaseSearchBandits(BaseSearchCV):
                 X_resampled, y_resampled = resample(X, y, n_samples=sample_size, replace=False)
                 groups_resampled = None
 
+            print('-- iteration %d sample size %d arms %d' %(hyperband_i, sample_size, len(parameter_iterable)))
             res = self._do_iteration(X_resampled, y_resampled, groups_resampled, sample_size, parameter_iterable, cv, eta)
             results_iteration, parameter_iterable, best_index_iteration, best_parameters_iteration = res
 
@@ -157,97 +168,15 @@ class BaseSearchBandits(BaseSearchCV):
         return results, best_index, best_parameters
 
 
-class KdeSampler(object):
-    def __init__(self, param_priors, param_hyperparameters, n_iter):
-        self.hyperparameters = collections.OrderedDict(sorted(param_hyperparameters.items()))
-        self.n_iter = n_iter
-        self.param_index = []
-        self.distributions = {}
-
-        kde_data = None
-        for name, hyperparameter in param_hyperparameters.items():
-            if isinstance(hyperparameter, UniformFloatHyperparameter):
-                self.param_index.append(name)
-                data = np.array(param_priors[name])
-                if hyperparameter.log:
-                    data = np.log2(data)
-                if kde_data is None:
-                    kde_data = np.reshape(np.array(data), (1, len(data)))
-                else:
-                    reshaped = np.reshape(np.array(data), (1, len(data)))
-                    kde_data = np.concatenate((kde_data, reshaped), axis=0)
-            elif isinstance(hyperparameter, UniformIntegerHyperparameter):
-                raise ValueError('UniformIntegerHyperparameter not yet implemented:', name)
-            elif isinstance(hyperparameter, CategoricalHyperparameter):
-                self.distributions[name] = openmlpimp.utils.rv_discrete_wrapper(name, param_priors[name])
-            else:
-                raise ValueError()
-        if len(self.param_index) < 2:
-            raise ValueError('Need at least 2 float hyperparameters')
-        self.kde = gaussian_kde(kde_data)
-
-    def __iter__(self):
-        # check if all distributions are given as lists
-        # in this case we want to sample without replacement
-
-        # Always sort the keys of a dictionary, for reproducibility
-        for _ in range(self.n_iter):
-            params = dict()
-            sampled = self.kde.resample(size=1)
-            for name, hyperparameter in self.hyperparameters.items():
-                if isinstance(hyperparameter, UniformFloatHyperparameter):
-                    value = sampled[self.param_index.index(name)][0]
-                    if hyperparameter.log:
-                        value = np.power(2, value)
-                    params[name] = value
-                elif isinstance(hyperparameter, UniformIntegerHyperparameter):
-                    raise ValueError()
-                elif isinstance(hyperparameter, CategoricalHyperparameter):
-                    params[name] = self.distributions[name].rvs()
-                else:
-                    raise ValueError()
-
-            yield params
-
-    def __len__(self):
-        """Number of points that will be sampled."""
-        return self.n_iter
-
-
-class MultivariateKdeSearch(BaseSearchCV):
-    def __init__(self, estimator, param_priors, param_hyperparameters, n_iter=50,
-                 scoring=None, fit_params=None, n_jobs=1, iid=True, refit=True,
-                 cv=None, verbose=0, pre_dispatch='2*n_jobs', random_state=None,
-                 error_score='raise', return_train_score=True):
-        self.param_priors = param_priors
-        self.param_distributions = param_priors # TODO: hack for OpenML plugin
-        self.param_hyperparameters = param_hyperparameters
-        self.n_iter = n_iter
-        self.random_state = random_state
-        super(MultivariateKdeSearch, self).__init__(
-             estimator=estimator, scoring=scoring, fit_params=fit_params,
-             n_jobs=n_jobs, iid=iid, refit=refit, cv=cv, verbose=verbose,
-             pre_dispatch=pre_dispatch, error_score=error_score,
-             return_train_score=return_train_score)
-
-    def _get_param_iterator(self):
-        """Return ParameterSampler instance for the given distributions"""
-        return KdeSampler(self.param_priors, self.param_hyperparameters, self.n_iter)
-
-    def fit(self, X, y=None, groups=None):
-        # compatibility function
-        return self._fit(X, y, groups, self._get_param_iterator())
-
-
 class SuccessiveHalving(BaseSearchBandits):
 
-    def __init__(self, estimator, param_distributions, successive_halving_steps,
+    def __init__(self, estimator, param_distributions, num_steps,
                  eta, scoring=None, fit_params=None, n_jobs=1, iid=True, refit=True, cv=None,
                  verbose=0, pre_dispatch='2*n_jobs', random_state=None,
                  error_score='raise', return_train_score=True):
         self.param_distributions = param_distributions
         self.random_state = random_state
-        self.successive_halving_steps = successive_halving_steps
+        self.num_steps = num_steps
         self.eta = eta
         super(SuccessiveHalving, self).__init__(
              estimator=estimator, scoring=scoring, fit_params=fit_params,
@@ -257,7 +186,7 @@ class SuccessiveHalving(BaseSearchBandits):
 
     def fit(self, X, y, groups=None):
         """Actual fitting,  performing the search over parameters."""
-        num_arms = self.eta ** (self.successive_halving_steps - 1)
+        num_arms = self.eta ** (self.num_steps - 1)
         parameter_iterable = ParameterSampler(self.param_distributions,
                                               num_arms,
                                               random_state=self.random_state)
@@ -276,7 +205,7 @@ class SuccessiveHalving(BaseSearchBandits):
 
         base_estimator = clone(self.estimator)
 
-        results, best_index, best_parameters = self._successive_halving(X, y, groups, parameter_iterable, cv, self.eta, self.successive_halving_steps)
+        results, best_index, best_parameters = self._successive_halving(X, y, groups, cv, self.eta, self.num_steps - 1, self.num_steps - 1)
 
         self.cv_results_ = results
         self.best_index_ = best_index
@@ -322,10 +251,7 @@ class HyperBand(BaseSearchBandits):
         for bracket_idx in range(self.num_brackets - 1, -1, -1):
             successive_halving_steps = bracket_idx + 1
             # TODO: num_arms should be different
-            num_arms = self.eta ** (successive_halving_steps - 1)
-            parameter_iterable = ParameterSampler(self.param_distributions,
-                                                  num_arms,
-                                                  random_state=self.random_state)
+
 
             estimator = self.estimator
             cv = check_cv(self.cv, y, classifier=is_classifier(estimator))
@@ -333,11 +259,6 @@ class HyperBand(BaseSearchBandits):
 
             X, y, groups = indexable(X, y, groups)
             n_splits = cv.get_n_splits(X, y, groups)
-            if self.verbose > 0 and isinstance(parameter_iterable, Sized):
-                n_candidates = len(parameter_iterable)
-                print("Fitting {0} folds for each of {1} candidates, totalling"
-                      " {2} fits".format(n_splits, n_candidates,
-                                         n_candidates * n_splits))
 
             base_estimator = clone(self.estimator)
 
@@ -345,7 +266,7 @@ class HyperBand(BaseSearchBandits):
             if 'mean_test_score' in results:
                 arms_pulled = len(results['mean_test_score'])
 
-            res = self._successive_halving(X, y, groups, parameter_iterable, cv, self.eta, successive_halving_steps)
+            res = self._successive_halving(X, y, groups, cv, self.eta, successive_halving_steps - 1, self.num_brackets - 1)
             bracket_results, bracket_best_index, bracket_best_parameters = res
             for key, values in bracket_results.items():
                 if key not in results:

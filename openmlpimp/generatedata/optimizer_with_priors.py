@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument('--n_executions', type=int, default=None, help='Max bound, for example for cluster jobs. ')
     parser.add_argument('--random_order', action="store_true", help='Iterates the tasks in a random order')
     parser.add_argument('--eta', type=int, default=2, help='successive halving parameter')
-    parser.add_argument('--successive_halving_steps', type=int, default=5, help='successive halving parameter')
+    parser.add_argument('--num_steps', type=int, default=5, help='successive halving parameter')
     parser.add_argument('--num_brackets', type=int, default=5, help='successive halving parameter')
 
     args = parser.parse_args()
@@ -139,7 +139,6 @@ if __name__ == '__main__':
             else:
                 holdout = {task_id}
 
-            optimizer = None
             if args.search_type == 'kde':  # KDE
                 param_distributions = openmlpimp.utils.get_kde_paramgrid(cache_dir,
                                                                          args.study_id,
@@ -163,33 +162,6 @@ if __name__ == '__main__':
                 param_distributions = update_param_dist(args.classifier, param_distributions)
                 print('%s Param Grid:' % openmlpimp.utils.get_time(), param_distributions)
 
-            elif args.search_type == 'multivariate':
-                priors = openmlpimp.utils.obtain_priors(cache_dir,
-                                                        args.study_id,
-                                                        args.flow_id,
-                                                        hyperparameters,
-                                                        args.fixed_parameters,
-                                                        holdout,
-                                                        args.bestN)
-                for name in list(priors.keys()):
-                    if args.fixed_parameters is not None and name in args.fixed_parameters.keys():
-                        priors.pop(name)
-                        hyperparameters.pop(name)
-                    elif all(x == priors[name][0] for x in priors[name]):
-                        warnings.warn('Skipping Hyperparameter %s: All prior values equals (%s). ' % (name, priors[name][0]))
-                        priors.pop(name)
-                        hyperparameters.pop(name)
-
-                priors = update_param_dist(args.classifier, priors)
-
-                optimizer = openmlpimp.utils.MultivariateKdeSearch(estimator=pipe,
-                                                                   param_priors=priors,
-                                                                   param_hyperparameters=update_param_dist(args.classifier, hyperparameters),
-                                                                   n_iter=args.n_iters,
-                                                                   random_state=1,
-                                                                   n_jobs=-1)
-                print('%s Prior keys:' % openmlpimp.utils.get_time(), priors.keys())
-
             elif args.search_type == 'uniform':
                 param_distributions = openmlpimp.utils.get_uniform_paramgrid(hyperparameters, args.fixed_parameters)
                 param_distributions = update_param_dist(args.classifier, param_distributions)
@@ -207,13 +179,20 @@ if __name__ == '__main__':
                     param_name = 'estimator__classifier__' + param_name
                     fixed_param_values[param_name] = value
 
-            if optimizer is None:
+            if args.num_brackets is not None:
                 optimizer = HyperBand(estimator=pipe,
                                       param_distributions=param_distributions,
                                       random_state=1,
                                       n_jobs=-1,
                                       eta=args.eta,
                                       num_brackets=args.num_brackets)
+            elif args.num_steps is not None:
+                optimizer = SuccessiveHalving(estimator=pipe,
+                                              param_distributions=param_distributions,
+                                              random_state=1,
+                                              n_jobs=-1,
+                                              eta=args.eta,
+                                              num_steps=args.num_steps)
             optimizer.set_params(**fixed_param_values)
             print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
             print("%s Steps: " %openmlpimp.utils.get_time(), optimizer.estimator.steps)
