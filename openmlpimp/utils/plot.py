@@ -128,9 +128,8 @@ def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, c
             continue
         strategy_name = _determine_name(strategy)
 
-        for task_csv in os.listdir(os.path.join(curves_directory, strategy)):
-            task_id = task_csv.split('.')[0]
-            results[task_id][strategy_name] = os.path.join(curves_directory, strategy, task_csv)
+        for task_id in os.listdir(os.path.join(curves_directory, strategy)):
+            results[task_id][strategy_name] = os.path.join(curves_directory, strategy, task_id, '*.csv')
 
     for task_id, strategy_file in results.items():
         for strategy, file in results[task_id].items():
@@ -149,7 +148,7 @@ def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, c
     subprocess.run(' '.join(cmd), shell=True)
 
 
-def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, task_id=None, improvements=True):
+def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, identifier=None, improvements=True):
     def save_curve(current_curve, filename):
         with open(filename, 'w') as csvfile:
             csvwriter = csv.writer(csvfile)
@@ -186,7 +185,7 @@ def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, 
                     current_curve[idx] = current_curve[idx - 1]
 
     if avg_curve_directory is not None:
-        if task_id is None:
+        if identifier is None:
             raise ValueError()
 
         try:
@@ -199,7 +198,7 @@ def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, 
         for _, currentcurve in curves.items():
             for itt, value in enumerate(currentcurve):
                 average_curve[itt] += value / len(curves)
-        save_curve(average_curve, avg_curve_directory + '/%s.csv' % str(task_id))
+        save_curve(average_curve, avg_curve_directory + '/%s.csv' % str(identifier))
 
     for idx, repeat, fold in curves.keys():
         save_curve(curves[(idx, repeat, fold)], save_directory + '/%d_%d_%d.csv' %(idx, repeat, fold))
