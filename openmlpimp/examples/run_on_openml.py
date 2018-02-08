@@ -37,6 +37,7 @@ def read_cmd():
     parser.add_argument('-I', '--interaction_effect', action="store_true", default=False)
     parser.add_argument('-M', '--modus', type=str, choices=['ablation', 'fanova'],
                         default='fanova', help='Whether to use ablation or fanova')
+    parser.add_argument('-L', '--limit', type=int, default=None, help='Max runs per task (efficiency)')
 
     args_, misc = parser.parse_known_args()
 
@@ -93,7 +94,7 @@ if __name__ == '__main__':
 
             if args.modus == 'fanova':
                 print('Running FANOVA backend on task %d' %task_id)
-                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path, use_percentiles=args.use_quantiles, interaction_effect=args.interaction_effect)
+                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path, use_percentiles=args.use_quantiles, interaction_effect=args.interaction_effect, run_limit=args.limit)
             else:
                 print('Running PIMP backend [%s] on task %d' %(args.modus, task_id))
                 results_file = PimpBackend.execute(task_save_folder, runhistory_path, configspace_path, modus=args.modus)

@@ -121,8 +121,10 @@ def _get_best_setups(task_setup_scores, holdout, bestN, factor=4):
     task_setups = dict()
     for task, setup_scores in task_setup_scores.items():
         if (holdout is None or task not in holdout) and len(setup_scores) < bestN * factor:
-            raise Warning('Not enough setups for task %d. Need %d, expected at least %d, got %d' % (task, bestN, bestN * factor, len(setup_scores)))
-        task_setups[task] = dict(sorted(setup_scores.items(), key=operator.itemgetter(1), reverse=True)[:bestN]).keys()
+            pass
+            #raise Warning('Not enough setups for task %d. Need %d, expected at least %d, got %d' % (task, bestN, bestN * factor, len(setup_scores)))
+        else:
+            task_setups[task] = dict(sorted(setup_scores.items(), key=operator.itemgetter(1), reverse=True)[:bestN]).keys()
     return task_setups
 
 
@@ -143,10 +145,8 @@ def cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_param
     for task_id in study.tasks:
         runs = openmlpimp.utils.obtain_all_evaluations(function="predictive_accuracy", task=[task_id], flow=[flow_id])
         for run in runs.values():
-            if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name',
-                                                                   fixed_parameters):
-                if openmlpimp.utils.setup_complies_to_config_space(setups[run.setup_id], 'parameter_name',
-                                                                   hyperparameters):
+            if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name', fixed_parameters):
+                if openmlpimp.utils.setup_complies_to_config_space(setups[run.setup_id], 'parameter_name', hyperparameters):
                     task_setup_scores[task_id][run.setup_id] = run.value
     try:
         os.makedirs(cache_directory)

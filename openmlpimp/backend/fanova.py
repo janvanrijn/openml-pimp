@@ -6,7 +6,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 
-from ConfigSpace.hyperparameters import CategoricalHyperparameter
+from ConfigSpace.hyperparameters import UniformFloatHyperparameter, UniformIntegerHyperparameter, CategoricalHyperparameter
 from ConfigSpace.io.pcs_new import read
 
 from fanova.fanova import fANOVA as fanova_pyrfr
@@ -39,7 +39,7 @@ class FanovaBackend(object):
 
 
     @staticmethod
-    def execute(save_folder, runhistory_location, configspace_location, manual_logtransform=True, use_percentiles=True, interaction_effect=True):
+    def execute(save_folder, runhistory_location, configspace_location, manual_logtransform=True, use_percentiles=True, interaction_effect=True, run_limit=None):
         with open(runhistory_location) as runhistory_file:
             runhistory = json.load(runhistory_file)
         with open(configspace_location) as configspace_file:
@@ -52,19 +52,31 @@ class FanovaBackend(object):
         y = []
 
         for item in runhistory['data']:
+            if run_limit is not None and len(X) > run_limit:
+                break
+
+            valid = True
             current = []
             setup_id = str(item[0][0])
             configuration = runhistory['configs'][setup_id]
             for param in configspace.get_hyperparameters():
                 value = configuration[param.name]
+                if isinstance(param, UniformFloatHyperparameter) and not isinstance(value, float):
+                    valid = False
+                elif isinstance(param, UniformIntegerHyperparameter) and not isinstance(value, int):
+                    valid = False
+
                 if isinstance(param, CategoricalHyperparameter):
                     value = param.choices.index(value)
                 elif param.log and manual_logtransform:
                     value = np.log(value)
 
                 current.append(value)
-            X.append(current)
-            y.append(item[1][0])
+            if valid:
+                X.append(current)
+                y.append(item[1][0])
+            else:
+                print('Illegal configuration', current)
         X = np.array(X)
         y = np.array(y)
 
@@ -102,7 +114,8 @@ class FanovaBackend(object):
             result_interaction = {}
             for idx, param in enumerate(params):
                 for idx2, param2 in enumerate(params):
-                    if idx2 == idx:
+                    print('interaction effects between', param.name, param2.name)
+                    if idx2 <= idx:
                         continue
                     interaction = evaluator.quantify_importance([idx, idx2])[(idx,idx2)]['total importance']
                     interaction -= result[param.name]
@@ -115,7 +128,7 @@ class FanovaBackend(object):
             # store interaction effects to disk
             with open(os.path.join(save_folder, 'pimp_values_fanova_interaction.json'), 'w') as out_file:
                 json.dump(result_interaction, out_file, sort_keys=True, indent=4, separators=(',', ': '))
-            vis = Visualizer(evaluator, configspace)
-            vis.create_most_important_pairwise_marginal_plots(save_folder + '/fanova')
+            #vis = Visualizer(evaluator, configspace)
+            #vis.create_most_important_pairwise_marginal_plots(save_folder + '/fanova')
 
         return save_folder + "/" + filename

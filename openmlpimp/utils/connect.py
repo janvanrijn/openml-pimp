@@ -56,14 +56,18 @@ def obtain_all_evaluations(**kwargs):
     evaluations = {}
     offset = 0
     limit = 1000
-    while True:
-        evaluations_batch = openml.evaluations.list_evaluations(**kwargs, offset=offset, size=limit)
-        for run_id in evaluations_batch.keys():
-            evaluations[run_id] = evaluations_batch[run_id]
+    try:
+        while True:
+            evaluations_batch = openml.evaluations.list_evaluations(**kwargs, offset=offset, size=limit)
+            for run_id in evaluations_batch.keys():
+                evaluations[run_id] = evaluations_batch[run_id]
 
-        offset += limit
-        if len(evaluations_batch) < limit:
-            break
+            offset += limit
+            if len(evaluations_batch) < limit:
+                break
+    except OpenMLServerException:
+        pass
+
     return evaluations
 
 
