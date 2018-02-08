@@ -25,7 +25,7 @@ def parse_args():
     parser.add_argument('--flow_id', type=int, default=6970, help='the tag to obtain the tasks for the prior from')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
-    parser.add_argument('--openml_taskid', type=int, nargs="+", default=3, help='the openml task id to execute')
+    parser.add_argument('--openml_taskid', type=int, nargs="+", default=None, help='the openml task id to execute')
     parser.add_argument('--search_type', type=str, choices=['kde', 'uniform', 'empirical', 'multivariate'], default='kde', help='the way to apply the search')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--inverse_holdout', action="store_true", help='Will only operate on the task at hand (overestimate performance)')
