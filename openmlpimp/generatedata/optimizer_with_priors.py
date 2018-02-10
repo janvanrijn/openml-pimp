@@ -22,21 +22,21 @@ def parse_args():
     parser.add_argument('--cache_dir', type=str, default=os.path.expanduser('~') + '/experiments/cache_kde')
     parser.add_argument('--output_dir', type=str, default=os.path.expanduser('~') + '/experiments/priorbased_experiments')
     parser.add_argument('--study_id', type=str, default='OpenML100', help='the tag to obtain the tasks for the prior from')
-    parser.add_argument('--flow_id', type=int, default=6970, help='the tag to obtain the tasks for the prior from')
+    parser.add_argument('--flow_id', type=int, default=6969, help='the tag to obtain the tasks for the prior from')
     parser.add_argument('--fixed_parameters', type=json.loads, default=None, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--openml_server', type=str, default=None, help='the openml server location')
     parser.add_argument('--openml_taskid', type=int, nargs="+", default=None, help='the openml task id to execute')
     parser.add_argument('--search_type', type=str, choices=['kde', 'uniform', 'empirical', 'multivariate'], default='kde', help='the way to apply the search')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')
     parser.add_argument('--inverse_holdout', action="store_true", help='Will only operate on the task at hand (overestimate performance)')
-    parser.add_argument('--ignore_logscale', action="store_true", help='Will only use hyperparameters that are not on a logscale')
     parser.add_argument('--oob_strategy', type=str, default='resample', help='Way to handle priors that are out of bound')
     parser.add_argument('--n_executions', type=int, default=None, help='Max bound, for example for cluster jobs. ')
     parser.add_argument('--seeds', type=int, nargs="+", default=[10, 20, 30, 40, 50, 60, 70, 80, 90, 100], help='random seed for experiments')
     parser.add_argument('--random_order', action="store_true", help='Iterates the tasks in a random order')
     parser.add_argument('--eta', type=int, default=2, help='successive halving parameter')
     parser.add_argument('--num_steps', type=int, default=None, help='successive halving parameter')
-    parser.add_argument('--num_brackets', type=int, default=None, help='successive halving parameter')
+    parser.add_argument('--num_brackets', type=int, default=None, help='hyperband parameter')
+    parser.add_argument('--num_iterations', type=int, default=50, help='random search parameter')
     parser.add_argument('--n_jobs', type=int, default=-1, help='parallelize')
 
     args = parser.parse_args()
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     optimizer_parameters = dict()
     optimizer_parameters['bestN'] = args.bestN
     optimizer_parameters['inverse_holdout'] = args.inverse_holdout
-    optimizer_parameters['ignore_logscale'] = args.ignore_logscale
+    optimizer_parameters['ignore_logscale'] = False
     optimizer_parameters['oob_strategy'] = args.oob_strategy
 
     output_save_folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(optimizer_parameters)
@@ -106,10 +106,6 @@ if __name__ == '__main__':
 
     configuration_space = openmlpimp.utils.get_config_space_casualnames(classifier, args.fixed_parameters)
     hyperparameters = dict(configuration_space._hyperparameters.items())
-    if args.ignore_logscale:
-        for param_name in hyperparameters.keys():
-            if isinstance(hyperparameters[param_name], NumericalHyperparameter):
-                hyperparameters[param_name].log = False
 
     print("classifier %s; flow id: %d; fixed_parameters: %s" %(classifier, args.flow_id, args.fixed_parameters))
     print("%s Tasks: %s" %(openmlpimp.utils.get_time(), str(all_task_ids)))
@@ -119,6 +115,8 @@ if __name__ == '__main__':
         setting = 'hyperband_%d' %(args.num_brackets)
     elif args.num_steps is not None:
         setting = 'successive_halving_%d' %(args.num_steps)
+    elif args.num_iterations is not None:
+        setting = 'random_search_%d' %(args.num_iterations)
     else:
         raise ValueError()
 
@@ -238,6 +236,12 @@ if __name__ == '__main__':
                                                   n_jobs=args.n_jobs,
                                                   eta=args.eta,
                                                   num_steps=args.num_steps)
+                elif args.num_iterations is not None:
+                    optimizer = RandomizedSearchCV(estimator=pipe,
+                                                   param_distributions=param_distributions,
+                                                   n_iter=args.num_iterations,
+                                                   random_state=seed,
+                                                   n_jobs=args.n_jobs)
                 optimizer.set_params(**fixed_param_values)
                 print("%s Optimizer: %s" %(openmlpimp.utils.get_time(), str(optimizer)))
                 print("%s Steps: " %openmlpimp.utils.get_time(), optimizer.estimator.steps)
