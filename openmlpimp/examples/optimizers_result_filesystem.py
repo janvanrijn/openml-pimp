@@ -28,6 +28,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    print(args.setup, args.flow_id, args.fixed_parameters)
     strategy_threshold = 20
 
     results_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)

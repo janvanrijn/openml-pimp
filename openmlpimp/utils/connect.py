@@ -151,18 +151,21 @@ def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
     offset = 0
     limit  = 500
     setup_ids = list(setup_ids)
-    while True:
-        setups_batch = openml.setups.list_setups(flow=flow_id, setup=setup_ids[offset:offset+limit], offset=offset)
-        if fixed_parameters is None:
-            setups.update(setups_batch)
-        else:
-            for setup_id in setups_batch.keys():
-                if setup_complies_to_fixed_parameters(setups_batch[setup_id], keyfield, fixed_parameters):
-                    setups[setup_id] = setups_batch[setup_id]
+    try:
+        while True:
+            setups_batch = openml.setups.list_setups(flow=flow_id, setup=setup_ids[offset:offset+limit], offset=offset)
+            if fixed_parameters is None:
+                setups.update(setups_batch)
+            else:
+                for setup_id in setups_batch.keys():
+                    if setup_complies_to_fixed_parameters(setups_batch[setup_id], keyfield, fixed_parameters):
+                        setups[setup_id] = setups_batch[setup_id]
 
-        offset += limit
-        if len(setups_batch) < limit:
-            break
+            offset += limit
+            if len(setups_batch) < limit:
+                break
+    except OpenMLServerException:
+        pass
     return setups
 
 

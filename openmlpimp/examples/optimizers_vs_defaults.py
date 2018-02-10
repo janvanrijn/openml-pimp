@@ -1,11 +1,11 @@
 import arff
 import argparse
 import collections
-import csv
 import matplotlib.pyplot as plt
 import openml
 import openmlpimp
 import os
+import pickle
 import random
 import sklearn
 
@@ -119,7 +119,7 @@ def plot_boxplot(priors_results, mode):
                 scores_kde = priors_results[classifier][task_id]['kde']
                 scores_uniform = priors_results[classifier][task_id]['uniform']
 
-                current = sum(scores_kde.values()) / len(scores_kde) - sum(scores_uniform.values()) / len(scores_kde)
+                current = sum(scores_kde.values()) / len(scores_kde) - sum(scores_uniform.values()) / len(scores_uniform)
                 data.append(current)
                 if current > 0: kde_wins +=1
                 elif current < 0: uni_wins += 1
@@ -157,37 +157,62 @@ if __name__ == '__main__':
     priors_results_valid = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(dict)))
     defaults_results = collections.defaultdict(dict)
     for classifier, directory_suffix in all_classifiers:
-        for task_id in all_tasks:
+        classifier_dir = os.path.join(args.result_directory, args.setup, directory_suffix)
+        cache_dir = os.path.join(args.output_directory, args.setup, directory_suffix)
 
-            # default_run_directory = args.defaults_directory + directory_suffix + '/' + str(task_id)
-            # default_run_xml = default_run_directory + '/run.xml'
-            # if os.path.isfile(default_run_xml):
-            #     default_score = get_score_from_xml(default_run_xml, args.measure)
-            #     defaults_results[classifier][task_id] = default_score
-            classifier_dir = os.path.join(args.result_directory, args.setup, directory_suffix)
+        try:
+            os.makedirs(cache_dir)
+        except FileExistsError:
+            pass
+
+        if os.path.isfile(cache_dir + '/cache_test.pkl') and os.path.isfile(cache_dir + '/cache_valid.pkl'):
+            cache_results_test = pickle.load(open(cache_dir + '/cache_test.pkl', 'rb'))
+            cache_results_valid = pickle.load(open(cache_dir + '/cache_valid.pkl', 'rb'))
+        else:
+            cache_results_test = dict()
+            cache_results_valid = dict()
+
+        for task_id in all_tasks:
+            if task_id not in cache_results_test: cache_results_test[task_id] = dict()
+            if task_id not in cache_results_valid: cache_results_valid[task_id] = dict()
+
             for strategy in os.listdir(classifier_dir):
+                strategy_name = strategy.split('__')[0]
+                if strategy_name not in cache_results_test[task_id]: cache_results_test[task_id][strategy_name] = dict()
+                if strategy_name not in cache_results_valid[task_id]: cache_results_valid[task_id][strategy_name] = dict()
+
                 task_dir = os.path.join(classifier_dir, strategy, str(task_id))
                 if os.path.isdir(task_dir):
                     for seed in os.listdir(task_dir):
-                        if args.seed is not None and args.seed is not int(seed):
-                            continue
-                        strategy_name = strategy.split('__')[0]
-                        strategy_trace = classifier_dir + '/' + strategy + '/' + str(task_id) + '/' + seed + '/trace.arff'
-                        strategy_predictions = classifier_dir + '/' + strategy + '/' + str(task_id) + '/' + seed + '/predictions.arff'
-
-                        if not os.path.isfile(strategy_predictions) or not os.path.isfile(strategy_trace):
-                            print(openmlpimp.utils.get_time(), '%s: Task %d not finished for strategy %s seed %s' %(classifier, task_id, strategy, seed))
+                        seed = int(seed)
+                        if args.seed is not None and args.seed is not seed:
                             continue
 
-                        with open(strategy_predictions, 'r') as fp:
-                            predictions_arff = arff.load(fp)
+                        strategy_trace = classifier_dir + '/' + strategy + '/' + str(task_id) + '/' + str(seed) + '/trace.arff'
+                        strategy_predictions = classifier_dir + '/' + strategy + '/' + str(task_id) + '/' + str(seed) + '/predictions.arff'
 
-                        run = openml.runs.OpenMLRun(flow_id=-1, dataset_id=-1, task_id=task_id)
-                        run.data_content = predictions_arff['data']
-                        score = run.get_metric_fn(sklearn.metrics.accuracy_score)
+                        if seed not in cache_results_test[task_id][strategy_name]:
+                            # data not in cache yet
+                            if not os.path.isfile(strategy_predictions) or not os.path.isfile(strategy_trace):
+                                print(openmlpimp.utils.get_time(), '%s: Task %d not finished for strategy %s seed %s' %(classifier, task_id, strategy, seed))
+                                continue
 
-                        priors_results_test[classifier][task_id][strategy_name][seed] = score.mean()
-                        priors_results_valid[classifier][task_id][strategy_name][seed] = trace_to_score(strategy_trace)
+                            with open(strategy_predictions, 'r') as fp:
+                                predictions_arff = arff.load(fp)
+
+                            run = openml.runs.OpenMLRun(flow_id=-1, dataset_id=-1, task_id=task_id)
+                            run.data_content = predictions_arff['data']
+                            score = run.get_metric_fn(sklearn.metrics.accuracy_score)
+
+                            cache_results_test[task_id][strategy_name][seed] = score.mean()
+                            cache_results_valid[task_id][strategy_name][seed] = trace_to_score(strategy_trace)
+
+                        # data is in cache
+                        priors_results_test[classifier][task_id][strategy_name][seed] = cache_results_test[task_id][strategy_name][seed]
+                        priors_results_valid[classifier][task_id][strategy_name][seed] = cache_results_valid[task_id][strategy_name][seed]
+
+        pickle.dump(cache_results_test, open(cache_dir + '/cache_test.pkl', 'wb'))
+        pickle.dump(cache_results_valid, open(cache_dir + '/cache_valid.pkl', 'wb'))
     # plot_scatter(defaults_results, priors_results_test)
     plot_boxplot(priors_results_test, 'test')
     plot_boxplot(priors_results_valid, 'validation')

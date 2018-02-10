@@ -128,8 +128,9 @@ def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, c
             continue
         strategy_name = _determine_name(strategy)
 
-        for task_id in os.listdir(os.path.join(curves_directory, strategy)):
-            results[task_id][strategy_name] = os.path.join(curves_directory, strategy, task_id, '*.csv')
+        for task_csv in os.listdir(os.path.join(curves_directory, strategy)):
+            task_id = task_csv.split('.')[0]
+            results[task_id][strategy_name] = os.path.join(curves_directory, strategy, task_csv)
 
     for task_id, strategy_file in results.items():
         for strategy, file in results[task_id].items():

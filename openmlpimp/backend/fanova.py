@@ -114,18 +114,45 @@ class FanovaBackend(object):
             result_interaction = {}
             for idx, param in enumerate(params):
                 for idx2, param2 in enumerate(params):
-                    print('interaction effects between', param.name, param2.name)
-                    if idx2 <= idx:
+                    if param.name >= param2.name: # string comparison cause stable
                         continue
+                    print('interaction effects between', param.name, param2.name)
                     interaction = evaluator.quantify_importance([idx, idx2])[(idx,idx2)]['total importance']
                     interaction -= result[param.name]
                     interaction -= result[param2.name]
+                    combined_name = param.name + '__' + param2.name
                     if interaction < 0.0:
-                        raise ValueError()
-                    result_interaction[param.name + '__' + param2.name] = interaction
-                    result_interaction[param2.name + '__' + param.name] = interaction
+                        raise ValueError('interaction score too low. Params: %s score %d' %(combined_name, interaction))
+                    result_interaction[combined_name] = interaction
+
+            for idx, param in enumerate(params):
+                for idx2, param2 in enumerate(params):
+                    if param.name >= param2.name:  # string comparison cause stable
+                        continue
+                    for idx3, param3 in enumerate(params):
+                        if param2.name >= param3.name:  # string comparison cause stable
+                            continue
+
+                        print('interaction effects between', param.name, param2.name, param3.name)
+                        interaction = evaluator.quantify_importance([idx, idx2, idx3])[(idx, idx2, idx3)]['total importance']
+                        interaction -= result[param.name]
+                        interaction -= result[param2.name]
+                        interaction -= result[param3.name]
+                        combined_name = param.name + '__' + param2.name + '__' + param3.name
+
+                        interaction -= result_interaction[param.name + '__' + param2.name]
+                        interaction -= result_interaction[param2.name + '__' + param3.name]
+                        interaction -= result_interaction[param.name + '__' + param3.name]
+
+                        if interaction < 0.0:
+                            raise ValueError('interaction score too low. Params: %s score %d' % (combined_name, interaction))
+                        result_interaction[combined_name] = interaction
 
             # store interaction effects to disk
+
+            if sum(result_interaction.values()) + sum(result.values()) > 1:
+                raise ValueError('Sum of results too high')
+
             with open(os.path.join(save_folder, 'pimp_values_fanova_interaction.json'), 'w') as out_file:
                 json.dump(result_interaction, out_file, sort_keys=True, indent=4, separators=(',', ': '))
             #vis = Visualizer(evaluator, configspace)

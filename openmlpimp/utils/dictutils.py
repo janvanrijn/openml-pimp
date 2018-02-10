@@ -18,6 +18,8 @@ def rank_dict(dictionary, reverse=False):
 
 def sum_dict_values(a, b, allow_subsets=False):
     result = {}
+    a_total = sum(a.values())
+    b_total = sum(b.values())
     a_min_b = set(a.keys()) - set(b.keys())
     b_min_a = set(b.keys()) - set(a.keys())
     if len(b_min_a) > 0:
@@ -29,6 +31,8 @@ def sum_dict_values(a, b, allow_subsets=False):
             result[idx] = a[idx] + b[idx]
         else:
             result[idx] = a[idx]
+    if sum(result.values()) != a_total + b_total:
+        raise ValueError()
     return result
 
 
