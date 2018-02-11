@@ -108,6 +108,8 @@ def determine_relevant(data, max_items=None, max_interactions=None):
 
 if __name__ == '__main__':
     args = parse_args()
-    total_ranks, marginal_contribution = openmlpimp.utils.obtain_marginal_contributions(args.result_directory)
+    total_ranks, marginal_contribution, all_tasks = openmlpimp.utils.obtain_marginal_contributions(args.result_directory)
     sorted_values, keys = determine_relevant(marginal_contribution, max_interactions=3)
 
+    to_ranks_file(marginal_contribution, all_tasks)
+    to_ranks_plain_file(sorted_values, keys, all_tasks)

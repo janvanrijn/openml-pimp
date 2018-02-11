@@ -36,4 +36,4 @@ def obtain_marginal_contributions(result_directory):
                     total_ranks = openmlpimp.utils.sum_dict_values(total_ranks, ranks, allow_subsets=False)
                     num_tasks += 1
     total_ranks = openmlpimp.utils.divide_dict_values(total_ranks, num_tasks)
-    return total_ranks, marginal_contribution
+    return total_ranks, marginal_contribution, all_tasks
