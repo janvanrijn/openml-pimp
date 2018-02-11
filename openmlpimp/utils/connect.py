@@ -117,7 +117,25 @@ def setup_complies_to_fixed_parameters(setup, keyfield, fixed_parameters):
     return True
 
 
-def setup_complies_to_config_space(setup, keyfield, hyperparameters):
+def setup_complies_to_config_space(setup, hyperparameters, keyfield='parameter_name'):
+    """
+        Checks whether a setup complies with a config space object
+
+        Parameters
+        -------
+        setup : OpenMLSetup
+            The OpenML setup field
+
+        hyperparameters : dict[str, ConfigSpace.Hyperparameter]
+            dictionary mapping from parameter name to the ConfigSpace Hyperparameter object
+
+        keyfield :
+            The field in setup that connects the hyperparameters key to the setup name.
+
+        Returns
+        -------
+        bool whether the config comploes
+        """
     setup_parameters = {getattr(setup.parameters[param_id], keyfield): setup.parameters[param_id].value for param_id in
                         setup.parameters}
     for name, parameter in hyperparameters.items():
@@ -131,17 +149,17 @@ def setup_complies_to_config_space(setup, keyfield, hyperparameters):
             continue
         elif isinstance(parameter, UniformIntegerHyperparameter):
             if not isinstance(value_online, int):
-                print('Illegal setup, non-integer value:',parameter.name, value_online)
+                print('Illegal setup %d, non-integer value:' %setup.setup_id, parameter.name, value_online)
                 return False
             elif value_online > parameter.upper or value_online < parameter.lower:
-                print('Illegal setup, value out of range [%d-%d]:' %(parameter.lower, parameter.upper), parameter.name, value_online)
+                print('Illegal setup %d, value out of range [%d-%d]:' %(setup.setup_id, parameter.lower, parameter.upper), parameter.name, value_online)
                 return False
         elif isinstance(parameter, UniformFloatHyperparameter):
             if not isinstance(value_online, float):
-                print('Illegal setup, non-float value:',parameter.name, value_online)
+                print('Illegal setup %d, non-float value:' %setup.setup_id, parameter.name, value_online)
                 return False
             elif value_online > parameter.upper or value_online < parameter.lower:
-                print('Illegal setup, value out of range [%f-%f]:' %(parameter.lower, parameter.upper), parameter.name, value_online)
+                print('Illegal setup %d, value out of range [%f-%f]:' %(setup.setup_id, parameter.lower, parameter.upper), parameter.name, value_online)
                 return False
     return True
 
@@ -207,18 +225,21 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     configs = {}
     applicable_setups = set()
     for run_id in evaluations.keys():
-        cost = evaluations[run_id].value
-        runtime = 0.0 # not easily accessible
-        status = {"__enum__": str(StatusType.SUCCESS)}
-        additional = {}
-        performance = [cost, runtime, status, additional]
-
         config_id = evaluations[run_id].setup_id
-        instance = openml.config.server + "task/" + str(task_id)
-        seed = 1  # not relevant
-        run = [config_id, instance, seed]
-
         if config_id in setup_ids:
+            if not setup_complies_to_config_space(setups[config_id], dict(config_space._hyperparameters.items())):
+                continue
+
+            cost = evaluations[run_id].value
+            runtime = 0.0 # not easily accessible
+            status = {"__enum__": str(StatusType.SUCCESS)}
+            additional = {}
+            performance = [cost, runtime, status, additional]
+
+            instance = openml.config.server + "task/" + str(task_id)
+            seed = 1  # not relevant
+            run = [config_id, instance, seed]
+
             applicable_setups.add(config_id)
             data.append([run, performance])
 

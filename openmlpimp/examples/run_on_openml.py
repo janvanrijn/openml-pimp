@@ -32,9 +32,11 @@ def read_cmd():
     parser.add_argument("-T", "--openml_studyid", default="14", help="The OpenML tag for obtaining tasks")
     parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
-    parser.add_argument('-Q', '--use_quantiles', action="store_true", default=True,
+    parser.add_argument('-Q', '--use_quantiles', action="store_true", default=False,
                         help='Use quantile information instead of full range')
-    parser.add_argument('-I', '--interaction_effect', action="store_true", default=False)
+    parser.add_argument('-X', '--draw_plots', action="store_true", default=False,
+                        help='Draw plots of the marginals and interactions')
+    parser.add_argument('-I', '--interaction_effect', action="store_true", default=True)
     parser.add_argument('-M', '--modus', type=str, choices=['ablation', 'fanova'],
                         default='fanova', help='Whether to use ablation or fanova')
     parser.add_argument('-L', '--limit', type=int, default=None, help='Max runs per task (efficiency)')
@@ -94,7 +96,7 @@ if __name__ == '__main__':
 
             if args.modus == 'fanova':
                 print('Running FANOVA backend on task %d' %task_id)
-                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path, use_percentiles=args.use_quantiles, interaction_effect=args.interaction_effect, run_limit=args.limit)
+                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path, use_percentiles=args.use_quantiles, interaction_effect=args.interaction_effect, run_limit=args.limit, draw_plots=args.draw_plots)
             else:
                 print('Running PIMP backend [%s] on task %d' %(args.modus, task_id))
                 results_file = PimpBackend.execute(task_save_folder, runhistory_path, configspace_path, modus=args.modus)

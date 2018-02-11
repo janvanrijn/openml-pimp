@@ -146,7 +146,7 @@ def cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_param
         runs = openmlpimp.utils.obtain_all_evaluations(function="predictive_accuracy", task=[task_id], flow=[flow_id])
         for run in runs.values():
             if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name', fixed_parameters):
-                if openmlpimp.utils.setup_complies_to_config_space(setups[run.setup_id], 'parameter_name', hyperparameters):
+                if openmlpimp.utils.setup_complies_to_config_space(setups[run.setup_id], keyfield='parameter_name', hyperparameters=hyperparameters):
                     task_setup_scores[task_id][run.setup_id] = run.value
     try:
         os.makedirs(cache_directory)
