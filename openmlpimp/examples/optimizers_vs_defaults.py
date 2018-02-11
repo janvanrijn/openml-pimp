@@ -9,12 +9,15 @@ import pickle
 import random
 import sklearn
 
+from statistics import mean
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--virtual_env', type=str, default=os.path.expanduser('~') + '/projects/pythonvirtual/plot2/bin/python')
     parser.add_argument('--scripts_dir', type=str, default=os.path.expanduser('~') + '/projects/plotting_scripts/scripts')
     parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/priorbased_experiments/')
+    parser.add_argument('--defaults_directory', type=str, default=os.path.expanduser('~') + '/experiments/defaults/')
     parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/optimizers/priors/')
 
     parser.add_argument('--measure', type=str, default='predictive_accuracy')
@@ -39,16 +42,16 @@ def list_classifiers(directory):
     return result
 
 
-# def get_score_from_xml(run_xml_location, measure):
-#     with open(run_xml_location, 'r') as fp:
-#         run = openml.runs.functions._create_run_from_xml(fp.read())
-#         scores = []
-#
-#         for repeat in run.fold_evaluations[measure]:
-#             for fold in run.fold_evaluations[measure][repeat]:
-#                 scores.append(float(run.fold_evaluations[measure][repeat][fold]))
-#
-#     return sum(scores) / len(scores)
+def get_score_from_xml(run_xml_location, measure):
+    with open(run_xml_location, 'r') as fp:
+        run = openml.runs.functions._create_run_from_xml(fp.read(), from_server=False)
+        scores = []
+
+        for repeat in run.fold_evaluations[measure]:
+            for fold in run.fold_evaluations[measure][repeat]:
+                scores.append(float(run.fold_evaluations[measure][repeat][fold]))
+
+    return sum(scores) / len(scores)
 
 
 # def get_score_from_avgcurve(csv_location):
@@ -93,9 +96,12 @@ def plot_scatter(defaults_results, priors_results):
         for task_id in priors_results[classifier]:
             if len(priors_results[classifier][task_id]) == 2 and 'uniform' in priors_results[classifier][task_id] and 'kde' in priors_results[classifier][task_id] and task_id in defaults_results[classifier]:
                 # print("%7d %7f %7f %7f" %(task_id, defaults_results[classifier][task_id], priors_results[classifier][task_id]['uniform'], priors_results[classifier][task_id]['kde']))
-                plot_data_x.append(priors_results[classifier][task_id]['uniform'] - defaults_results[classifier][task_id])
-                plot_data_y.append(priors_results[classifier][task_id]['kde'] - defaults_results[classifier][task_id])
-        plt.scatter(plot_data_x, plot_data_y, color=colors[idx], label=classifier)
+                plot_data_x.append(mean(priors_results[classifier][task_id]['uniform'].values()) - defaults_results[classifier][task_id])
+                plot_data_y.append(mean(priors_results[classifier][task_id]['kde'].values()) - defaults_results[classifier][task_id])
+
+        if len(plot_data_x) > 0:
+            print(plot_data_x, plot_data_y)
+            plt.scatter(plot_data_x, plot_data_y, color=colors[idx], label=classifier)
     # print("(%5d) %7f %7f %7f" %(len(plot_data_x), 0, sum(plot_data_x) / len(plot_data_x), sum(plot_data_y) / len(plot_data_y)))
 
     plt.legend(loc='upper left')
@@ -124,16 +130,22 @@ def plot_boxplot(priors_results, mode):
                 if current > 0: kde_wins +=1
                 elif current < 0: uni_wins += 1
                 else: draws += 1
-        all.append(data)
-        keys.append(classifier)
-        print(openmlpimp.utils.get_time(), mode, "%s kde %d vs %d uniform (and %d draws)" %(classifier, kde_wins, uni_wins, draws))
+        n = kde_wins + uni_wins + draws
+        if n > 5:
+            all.append(data)
+            keys.append(classifier)
 
-        plt.figure(figsize=(4, 12))
-        plt.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
-        plt.plot([0.5, 1.5], [0, 0], 'k-', linestyle='--', lw=1)
-        plt.violinplot(data)
-        plt.savefig(output_directory + '/priors_%s_%s.pdf' %(classifier, mode), bbox_inches='tight')
-        plt.close()
+            rank_kde = 2 - (kde_wins + (draws / 2)) / float(n)
+            rank_uni = 2 - (uni_wins + (draws / 2)) / float(n)
+
+            print(openmlpimp.utils.get_time(), mode, "%s kde %d vs %d uniform (and %d draws). N = %d, Ranks: kde %f - %f uniform" %(classifier, kde_wins, uni_wins, draws, n, rank_kde, rank_uni))
+
+            plt.figure(figsize=(4, 12))
+            plt.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
+            plt.plot([0.5, 1.5], [0, 0], 'k-', linestyle='--', lw=1)
+            plt.violinplot(data)
+            plt.savefig(output_directory + '/priors_%s_%s.pdf' %(classifier, mode), bbox_inches='tight')
+            plt.close()
 
     plt.figure()
     plt.violinplot(all, list(range(len(all))))
@@ -176,6 +188,12 @@ if __name__ == '__main__':
             if task_id not in cache_results_test: cache_results_test[task_id] = dict()
             if task_id not in cache_results_valid: cache_results_valid[task_id] = dict()
 
+            default_run_directory = args.defaults_directory + directory_suffix + '/' + str(task_id)
+            default_run_xml = default_run_directory + '/run.xml'
+            if os.path.isfile(default_run_xml):
+                default_score = get_score_from_xml(default_run_xml, args.measure)
+                defaults_results[classifier][task_id] = default_score
+
             for strategy in os.listdir(classifier_dir):
                 strategy_name = strategy.split('__')[0]
                 if strategy_name not in cache_results_test[task_id]: cache_results_test[task_id][strategy_name] = dict()
@@ -183,6 +201,14 @@ if __name__ == '__main__':
 
                 task_dir = os.path.join(classifier_dir, strategy, str(task_id))
                 if os.path.isdir(task_dir):
+
+                    default_run_directory = args.defaults_directory + directory_suffix + '/' + str(task_id)
+                    default_run_xml = default_run_directory + '/run.xml'
+
+                    if os.path.isfile(default_run_xml):
+                        default_score = get_score_from_xml(default_run_xml, args.measure)
+                        defaults_results[classifier][task_id] = default_score
+
                     for seed in os.listdir(task_dir):
                         seed = int(seed)
                         if args.seed is not None and args.seed is not seed:
@@ -213,6 +239,6 @@ if __name__ == '__main__':
 
         pickle.dump(cache_results_test, open(cache_dir + '/cache_test.pkl', 'wb'))
         pickle.dump(cache_results_valid, open(cache_dir + '/cache_valid.pkl', 'wb'))
-    # plot_scatter(defaults_results, priors_results_test)
+    plot_scatter(defaults_results, priors_results_test)
     plot_boxplot(priors_results_test, 'test')
     plot_boxplot(priors_results_valid, 'validation')
