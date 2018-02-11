@@ -1,0 +1,22 @@
+{
+    "C__gamma": 0.293200660925573,
+    "C__gamma__shrinking": 0.0008535733683361895,
+    "C__gamma__strategy": 0.019524594452046316,
+    "C__gamma__tol": 0.06644664814296802,
+    "C__shrinking": 0.0043561848401804945,
+    "C__shrinking__strategy": 0.0001853617554056497,
+    "C__shrinking__tol": 0.0015315012407861317,
+    "C__strategy": 0.011252436016824897,
+    "C__strategy__tol": 0.009005258127179838,
+    "C__tol": 0.06889104434168417,
+    "gamma__shrinking": 0.0004375203600072439,
+    "gamma__shrinking__strategy": 6.920901358717368e-05,
+    "gamma__shrinking__tol": 0.00048810400202894955,
+    "gamma__strategy": 0.0071668770386519205,
+    "gamma__strategy__tol": 0.012644755190426238,
+    "gamma__tol": 0.06361349214299658,
+    "shrinking__strategy": 7.39096694034316e-05,
+    "shrinking__strategy__tol": 2.826019274781988e-05,
+    "shrinking__tol": 0.0018682958501392843,
+    "strategy__tol": 0.007156796265681012
+}

@@ -1,0 +1,22 @@
+{
+    "algorithm__learning_rate": 0.00614164127062088,
+    "algorithm__learning_rate__max_depth": 0.010761615507676306,
+    "algorithm__learning_rate__n_estimators": 0.0008209674853166902,
+    "algorithm__learning_rate__strategy": 0.00015828474002380847,
+    "algorithm__max_depth": 0.01638880050758662,
+    "algorithm__max_depth__n_estimators": 0.005780989044323507,
+    "algorithm__max_depth__strategy": 0.00029358197122113396,
+    "algorithm__n_estimators": 0.002228529097377528,
+    "algorithm__n_estimators__strategy": 0.00011602274292457712,
+    "algorithm__strategy": 9.200847013142364e-05,
+    "learning_rate__max_depth": 0.013855422691472996,
+    "learning_rate__max_depth__n_estimators": 0.005521915968814895,
+    "learning_rate__max_depth__strategy": 0.0008588053159742214,
+    "learning_rate__n_estimators": 0.001651362582214001,
+    "learning_rate__n_estimators__strategy": 0.00010381671918660649,
+    "learning_rate__strategy": 0.00017881376903710044,
+    "max_depth__n_estimators": 0.009871860679263945,
+    "max_depth__n_estimators__strategy": 0.0011781621947844542,
+    "max_depth__strategy": 0.0006433002511835136,
+    "n_estimators__strategy": 0.00019094050216277985
+}
