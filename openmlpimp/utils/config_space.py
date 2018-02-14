@@ -52,11 +52,11 @@ def get_config_space_casualnames(classifier, fixed_parameters=None):
             continue
 
         if isinstance(hyperparameter, ConfigSpace.CategoricalHyperparameter):
-            config_space_prime.add_hyperparameter(ConfigSpace.CategoricalHyperparameter(casualname, hyperparameter.choices, default=hyperparameter.default))
+            config_space_prime.add_hyperparameter(ConfigSpace.CategoricalHyperparameter(casualname, hyperparameter.choices, default_value=hyperparameter.default_value))
         elif isinstance(hyperparameter, ConfigSpace.UniformIntegerHyperparameter):
-            config_space_prime.add_hyperparameter(ConfigSpace.UniformIntegerHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default=hyperparameter.default))
+            config_space_prime.add_hyperparameter(ConfigSpace.UniformIntegerHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default_value=hyperparameter.default_value))
         elif isinstance(hyperparameter, ConfigSpace.UniformFloatHyperparameter):
-            config_space_prime.add_hyperparameter(ConfigSpace.UniformFloatHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default=hyperparameter.default))
+            config_space_prime.add_hyperparameter(ConfigSpace.UniformFloatHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default_value=hyperparameter.default_value))
         else:
             raise ValueError()
     return config_space_prime
