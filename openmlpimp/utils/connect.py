@@ -7,7 +7,7 @@ import json
 
 from openml.exceptions import OpenMLServerException
 
-from ConfigSpace.io.pcs_new import write
+from ConfigSpace.read_and_write.pcs_new import write
 from ConfigSpace.hyperparameters import CategoricalHyperparameter, UniformFloatHyperparameter, \
     UniformIntegerHyperparameter
 

@@ -6,11 +6,9 @@ import numpy as np
 import openmlpimp
 import os
 import matplotlib.pyplot as plt
-import warnings
 
 from scipy.stats import rv_discrete
 
-import autosklearn.constants
 from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter
 from autosklearn.util.pipeline import get_configuration_space
 
