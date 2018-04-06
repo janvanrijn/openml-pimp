@@ -109,6 +109,8 @@ def config_to_classifier(config, indices):
             value = False
 
         pipeline_parameters[param_name] = value
+    if model_type is None:
+        raise ValueError('Modeltype not recognized (set with classifier:__choice__ value)')
 
     classifier, required_parameters = modeltype_to_classifier(model_type)
     pipeline_parameters.update(required_parameters)
