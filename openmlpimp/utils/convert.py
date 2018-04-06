@@ -7,7 +7,7 @@ import sys
 
 from openml.flows import flow_to_sklearn
 from sklearn.svm import SVC
-
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 
 from ConfigSpace.configuration_space import ConfigurationSpace
 from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
@@ -45,7 +45,7 @@ def classifier_to_pipeline(classifier, indices):
              ('classifier', classifier)]
 
     # TODO: Also scaling on Tree based models?
-    if isinstance(classifier, sklearn.ensemble.RandomForestClassifier) or isinstance(classifier, sklearn.ensemble.AdaBoostClassifier):
+    if isinstance(classifier, RandomForestClassifier) or isinstance(classifier, AdaBoostClassifier):
         del steps[2]
 
     pipeline = sklearn.pipeline.Pipeline(steps=steps)
@@ -60,7 +60,7 @@ def modeltype_to_classifier(model_type, params={}):
             if param.startswith('base_estimator__'):
                 base_estimator_params[param[16:]] = params.pop(param)
 
-        classifier = sklearn.ensemble.AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier(**base_estimator_params), **params)
+        classifier = AdaBoostClassifier(base_estimator=sklearn.tree.DecisionTreeClassifier(**base_estimator_params), **params)
     elif model_type == 'decision_tree':
         classifier = sklearn.tree.DecisionTreeClassifier(**params)
     elif model_type == 'libsvm_svc':
@@ -69,7 +69,7 @@ def modeltype_to_classifier(model_type, params={}):
     elif model_type == 'sgd':
         classifier = sklearn.linear_model.SGDClassifier(**params)
     elif model_type == 'random_forest':
-        classifier = sklearn.ensemble.RandomForestClassifier(**params)
+        classifier = RandomForestClassifier(**params)
     else:
         raise ValueError('Unknown classifier: %s' %model_type)
     return classifier, required_params
