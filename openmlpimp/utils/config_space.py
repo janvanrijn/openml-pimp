@@ -3,7 +3,7 @@ import openmlpimp
 
 
 def get_config_space(classifier, type='default'):
-    fn_string = 'get_' + type + '_' + classifier + '_search_space'
+    fn_string = 'get_' + classifier + '_' + type + '_search_space'
     fn_reference = getattr(openmlpimp.configspaces, fn_string)
     cf_space_raw = fn_reference()
 
@@ -37,11 +37,11 @@ def get_config_space_casualnames(classifier, fixed_parameters=None):
             continue
 
         if isinstance(hyperparameter, ConfigSpace.CategoricalHyperparameter):
-            config_space_prime.add_hyperparameter(ConfigSpace.CategoricalHyperparameter(casualname, hyperparameter.choices, default=hyperparameter.default))
+            config_space_prime.add_hyperparameter(ConfigSpace.CategoricalHyperparameter(casualname, hyperparameter.choices, default_value=hyperparameter.default_value))
         elif isinstance(hyperparameter, ConfigSpace.UniformIntegerHyperparameter):
-            config_space_prime.add_hyperparameter(ConfigSpace.UniformIntegerHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default=hyperparameter.default))
+            config_space_prime.add_hyperparameter(ConfigSpace.UniformIntegerHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default_value=hyperparameter.default_value))
         elif isinstance(hyperparameter, ConfigSpace.UniformFloatHyperparameter):
-            config_space_prime.add_hyperparameter(ConfigSpace.UniformFloatHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default=hyperparameter.default))
+            config_space_prime.add_hyperparameter(ConfigSpace.UniformFloatHyperparameter(casualname, hyperparameter.lower, hyperparameter.upper, log=hyperparameter.log, default_value=hyperparameter.default_value))
         else:
             raise ValueError()
     return config_space_prime

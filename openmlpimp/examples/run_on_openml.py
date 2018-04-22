@@ -1,4 +1,5 @@
 import traceback
+import ConfigSpace
 import openmlpimp
 import datetime
 import inspect
@@ -9,7 +10,6 @@ import sys
 import time
 import openml
 
-from ConfigSpace.io.pcs_new import read
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from openmlpimp.backend.fanova import FanovaBackend
 from openmlpimp.backend.pimp import PimpBackend

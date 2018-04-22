@@ -1,14 +1,13 @@
 import os
 import json
 import openmlpimp
+import ConfigSpace
 
 import numpy as np
 
 from matplotlib import pyplot as plt
 
-from ConfigSpace.hyperparameters import UniformFloatHyperparameter, UniformIntegerHyperparameter, CategoricalHyperparameter
-from ConfigSpace.io.pcs_new import read
-
+from ConfigSpace.read_and_write.pcs import read
 from fanova.fanova import fANOVA as fanova_pyrfr
 from fanova.visualizer import Visualizer
 
@@ -27,7 +26,7 @@ class FanovaBackend(object):
             plt.clf()
             param = hp.name
             outfile_name = os.path.join(directory, param.replace(os.sep, "_") + ".pdf")
-            if isinstance(hp, (CategoricalHyperparameter)):
+            if isinstance(hp, (ConfigSpace.hyperparameters.CategoricalHyperparameter)):
                 vis.plot_categorical_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False, ylabel='Predictive Accuracy')
             else:
                 vis.plot_marginal(configspace.get_idx_by_hyperparameter_name(param), resolution=100, show=False, ylabel='Predictive Accuracy')
@@ -60,12 +59,12 @@ class FanovaBackend(object):
             configuration = runhistory['configs'][setup_id]
             for param in configspace.get_hyperparameters():
                 value = configuration[param.name]
-                if isinstance(param, UniformFloatHyperparameter) and not isinstance(value, float):
+                if isinstance(param, ConfigSpace.hyperparameters.UniformFloatHyperparameter) and not isinstance(value, float):
                     valid = False
-                elif isinstance(param, UniformIntegerHyperparameter) and not isinstance(value, int):
+                elif isinstance(param, ConfigSpace.hyperparameters.UniformIntegerHyperparameter) and not isinstance(value, int):
                     valid = False
 
-                if isinstance(param, CategoricalHyperparameter):
+                if isinstance(param, ConfigSpace.hyperparameters.CategoricalHyperparameter):
                     value = param.choices.index(value)
                 elif param.log and manual_logtransform:
                     value = np.log(value)
