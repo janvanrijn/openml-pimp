@@ -20,7 +20,7 @@ from sklearn.base import is_classifier, clone
 from sklearn.model_selection._split import check_cv
 from sklearn.model_selection._validation import _fit_and_score
 from sklearn.externals.joblib import Parallel, delayed
-from sklearn.utils.fixes import rankdata
+from sklearn.utils.stats import rankdata
 from sklearn.utils.fixes import MaskedArray
 from sklearn.utils.validation import indexable
 from sklearn.metrics.scorer import check_scoring
