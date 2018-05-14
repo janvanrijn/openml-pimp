@@ -235,8 +235,8 @@ def scale_configspace_to_log(configspace):
             if hyperparameter.log:
                 lower = np.log(hyperparameter.lower)
                 upper = np.log(hyperparameter.upper)
-                default = np.log(hyperparameter.default)
-                prime = UniformFloatHyperparameter(name=hyperparameter.name, lower=lower, upper=upper, default=default, log=False)
+                default = np.log(hyperparameter.default_value)
+                prime = UniformFloatHyperparameter(name=hyperparameter.name, lower=lower, upper=upper, default_value=default, log=False)
                 configspace_prime.add_hyperparameter(prime)
             else:
                 prime = copy.deepcopy(hyperparameter)
@@ -244,6 +244,7 @@ def scale_configspace_to_log(configspace):
         else:
             raise ValueError()
     return configspace_prime
+
 
 def runhistory_to_trajectory(runhistory, maximize):
     trajectory_lines = []

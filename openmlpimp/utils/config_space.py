@@ -1,5 +1,25 @@
 import ConfigSpace
+import json
 import openmlpimp
+
+
+def openmlsetup_to_configuration(openmlsetup, config_space):
+    name_values = dict()
+    for param_id, param in openmlsetup.parameters.items():
+        name = param.parameter_name
+        if name in config_space.get_hyperparameter_names():
+            hyperparam = config_space._hyperparameters[name]
+            if isinstance(hyperparam, ConfigSpace.hyperparameters.UniformIntegerHyperparameter):
+                name_values[name] = int(param.value)
+            elif isinstance(hyperparam, ConfigSpace.hyperparameters.NumericalHyperparameter):
+                name_values[name] = float(param.value)
+            else:
+                val = json.loads(param.value)
+                if isinstance(val, bool):
+                    val = str(val)
+                name_values[name] = val
+
+    return ConfigSpace.Configuration(config_space, name_values)
 
 
 def get_config_space(classifier, type='default'):

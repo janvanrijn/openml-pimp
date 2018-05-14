@@ -8,8 +8,6 @@ import json
 from openml.exceptions import OpenMLServerException
 
 from ConfigSpace.read_and_write.pcs_new import write
-from ConfigSpace.hyperparameters import CategoricalHyperparameter, UniformFloatHyperparameter, \
-    UniformIntegerHyperparameter
 
 
 def task_counts(flow_id):
@@ -117,73 +115,23 @@ def setup_complies_to_fixed_parameters(setup, keyfield, fixed_parameters):
     return True
 
 
-def setup_complies_to_config_space(setup, hyperparameters, keyfield='parameter_name'):
-    """
-        Checks whether a setup complies with a config space object
-
-        Parameters
-        -------
-        setup : OpenMLSetup
-            The OpenML setup field
-
-        hyperparameters : dict[str, ConfigSpace.Hyperparameter]
-            dictionary mapping from parameter name to the ConfigSpace Hyperparameter object
-
-        keyfield :
-            The field in setup that connects the hyperparameters key to the setup name.
-
-        Returns
-        -------
-        bool whether the config comploes
-        """
-    setup_parameters = {getattr(setup.parameters[param_id], keyfield): setup.parameters[param_id].value for param_id in
-                        setup.parameters}
-    for name, parameter in hyperparameters.items():
-        if name not in setup_parameters.keys():
-            raise ValueError('Required parameter %s not in setup parameter for setup %d' % (parameter, setup.setup_id))
-        value_online = openml.flows.flow_to_sklearn(setup_parameters[parameter.name])
-        if isinstance(parameter, CategoricalHyperparameter):
-            # if value_online not in parameter.choices:
-            #     print('Illegal setup:',parameter.name, setup_parameters)
-            #     return False
-            continue
-        elif isinstance(parameter, UniformIntegerHyperparameter):
-            if not isinstance(value_online, int):
-                print('Illegal setup %d, non-integer value:' %setup.setup_id, parameter.name, value_online)
-                return False
-            elif value_online > parameter.upper or value_online < parameter.lower:
-                print('Illegal setup %d, value out of range [%d-%d]:' %(setup.setup_id, parameter.lower, parameter.upper), parameter.name, value_online)
-                return False
-        elif isinstance(parameter, UniformFloatHyperparameter):
-            if not isinstance(value_online, float):
-                print('Illegal setup %d, non-float value:' %setup.setup_id, parameter.name, value_online)
-                return False
-            elif value_online > parameter.upper or value_online < parameter.lower:
-                print('Illegal setup %d, value out of range [%f-%f]:' %(setup.setup_id, parameter.lower, parameter.upper), parameter.name, value_online)
-                return False
-    return True
-
-
 def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
     setups = {}
     offset = 0
-    limit  = 500
+    limit  = 250
     setup_ids = list(setup_ids)
-    try:
-        while True:
-            setups_batch = openml.setups.list_setups(flow=flow_id, setup=setup_ids[offset:offset+limit], offset=offset)
-            if fixed_parameters is None:
-                setups.update(setups_batch)
-            else:
-                for setup_id in setups_batch.keys():
-                    if setup_complies_to_fixed_parameters(setups_batch[setup_id], keyfield, fixed_parameters):
-                        setups[setup_id] = setups_batch[setup_id]
+    while True:
+        setups_batch = openml.setups.list_setups(flow=flow_id, setup=setup_ids[offset:offset+limit], offset=offset)
+        if fixed_parameters is None:
+            setups.update(setups_batch)
+        else:
+            for setup_id in setups_batch.keys():
+                if setup_complies_to_fixed_parameters(setups_batch[setup_id], keyfield, fixed_parameters):
+                    setups[setup_id] = setups_batch[setup_id]
 
-            offset += limit
-            if len(setups_batch) < limit:
-                break
-    except OpenMLServerException:
-        pass
+        offset += limit
+        if len(setups_batch) < limit:
+            break
     return setups
 
 
@@ -227,7 +175,10 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     for run_id in evaluations.keys():
         config_id = evaluations[run_id].setup_id
         if config_id in setup_ids:
-            if not setup_complies_to_config_space(setups[config_id], dict(config_space._hyperparameters.items())):
+            try:
+                configuration = openmlpimp.utils.openmlsetup_to_configuration(setups[config_id], config_space)
+            except ValueError as e:
+                print(e)
                 continue
 
             cost = evaluations[run_id].value
@@ -286,8 +237,7 @@ def cache_runhistory_configspace(save_folder, flow_id, task_id, model_type, requ
                                                                                      ignore_parameters=ignore_parameters,
                                                                                      reverse=reverse)
 
-        try: os.makedirs(save_folder + save_folder_suffix)
-        except FileExistsError: pass
+        os.makedirs(save_folder + save_folder_suffix, exist_ok=True)
 
         with open(runhistory_path, 'w') as outfile:
             json.dump(runhistory, outfile, indent=2)

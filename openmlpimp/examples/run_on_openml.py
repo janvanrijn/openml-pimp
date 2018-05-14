@@ -1,5 +1,4 @@
 import traceback
-import ConfigSpace
 import openmlpimp
 import datetime
 import inspect
@@ -10,6 +9,7 @@ import sys
 import time
 import openml
 
+from ConfigSpace.read_and_write.pcs_new import read
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from openmlpimp.backend.fanova import FanovaBackend
 from openmlpimp.backend.pimp import PimpBackend
@@ -27,14 +27,14 @@ def read_cmd():
     parser.add_argument("-V", "--verbose_level", default=logging.INFO, choices=["INFO", "DEBUG"], help="verbosity")
     parser.add_argument("-C", "--table", action='store_true', help="Save result table")
     parser.add_argument("-R", "--required_setups", default=100, help="Minimal number of setups needed to use a task")
-    parser.add_argument("-F", "--flow_id", default=6970, help="The OpenML flow id to use")
-    parser.add_argument("--model_type", default="adaboost")
+    parser.add_argument("-F", "--flow_id", default=7707, help="The OpenML flow id to use")
+    parser.add_argument("--model_type", default="libsvm_svc")
     parser.add_argument("-T", "--openml_studyid", default="14", help="The OpenML tag for obtaining tasks")
     parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
                         help='Will only use configurations that have these parameters fixed')
     parser.add_argument('-Q', '--use_quantiles', action="store_true", default=False,
                         help='Use quantile information instead of full range')
-    parser.add_argument('-X', '--draw_plots', action="store_true", default=False,
+    parser.add_argument('-X', '--draw_plots', action="store_true", default=True,
                         help='Draw plots of the marginals and interactions')
     parser.add_argument('-I', '--interaction_effect', action="store_true", default=True)
     parser.add_argument('-M', '--modus', type=str, choices=['ablation', 'fanova'],
@@ -58,14 +58,15 @@ def fixed_parameters_to_ignore_parameters(fixed_parameters):
             ignore_parameters.add('degree')
     return ignore_parameters
 
+
 if __name__ == '__main__':
     args = read_cmd()
 
     logging.basicConfig(level=args.verbose_level)
     ts = time.time()
     ts = datetime.datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H:%M:%S')
-    cache_folder = '/home/vanrijn/experiments/fanova/PIMP_flow%d_cache' %args.flow_id
-    save_folder = '/home/vanrijn/experiments/fanova/PIMP_flow%d_%s' % (args.flow_id, ts)
+    cache_folder = os.path.expanduser("~") + '/experiments/fanova/PIMP_flow%d_cache' %args.flow_id
+    save_folder = os.path.expanduser("~") + '/experiments/fanova/PIMP_flow%d_%s' % (args.flow_id, ts)
 
     study = openml.study.get_study(args.openml_studyid, 'tasks')
     print("Tasks: ", list(study.tasks), "(%d)" %len(study.tasks))

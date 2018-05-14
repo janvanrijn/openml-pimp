@@ -7,7 +7,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 
-from ConfigSpace.read_and_write.pcs import read
+from ConfigSpace.read_and_write.pcs_new import read
 from fanova.fanova import fANOVA as fanova_pyrfr
 from fanova.visualizer import Visualizer
 
