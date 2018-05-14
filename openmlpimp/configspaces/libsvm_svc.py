@@ -5,7 +5,7 @@ from ConfigSpace.hyperparameters import CategoricalHyperparameter, \
     UnParametrizedHyperparameter, OrdinalHyperparameter
 
 
-def get_default_libsvm_svc_search_space():
+def get_libsvm_svc_default_search_space():
     classif_prefix = "classifier:libsvm_svc:"
 
     model_type = CategoricalHyperparameter('classifier:__choice__', ['libsvm_svc'])
@@ -35,7 +35,7 @@ def get_default_libsvm_svc_search_space():
     return cs
 
 
-def get_extended_libsvm_svc_search_space():
+def get_libsvm_svc_extended_search_space():
     classif_prefix = "classifier:libsvm_svc:"
 
     model_type = CategoricalHyperparameter('classifier:__choice__', ['libsvm_svc'])
