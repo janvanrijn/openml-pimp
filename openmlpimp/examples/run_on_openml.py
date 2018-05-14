@@ -29,12 +29,13 @@ def read_cmd():
     parser.add_argument("-R", "--required_setups", default=100, help="Minimal number of setups needed to use a task")
     parser.add_argument("-F", "--flow_id", default=7707, help="The OpenML flow id to use")
     parser.add_argument("--model_type", default="libsvm_svc")
-    parser.add_argument("-T", "--openml_studyid", default="14", help="The OpenML tag for obtaining tasks")
-    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default=None,
+    parser.add_argument("-S", "--openml_studyid", default="14", help="The OpenML tag for obtaining tasks")
+    parser.add_argument('-P', '--fixed_parameters', type=json.loads, default={'kernel': 'rbf'},
                         help='Will only use configurations that have these parameters fixed')
     parser.add_argument('-Q', '--use_quantiles', action="store_true", default=False,
                         help='Use quantile information instead of full range')
-    parser.add_argument('-X', '--draw_plots', action="store_true", default=True,
+    parser.add_argument('-T', '--n_trees', type=int, default=128)
+    parser.add_argument('-X', '--draw_plots', action="store_true", default=False,
                         help='Draw plots of the marginals and interactions')
     parser.add_argument('-I', '--interaction_effect', action="store_true", default=True)
     parser.add_argument('-M', '--modus', type=str, choices=['ablation', 'fanova'],
@@ -97,7 +98,13 @@ if __name__ == '__main__':
 
             if args.modus == 'fanova':
                 print('Running FANOVA backend on task %d' %task_id)
-                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path, use_percentiles=args.use_quantiles, interaction_effect=args.interaction_effect, run_limit=args.limit, draw_plots=args.draw_plots)
+                results_file = FanovaBackend.execute(task_save_folder, runhistory_path, configspace_path,
+                                                     use_percentiles=args.use_quantiles,
+                                                     interaction_effect=args.interaction_effect,
+                                                     n_trees=args.n_trees,
+                                                     run_limit=args.limit,
+                                                     draw_plots=args.draw_plots,
+                                                     manual_logtransform=True)
             else:
                 print('Running PIMP backend [%s] on task %d' %(args.modus, task_id))
                 results_file = PimpBackend.execute(task_save_folder, runhistory_path, configspace_path, modus=args.modus)

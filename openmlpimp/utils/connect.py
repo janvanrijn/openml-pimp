@@ -121,7 +121,7 @@ def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
     limit  = 250
     setup_ids = list(setup_ids)
     while True:
-        setups_batch = openml.setups.list_setups(flow=flow_id, setup=setup_ids[offset:offset+limit], offset=offset)
+        setups_batch = openml.setups.list_setups(flow=flow_id, setup=setup_ids[offset:offset+limit])
         if fixed_parameters is None:
             setups.update(setups_batch)
         else:

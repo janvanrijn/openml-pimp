@@ -16,35 +16,30 @@ class FanovaBackend(object):
 
     @staticmethod
     def _plot_result(fANOVA, configspace, directory, yrange=None):
-        vis = Visualizer(fANOVA, configspace)
+        os.makedirs(directory, exist_ok=True)
+        vis = Visualizer(fANOVA, configspace, directory, y_label='Predictive Accuracy')
 
-        try: os.makedirs(directory)
-        except FileExistsError: pass
-
-        for hp in configspace.get_hyperparameters():
+        for hp1 in configspace.get_hyperparameters():
             plt.close('all')
             plt.clf()
-            param = hp.name
+            param = hp1.name
             outfile_name = os.path.join(directory, param.replace(os.sep, "_") + ".pdf")
-            if isinstance(hp, (ConfigSpace.hyperparameters.CategoricalHyperparameter)):
-                vis.plot_categorical_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False, ylabel='Predictive Accuracy')
-            else:
-                vis.plot_marginal(configspace.get_idx_by_hyperparameter_name(param), resolution=100, show=False, ylabel='Predictive Accuracy')
+            vis.plot_marginal(configspace.get_idx_by_hyperparameter_name(param), show=False)
+
             x1, x2, _, _ = plt.axis()
             if yrange:
                 plt.axis((x1, x2, yrange[0], yrange[1]))
             plt.savefig(outfile_name)
+
         pass
 
-
     @staticmethod
-    def execute(save_folder, runhistory_location, configspace_location, manual_logtransform=True, use_percentiles=True, interaction_effect=True, run_limit=None, draw_plots=True):
+    def execute(save_folder, runhistory_location, configspace_location, manual_logtransform, use_percentiles, interaction_effect, n_trees, run_limit=None, draw_plots=True):
         with open(runhistory_location) as runhistory_file:
             runhistory = json.load(runhistory_file)
         with open(configspace_location) as configspace_file:
             configspace = read(configspace_file)
-        try: os.makedirs(save_folder)
-        except FileExistsError: pass
+        os.makedirs(save_folder, exist_ok=True)
 
         X = []
         y = []
@@ -78,6 +73,9 @@ class FanovaBackend(object):
         X = np.array(X)
         y = np.array(y)
 
+        if X.ndim != 2:
+            raise ValueError('Wrong shape')
+
         if manual_logtransform:
             configspace = openmlpimp.utils.scale_configspace_to_log(configspace)
 
@@ -88,7 +86,7 @@ class FanovaBackend(object):
             cutoffs = (p75, p100)
 
         # start the evaluator
-        evaluator = fanova_pyrfr(X=X, Y=y, config_space=configspace, config_on_hypercube=False, cutoffs=cutoffs)
+        evaluator = fanova_pyrfr(X=X, Y=y, config_space=configspace, config_on_hypercube=False, cutoffs=cutoffs, n_trees=n_trees)
         # obtain the results
         params = configspace.get_hyperparameters()
         result = {}
@@ -101,6 +99,7 @@ class FanovaBackend(object):
         filename = 'pimp_values_fanova.json'
         with open(os.path.join(save_folder, filename), 'w') as out_file:
             json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
+            print('Saved individuals to %s' %os.path.join(save_folder, filename))
 
         # call plotting fn
         yrange = (0, 1)
@@ -152,10 +151,12 @@ class FanovaBackend(object):
             if sum(result_interaction.values()) + sum(result.values()) > 1:
                 raise ValueError('Sum of results too high')
 
-            with open(os.path.join(save_folder, 'pimp_values_fanova_interaction.json'), 'w') as out_file:
+            filename = 'pimp_values_fanova_interaction.json'
+            with open(os.path.join(save_folder, filename), 'w') as out_file:
                 json.dump(result_interaction, out_file, sort_keys=True, indent=4, separators=(',', ': '))
+                print('Saved interactions to %s' %os.path.join(save_folder, filename))
             if draw_plots:
-                vis = Visualizer(evaluator, configspace)
-                vis.create_most_important_pairwise_marginal_plots(save_folder + '/fanova', zlabel='Predictive Accuracy')
+                vis = Visualizer(evaluator, configspace, save_folder + '/fanova', y_label='Predictive Accuracy')
+                vis.create_most_important_pairwise_marginal_plots()
 
         return save_folder + "/" + filename

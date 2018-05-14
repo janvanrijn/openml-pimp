@@ -38,10 +38,10 @@ def get_config_space(classifier, type='default'):
     if classifier == 'random_forest':
         hyperparameter = configuration_space.get_hyperparameter('classifier:random_forest:max_features')
         hyperparameter.lower = 0.1
-        hyperparameter.lower_hard = 0.1
+        # hyperparameter.lower_hard = 0.1
         hyperparameter.upper = 0.9
-        hyperparameter.upper_hard = 0.9
-        hyperparameter.default = 0.1
+        # hyperparameter.upper_hard = 0.9
+        hyperparameter.default_value = 0.1
 
     return configuration_space
 
