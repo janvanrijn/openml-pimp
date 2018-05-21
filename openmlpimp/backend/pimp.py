@@ -3,7 +3,7 @@ import json
 import tempfile
 import openmlpimp
 
-from pimp.importance.importance import Importance
+#from pimp.importance.importance import Importance
 
 
 class PimpBackend(object):

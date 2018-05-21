@@ -2,12 +2,12 @@ import json
 import numpy as np
 import openml
 import openmlpimp
-import openmlstudy14
 import scipy
 import sys
 
+from openmlstudy14.distributions import loguniform, loguniform_gen
 from collections import defaultdict, OrderedDict
-from openmlstudy14.distributions import loguniform, loguniform_int
+
 
 def obtain_runids(task_ids, flow_id, classifier, param_templates):
     """
@@ -120,7 +120,7 @@ def get_param_values(classifier, parameter, fixed_parameters=None):
         if all(isinstance(item, int) for item in grid):
             dtype = int
         result = np.arange(min_val, max_val + 1, stepsize, dtype)
-    elif hasattr(grid, 'dist') and isinstance(grid.dist, openmlstudy14.distributions.loguniform_gen):
+    elif hasattr(grid, 'dist') and isinstance(grid.dist, loguniform_gen):
         dtype = float
         result = grid.dist.logspace(steps)
     elif hasattr(grid, 'dist') and isinstance(grid.dist, scipy.stats._discrete_distns.randint_gen):

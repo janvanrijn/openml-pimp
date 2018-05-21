@@ -32,109 +32,6 @@ def task_counts(flow_id):
     return task_ids
 
 
-def obtain_setups_by_setup_id(setup_ids, flow):
-    # because urls can be a bitch
-    setups = {}
-    offset = 0
-    limit = 100
-    while offset < len(setup_ids):
-        setups_batch = openml.setups.list_setups(setup=setup_ids[offset:offset+limit], flow=flow)
-        for setup_id in setups_batch.keys():
-            setups[setup_id] = setups_batch[setup_id]
-
-        offset += limit
-        if len(setups_batch) < limit:
-            break
-    if set(setup_ids) != set(setups.keys()):
-        raise ValueError()
-    return setups
-
-
-def obtain_all_evaluations(**kwargs):
-    evaluations = {}
-    offset = 0
-    limit = 1000
-    try:
-        while True:
-            evaluations_batch = openml.evaluations.list_evaluations(**kwargs, offset=offset, size=limit)
-            for run_id in evaluations_batch.keys():
-                evaluations[run_id] = evaluations_batch[run_id]
-
-            offset += limit
-            if len(evaluations_batch) < limit:
-                break
-    except OpenMLServerException:
-        pass
-
-    return evaluations
-
-
-def obtain_all_runs(**kwargs):
-    runs = {}
-    offset = 0
-    limit = 1000
-    while True:
-        runs_batch = openml.runs.list_runs(**kwargs, offset=offset, size=limit)
-        for run_id in runs_batch.keys():
-            runs[run_id] = runs_batch[run_id]
-
-        offset += limit
-        if len(runs_batch) < limit:
-            break
-    return runs
-
-
-def obtain_all_setups(**kwargs):
-    setups = {}
-    offset = 0
-    limit = 1000
-    while True:
-        setups_batch = openml.setups.list_setups(**kwargs, offset=offset, size=limit)
-        for setup_id in setups_batch.keys():
-            setups[setup_id] = setups_batch[setup_id]
-
-        offset += limit
-        if len(setups_batch) < limit:
-            break
-    return setups
-
-
-def setup_complies_to_fixed_parameters(setup, keyfield, fixed_parameters):
-    # tests whether a setup has the right values that are requisted by fixed parameters
-    if fixed_parameters is None or len(fixed_parameters) == 0:
-        return True
-    setup_parameters = {getattr(setup.parameters[param_id], keyfield): setup.parameters[param_id].value for param_id in
-                        setup.parameters}
-    for parameter in fixed_parameters.keys():
-        if parameter not in setup_parameters.keys():
-            raise ValueError('Required parameter %s not in setup parameter for setup %d' % (parameter, setup.setup_id))
-        value_online = openml.flows.flow_to_sklearn(setup_parameters[parameter])
-        value_request = fixed_parameters[parameter]
-        if value_online != value_request:
-            return False
-    return True
-
-
-def obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters):
-    setups = {}
-    offset = 0
-    limit  = 250
-    setup_ids = list(setup_ids)
-    while True:
-        setups_batch = openml.setups.list_setups(flow=flow_id, setup=setup_ids[offset:offset+limit])
-        if fixed_parameters is None:
-            setups.update(setups_batch)
-        else:
-            for setup_id in setups_batch.keys():
-                if setup_complies_to_fixed_parameters(setups_batch[setup_id], keyfield, fixed_parameters):
-                    setups[setup_id] = setups_batch[setup_id]
-
-        offset += limit
-        if len(setups_batch) < limit:
-            break
-    return setups
-
-
 def obtain_runhistory_and_configspace(flow_id, task_id,
                                       model_type,
                                       keyfield='parameter_name',
@@ -151,7 +48,7 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     config_space = openmlpimp.utils.get_config_space_casualnames(model_type, all_fixed_parameters)
     valid_hyperparameters = config_space._hyperparameters.keys()
 
-    evaluations = obtain_all_evaluations(function="predictive_accuracy", flow=[flow_id], task=[task_id])
+    evaluations = openml.evaluations.list_evaluations(function="predictive_accuracy", flow=[flow_id], task=[task_id])
     setup_ids = set()
     for run_id in evaluations.keys():
         setup_ids.add(evaluations[run_id].setup_id)

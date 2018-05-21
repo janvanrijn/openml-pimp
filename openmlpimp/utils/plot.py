@@ -118,7 +118,7 @@ def boxplot_traces(strategy_traces, save_directory, name):
     plt.close()
 
 
-def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, curves_directory, include_pattern=None, exclude_pattern=None, ylabel=None):
+def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, curves_directory, include_pattern=None, exclude_pattern=None, ylabel=None, xmax=50):
     script = "%s %s/plot_ranks_from_csv.py " % (plotting_virtual_env, plotting_scripts_dir)
     cmd = [script]
 
@@ -145,19 +145,24 @@ def average_rank(plotting_virtual_env, plotting_scripts_dir, output_directory, c
     if ylabel:
         cmd.append('--ylabel "%s"' %ylabel)
     cmd.append('--save ' + filename + '.pdf')
+    cmd.append('--xmin 0')
+    cmd.append('--xmax %d' % xmax)
     print('CMD: ', ' '.join(cmd))
     subprocess.run(' '.join(cmd), shell=True)
 
 
-def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, identifier=None, improvements=True):
+def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, identifier=None, improvements=True, inverse=False):
     def save_curve(current_curve, filename):
         with open(filename, 'w') as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(['iteration', 'evaluation', 'evaluation2'])
             for idx in range(len(current_curve)):
-                if current_curve[idx] < -0.0000001 or current_curve[idx] > 1.0000001:
+                current_val = current_curve[idx]
+                if inverse:
+                    current_val = 1 - current_val
+                if current_val < -0.0000001 or current_val > 1.0000001:
                     raise ValueError()
-                csvwriter.writerow([idx+1, current_curve[idx], current_curve[idx]])
+                csvwriter.writerow([idx+1, current_val, current_val])
 
     if isinstance(traces, openml.runs.OpenMLRunTrace):
         traces = [traces]

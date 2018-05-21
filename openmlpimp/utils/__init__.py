@@ -1,5 +1,5 @@
 from .convert import config_to_classifier, classifier_to_pipeline, obtain_classifier, runhistory_to_trajectory, setups_to_configspace, modeltype_to_classifier, scale_configspace_to_log
-from .connect import task_counts, obtain_runhistory_and_configspace, cache_runhistory_configspace, obtain_setups, obtain_all_setups, obtain_all_runs, obtain_all_evaluations, obtain_setups_by_setup_id, setup_complies_to_fixed_parameters
+from .connect import task_counts, obtain_runhistory_and_configspace, cache_runhistory_configspace
 from .config_space import get_config_space, get_config_space_casualnames, openmlsetup_to_configuration
 from .filesystem import obtain_marginal_contributions
 from .dictutils import rank_dict, sum_dict_values, divide_dict_values
