@@ -28,8 +28,8 @@ def parse_args():
     parser.add_argument('--interval', type=int, default=10)
 
     # output video params
-    parser.add_argument('--gif', action='store_true', default=True)
-    parser.add_argument('--dpi', type=int, default=1800)
+    parser.add_argument('--gif', action='store_true', default=False)
+    parser.add_argument('--dpi', type=int, default=180)
     parser.add_argument('--fps', type=int, default=30)
     parser.add_argument('--bitrate', type=int, default=1800)
 

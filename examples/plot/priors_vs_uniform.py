@@ -8,14 +8,15 @@ import openml
 import openmlpimp
 
 
-# Mounting CMD: sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 ~/nemo/
+# Mounting CMD (nemo): sshfs fr_jv1031@login1.nemo.uni-freiburg.de:/home/fr/fr_fr/fr_jv1031 ~/nemo/
+# Mounting CMD (meta): sshfs vanrijn@aadpool2.informatik.uni-freiburg.de:/home/vanrijn/rsync_nemo_by_admin ~/uni_freiburg/
 def parse_args():
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
     parser.add_argument('--virtual_env', type=str, default=os.path.expanduser('~') + '/projects/pythonvirtual/plot2/bin/python', help='python virtual env for plotting')
     parser.add_argument('--scripts_dir', type=str, default=os.path.expanduser('~') + '/projects/plotting_scripts/scripts', help='directory to Katha\'s plotting scripts')
-    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/priorbased_experiments', help='the directory to load the experiments from')
-    parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/optimizers/priors/', help='the directory to store the results to')
+    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/uni_freiburg/priorbased_experiments', help='the directory to load the experiments from')
+    parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/pimp/optimizers/priors/', help='the directory to store the results to')
 
     parser.add_argument('--flow_id', type=int, default=6969, help='the openml flow id')
     parser.add_argument('--bestN', type=int, default=10, help='number of best setups to consider for creating the priors')

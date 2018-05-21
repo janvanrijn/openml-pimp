@@ -16,14 +16,14 @@ import pickle
 def parse_args():
     all_classifiers = ['adaboost', 'decision_tree', 'libsvm_svc', 'random_forest', 'sgd']
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
-    parser.add_argument('--virtual_env', type=str, default=os.path.expanduser('~') + '/projects/pythonvirtual/plot2/bin/python', help='python virtual env for plotting')
+    parser.add_argument('--virtual_env', type=str, default=os.path.expanduser('~') + '/anaconda3/envs/openmlpimp/bin/python', help='python virtual env for plotting')
     parser.add_argument('--scripts_dir', type=str, default=os.path.expanduser('~') + '/projects/plotting_scripts/scripts', help='directory to Katha\'s plotting scripts')
-    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/nemo/experiments/rs_experiments/', help='the directory to load the experiments from')
-    parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/optimizers/random_search/', help='the directory to store the results to')
+    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/uni_freiburg_experiments/openml-pimp/', help='the directory to load the experiments from')
+    parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/pimp/optimizers/random_search/', help='the directory to store the results to')
     parser.add_argument('--openml_study', type=str, default='OpenML100', help='the study to obtain the tasks from')
 
     parser.add_argument('--classifier', type=str, choices=all_classifiers, default='libsvm_svc', help='the classifier to execute')
-    parser.add_argument('--fixed_parameters', type=json.loads, default={'kernel': 'sigmoid'}, help='Will only use configurations that have these parameters fixed')
+    parser.add_argument('--fixed_parameters', type=json.loads, default={'kernel': 'rbf'}, help='Will only use configurations that have these parameters fixed')
 
     args = parser.parse_args()
     return args
@@ -31,7 +31,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    study = openml.study.get_study(args.openml_study)
+    study = openml.study.get_study(args.openml_study, 'tasks')
 
     results_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
             if len(traces) == len(expected_values):
                 output_indivudual = output_directory + '/curves/' + name + '/' + str(task)
                 output_averaged = output_directory + '/curves_avg/' + name
-                openmlpimp.utils.obtain_performance_curves(traces, output_indivudual, output_averaged, task)
+                openmlpimp.utils.obtain_performance_curves(traces, output_indivudual, output_averaged, task, inverse=True)
 
                 average_curve = output_averaged + '/' + str(task) + '.csv'
                 with open(average_curve) as csvfile:
