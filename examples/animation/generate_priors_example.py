@@ -21,10 +21,11 @@ def parse_args():
     parser.add_argument('--param_max', type=int, default=20)
     parser.add_argument('--density_ymax', type=float, default=0.2)
 
-    parser.add_argument('--intro_frames', type=int, default=60)
-    parser.add_argument('--added_point_frames', type=int, default=10)
-    parser.add_argument('--kde_resolution', type=int, default=50)
+    parser.add_argument('--intro_frames', type=int, default=30*13)
+    parser.add_argument('--added_point_frames', type=int, default=7)
+    parser.add_argument('--kde_resolution', type=int, default=90)
     parser.add_argument('--interval', type=int, default=1)
+    parser.add_argument('--outro_frames', type=int, default=30*8)
 
     # output video params
     parser.add_argument('--gif', action='store_true', default=False)
@@ -56,6 +57,8 @@ def data_gen():
     # draw KDE (quickly)
     for i in range(args.kde_resolution):
         yield (None, False, i, False)
+    for i in range(args.outro_frames):
+        yield (0, False, 0, True)
 
 
 def plot(params):
@@ -134,9 +137,10 @@ def plot(params):
 
     sub = fig.add_subplot(2, 1, 2)
     sub.text(x=(args.param_max - args.param_min) / 2,
-             y=args.density_ymax - text_margin,
+             y=args.density_ymax,
              s='Prior across datasets',
-             horizontalalignment='center')
+             horizontalalignment='center',
+             verticalalignment='top')
     sub.set_xlabel('Hyperparameter value')
     sub.set_ylabel('Probability')
     sub.set_xticks([])
@@ -205,7 +209,7 @@ if __name__ == '__main__':
     for idx, task_id in enumerate(tasks):
         task_datapoints[task_id] = get_evaluations_for_task(6969, task_id, 'min_samples_leaf', 50)
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(16, 9))
     np.random.seed(0)
 
     ani = matplotlib.animation.FuncAnimation(fig, plot, data_gen,

@@ -19,9 +19,9 @@ def parse_args():
     parser.add_argument('--data_noise', type=float, default=.25)
 
     # gamma hyperparameter related
-    parser.add_argument('--param_min', type=int, default=-8)
+    parser.add_argument('--param_min', type=int, default=-3)
     parser.add_argument('--param_max', type=int, default=8)
-    parser.add_argument('--param_interval', type=float, default=0.01)
+    parser.add_argument('--param_interval', type=float, default=0.02)
 
     # plot
     parser.add_argument('--plot_margin', type=int, default=0.1)
@@ -112,7 +112,8 @@ def plot_svm(params):
 if __name__ == '__main__':
     args = parse_args()
 
-    fig, ax = plt.subplots(1, 1)
+    fig = plt.figure(figsize=(16, 9))
+    ax = fig.add_subplot(1, 1, 1)
     np.random.seed(0)
 
     X, y = sklearn.datasets.make_circles(n_samples=args.num_datapoints, factor=args.data_factor, noise=args.data_noise)
