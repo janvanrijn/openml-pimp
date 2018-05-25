@@ -137,10 +137,10 @@ def plot(params):
 
     sub = fig.add_subplot(2, 1, 2)
     sub.text(x=(args.param_max - args.param_min) / 2,
-             y=args.density_ymax,
+             y=args.density_ymax - text_margin * (sub.get_ylim()[1] - sub.get_ylim()[0]) * 0.25,
              s='Prior across datasets',
-             horizontalalignment='center',
-             verticalalignment='top')
+             ha='center',
+             va='top')
     sub.set_xlabel('Hyperparameter value')
     sub.set_ylabel('Probability')
     sub.set_xticks([])

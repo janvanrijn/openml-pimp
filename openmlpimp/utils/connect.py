@@ -1,6 +1,7 @@
 import copy
 import openml
 import openmlpimp
+import openmlcontrib
 
 import os
 import json
@@ -57,7 +58,10 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
         if len(setup_ids) < required_setups:
             raise ValueError('Not enough (evaluated) setups found on OpenML. Found %d; required: %d' %(len(setup_ids), required_setups))
 
-    setups = obtain_setups(flow_id, setup_ids, keyfield, fixed_parameters)
+    setups = openmlcontrib.setups.obtain_setups_by_ids(setup_ids)
+    for param, value in fixed_parameters.items():
+        print('restricting', param, value)
+        setups = openmlcontrib.setups.filter_setup_list(setups, param, allowed_values=[value])
     print('Setup count; before %d after %d' %(len(setup_ids), len(setups)))
     setup_ids = set(setups.keys())
 

@@ -207,4 +207,4 @@ def obtain_performance_curves(traces, save_directory, avg_curve_directory=None, 
         save_curve(average_curve, avg_curve_directory + '/%s.csv' % str(identifier))
 
     for idx, repeat, fold in curves.keys():
-        save_curve(curves[(idx, repeat, fold)], save_directory + '/%d_%d_%d.csv' %(idx, repeat, fold))
+        save_curve(curves[(idx, repeat, fold)], save_directory + '/%d_%d_%d.csv' % (idx, repeat, fold))
