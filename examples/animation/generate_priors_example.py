@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--outro_frames', type=int, default=30*8)
 
     # output video params
-    parser.add_argument('--gif', action='store_true', default=False)
+    parser.add_argument('--outputtype', type=str, default='png')
     parser.add_argument('--dpi', type=int, default=180)
     parser.add_argument('--fps', type=int, default=30)
     parser.add_argument('--bitrate', type=int, default=1800)
@@ -214,10 +214,16 @@ if __name__ == '__main__':
 
     ani = matplotlib.animation.FuncAnimation(fig, plot, data_gen,
                                              blit=False, interval=args.interval, repeat=False, save_count=num_frames())
-    if args.gif:
+    if args.outputtype == 'gif':
         ani.save(os.path.join(args.output_dir, args.filename + '.gif'), dpi=args.dpi, writer='imagemagick')
-    else:
+    elif args.outputtype == 'png':
+        fig = plt.figure(figsize=(12, 9))
+        plot((None, False, args.kde_resolution, False))
+        plt.savefig(os.path.join(args.output_dir, args.filename + '.png'))
+    elif args.outputtype == 'mp4':
         Writer = matplotlib.animation.writers['ffmpeg']
         writer = Writer(fps=args.fps, metadata=dict(artist='Jan N. van Rijn and Frank Hutter'), bitrate=args.bitrate)
         ani.save(os.path.join(args.output_dir, args.filename + '.mp4'), dpi=args.dpi, writer=writer)
+    else:
+        raise ValueError('Did not recognize output type: ' + args.outputtype)
     print('Done')
