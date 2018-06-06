@@ -4,7 +4,7 @@ import openmlpimp
 import ConfigSpace
 
 import numpy as np
-
+import matplotlib
 from matplotlib import pyplot as plt
 
 from ConfigSpace.read_and_write.pcs_new import read
@@ -35,6 +35,11 @@ class FanovaBackend(object):
 
     @staticmethod
     def execute(save_folder, runhistory_location, configspace_location, manual_logtransform, use_percentiles, interaction_effect, n_trees, run_limit=None, draw_plots=True):
+
+        matplotlib.rcParams['ps.useafm'] = True
+        matplotlib.rcParams['pdf.use14corefonts'] = True
+        matplotlib.rcParams['text.usetex'] = True
+
         with open(runhistory_location) as runhistory_file:
             runhistory = json.load(runhistory_file)
         with open(configspace_location) as configspace_file:
@@ -100,6 +105,7 @@ class FanovaBackend(object):
         with open(os.path.join(save_folder, filename), 'w') as out_file:
             json.dump(result, out_file, sort_keys=True, indent=4, separators=(',', ': '))
             print('Saved individuals to %s' %os.path.join(save_folder, filename))
+
 
         # call plotting fn
         yrange = (0, 1)
