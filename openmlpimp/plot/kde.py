@@ -2,17 +2,15 @@ import arff
 import argparse
 import collections
 import json
+import matplotlib
 import numpy as np
 import openmlpimp
 import os
 import matplotlib.pyplot as plt
-import warnings
 
 from scipy.stats import rv_discrete
 
-import autosklearn.constants
 from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter
-from autosklearn.util.pipeline import get_configuration_space
 
 
 def parse_args():
@@ -21,9 +19,9 @@ def parse_args():
                        'k_nearest_neighbors', 'lda', 'liblinear_svc', 'libsvm_svc', 'multinomial_nb', 'passive_aggressive',
                        'qda', 'random_forest', 'sgd']
     all_classifiers = ['adaboost', 'random_forest']
-    parser.add_argument('--flow_id', type=int, default=6952, help='the OpenML flow id')
+    parser.add_argument('--flow_id', type=int, default=7707, help='the OpenML flow id')
+    parser.add_argument('--classifier', type=str, default='libsvm_svc', help='the OpenML flow id')
     parser.add_argument('--study_id', type=str, default='OpenML100', help='the OpenML study id')
-    parser.add_argument('--classifier', type=str, choices=all_classifiers, default='libsvm_svc', help='the classifier to execute')
     parser.add_argument('--fixed_parameters', type=json.loads, default={'kernel': 'sigmoid'}, help='Will only use configurations that have these parameters fixed')
     parser.add_argument('--cache_directory', type=str, default=os.path.expanduser('~') + '/experiments/cache_kde', help="Directory containing cache files")
     parser.add_argument('--output_directory', type=str, default=os.path.expanduser('~') + '/experiments/pdf', help="Directory to save the result files")
@@ -118,12 +116,16 @@ def plot_numeric(hyperparameter, data, histo_keys, output_dir, parameter_name, r
 
 
 if __name__ == '__main__':
+    matplotlib.rcParams['ps.useafm'] = True
+    matplotlib.rcParams['pdf.use14corefonts'] = True
+    matplotlib.rcParams['text.usetex'] = True
+
     args = parse_args()
 
     folder_suffix = openmlpimp.utils.fixed_parameters_to_suffix(args.fixed_parameters)
-    output_dir = args.output_directory + '/' + args.classifier + '/' + folder_suffix
-    cache_dir = args.cache_directory + '/' + args.classifier + '/' + folder_suffix
-    results_dir = args.result_directory + '/' + args.classifier + '/' + folder_suffix
+    output_dir = args.output_directory + '/hyperband_5/' + str(args.flow_id) + '/' + folder_suffix
+    cache_dir = args.cache_directory + '/hyperband_5/' + str(args.flow_id) + '/' + folder_suffix
+    results_dir = args.result_directory + '/hyperband_5/' + str(args.flow_id) + '/' + folder_suffix
 
     configspace = openmlpimp.utils.get_config_space_casualnames(args.classifier, args.fixed_parameters)
     hyperparameters = {}

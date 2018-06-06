@@ -1,6 +1,7 @@
 import arff
 import argparse
 import collections
+import matplotlib
 import matplotlib.pyplot as plt
 import openml
 import openmlpimp
@@ -157,6 +158,11 @@ def plot_boxplot(priors_results, mode):
 
 
 if __name__ == '__main__':
+
+    matplotlib.rcParams['ps.useafm'] = True
+    matplotlib.rcParams['pdf.use14corefonts'] = True
+    matplotlib.rcParams['text.usetex'] = True
+
     args = parse_args()
     study = openml.study.get_study(args.study_id, 'tasks')
     all_tasks = study.tasks
