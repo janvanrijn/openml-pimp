@@ -116,10 +116,12 @@ def plot_numeric(hyperparameter, data, histo_keys, output_dir, parameter_name, r
 
 
 if __name__ == '__main__':
+    tick_fontsize = 18
     matplotlib.rcParams['ps.useafm'] = True
     matplotlib.rcParams['pdf.use14corefonts'] = True
     matplotlib.rcParams['text.usetex'] = True
-    matplotlib.rcParams['ytick.labelsize'] = 24
+    matplotlib.rcParams['xtick.labelsize'] = tick_fontsize
+    matplotlib.rcParams['ytick.labelsize'] = tick_fontsize
 
     args = parse_args()
 
