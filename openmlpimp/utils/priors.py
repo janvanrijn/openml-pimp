@@ -201,8 +201,9 @@ def obtain_priors(cache_directory, study_id, flow_id, config_space, fixed_parame
     with open(setups_cache_file, 'rb') as f:
         setups = pickle.load(f)
         setups = openmlcontrib.setups.filter_setup_list_by_config_space(setups, config_space)
-        for param_name, param_value in fixed_parameters.items():
-            setups = openmlcontrib.setups.filter_setup_list(setups, param_name, allowed_values=[param_value])
+        if fixed_parameters is not None:
+            for param_name, param_value in fixed_parameters.items():
+                setups = openmlcontrib.setups.filter_setup_list(setups, param_name, allowed_values=[param_value])
 
     if not os.path.isfile(priors_cache_file):
         print('%s No cache file for task setup scores (expected: %s), will create one ... ' % (openmlpimp.utils.get_time(), priors_cache_file))
