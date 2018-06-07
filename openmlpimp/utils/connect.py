@@ -76,10 +76,7 @@ def obtain_runhistory_and_configspace(flow_id, task_id,
     for run_id in evaluations.keys():
         config_id = evaluations[run_id].setup_id
         if config_id in setup_ids:
-            try:
-                configuration = openmlpimp.utils.openmlsetup_to_configuration(setups[config_id], config_space)
-            except ValueError as e:
-                print(e)
+            if not openmlcontrib.setups.setup_in_config_space(setups[config_id], config_space):
                 continue
 
             cost = evaluations[run_id].value

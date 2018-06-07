@@ -108,7 +108,7 @@ def plot_numeric(hyperparameter, data, histo_keys, output_dir, parameter_name, r
     axes[1].legend(loc='upper left')
     axes[0].set_xlim(min, max)
     if hyperparameter.log:
-        plt.xscale("log", log=2)
+        plt.xscale("log")
 
     # plot
     plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')

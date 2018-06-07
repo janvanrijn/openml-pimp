@@ -118,9 +118,10 @@ class gaussian_kde_wrapper(object):
                     return self.hyperparameter.upper
 
 
-def _get_best_setups(task_setup_scores, holdout, bestN, factor=4):
+def _get_best_setups(task_setup_scores, setup_ids, holdout, bestN, factor=4):
     task_setups = dict()
     for task, setup_scores in task_setup_scores.items():
+        setup_scores = {setup: scores for setup, scores in setup_scores.items() if setup in setup_ids}
         if (holdout is None or task not in holdout) and len(setup_scores) < bestN * factor:
             pass
             #raise Warning('Not enough setups for task %d. Need %d, expected at least %d, got %d' % (task, bestN, bestN * factor, len(setup_scores)))
@@ -140,7 +141,7 @@ def cache_setups(cache_directory, flow_id, bestN):
         pickle.dump(setups, f, pickle.HIGHEST_PROTOCOL)
 
 
-def cache_task_setup_scores(cache_directory, study, flow_id, bestN):
+def cache_task_setup_scores(cache_directory, study, flow_id):
     # print(setups.keys())
     task_setup_scores = collections.defaultdict(dict)
     for task_id in study.tasks:
@@ -151,16 +152,6 @@ def cache_task_setup_scores(cache_directory, study, flow_id, bestN):
         os.makedirs(cache_directory)
     except FileExistsError:
         pass
-
-    task_setups = _get_best_setups(task_setup_scores, holdout=None, bestN=bestN * 5, factor=1)
-    all_setup_ids = set()
-    for setups in task_setups.values():
-        all_setup_ids |= setups
-
-    setups = openmlcontrib.setups.obtain_setups_by_ids(setup_ids=list(all_setup_ids), require_all=False)
-    missing = all_setup_ids - set(setups.keys())
-    if len(missing) > 0:
-        raise ValueError('Missing:', missing)
 
     with open(cache_directory + '/best_setup_per_task.pkl', 'wb') as f:
         pickle.dump(task_setup_scores, f, pickle.HIGHEST_PROTOCOL)
@@ -216,30 +207,26 @@ def obtain_priors(cache_directory, study_id, flow_id, config_space, fixed_parame
     if not os.path.isfile(priors_cache_file):
         print('%s No cache file for task setup scores (expected: %s), will create one ... ' % (openmlpimp.utils.get_time(), priors_cache_file))
         study = openml.study.get_study(study_id, 'tasks')
-        cache_task_setup_scores(cache_directory, study, flow_id, bestN)
+        cache_task_setup_scores(cache_directory, study, flow_id)
         print('%s Cache created. Available in: %s' % (openmlpimp.utils.get_time(), priors_cache_file))
 
     with open(priors_cache_file, 'rb') as f:
         task_setup_scores = pickle.load(f)
 
-    task_setups = _get_best_setups(task_setup_scores, holdout, bestN)
-    all_setup_ids = set()
+    task_setups = _get_best_setups(task_setup_scores, setups.keys(), holdout, bestN)
+    best_setup_ids = set()
     for setup_id in task_setups.values():
-        all_setup_ids |= setup_id
+        best_setup_ids |= setup_id
 
-    if set(setups.keys()) != all_setup_ids:
-        mismatch1 = all_setup_ids - set(setups.keys())
-        mismatch2 = set(setups.keys()) - all_setup_ids
-        if len(mismatch1) > 0:
-            print(mismatch1) # TODO: JvR fix me
-            print(mismatch2)
-            raise ValueError('FIX ME. old serialization bug still active.')
+    mismatch1 = best_setup_ids - set(setups.keys())
+    if len(mismatch1) > 0:
+        raise ValueError('FIX ME. old serialization bug still active. Missing %d setups: %s' % (len(mismatch1), mismatch1))
 
     X = {hyperparameter.name: list() for hyperparameter in config_space.get_hyperparameters()}
 
     for task_id, best_setups in task_setups.items():
         if holdout is not None and task_id in holdout:
-            print('Holdout task %d' %task_id)
+            print('Holdout task %d' % task_id)
             continue
 
         for setup_id in best_setups:
