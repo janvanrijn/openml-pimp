@@ -2,6 +2,7 @@ import collections
 import numpy as np
 import json
 import openml
+import openmlcontrib
 import openmlpimp
 import operator
 import os
@@ -134,20 +135,18 @@ def cache_setups(cache_directory, flow_id, bestN):
     except FileExistsError:
         pass
 
-    setups = openmlpimp.utils.obtain_all_setups(flow=flow_id)
+    setups = openml.setups.list_setups(flow=flow_id)
     with open(cache_directory + '/setup_list_best%d.pkl' %bestN, 'wb') as f:
         pickle.dump(setups, f, pickle.HIGHEST_PROTOCOL)
 
 
-def cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_parameters, hyperparameters, bestN):
+def cache_task_setup_scores(cache_directory, study, flow_id, bestN):
     # print(setups.keys())
     task_setup_scores = collections.defaultdict(dict)
     for task_id in study.tasks:
-        runs = openmlpimp.utils.obtain_all_evaluations(function="predictive_accuracy", task=[task_id], flow=[flow_id])
+        runs = openml.evaluations.list_evaluations("predictive_accuracy", task=[task_id], flow=[flow_id])
         for run in runs.values():
-            if openmlpimp.utils.setup_complies_to_fixed_parameters(setups[run.setup_id], 'parameter_name', fixed_parameters):
-                if openmlpimp.utils.setup_complies_to_config_space(setups[run.setup_id], keyfield='parameter_name', hyperparameters=hyperparameters):
-                    task_setup_scores[task_id][run.setup_id] = run.value
+            task_setup_scores[task_id][run.setup_id] = run.value
     try:
         os.makedirs(cache_directory)
     except FileExistsError:
@@ -158,7 +157,7 @@ def cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_param
     for setups in task_setups.values():
         all_setup_ids |= setups
 
-    setups = openmlpimp.utils.obtain_setups_by_setup_id(setup_ids=list(all_setup_ids), flow=flow_id)
+    setups = openmlcontrib.setups.obtain_setups_by_ids(setup_ids=list(all_setup_ids), require_all=False)
     missing = all_setup_ids - set(setups.keys())
     if len(missing) > 0:
         raise ValueError('Missing:', missing)
@@ -167,7 +166,7 @@ def cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_param
         pickle.dump(task_setup_scores, f, pickle.HIGHEST_PROTOCOL)
 
 
-def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout, bestN):
+def obtain_priors(cache_directory, study_id, flow_id, config_space, fixed_parameters, holdout, bestN):
     """
     Obtains the priors based on (almost) all tasks in an OpenML study
 
@@ -179,10 +178,10 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     study_id : int
         the study id to obtain the priors from
 
-    flow id : int
+    flow_id : int
         the flow id of the classifier
 
-    hyperparameters : dict[str, ConfigSpace.Hyperparameter]
+    config_space : ConfigSpace.ConfigurationSpace
         dictionary mapping from parameter name to the ConfigSpace Hyperparameter object
 
     fixed_parameters : dict[str, str]
@@ -201,7 +200,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
         Mapping from hyperparameter name to a list of the best values.
     """
     priors_cache_file = cache_directory + '/best_setup_per_task.pkl'
-    setups_cache_file = cache_directory + '/setup_list_best%d.pkl' %bestN
+    setups_cache_file = cache_directory + '/setup_list_best%d.pkl' % bestN
 
     if not os.path.isfile(setups_cache_file):
         print('%s No cache file for setups (expected: %s), will create one ... ' %(openmlpimp.utils.get_time(), setups_cache_file))
@@ -210,16 +209,18 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
 
     with open(setups_cache_file, 'rb') as f:
         setups = pickle.load(f)
+        setups = openmlcontrib.setups.filter_setup_list_by_config_space(setups, config_space)
+        for param_name, param_value in fixed_parameters.items():
+            setups = openmlcontrib.setups.filter_setup_list(setups, param_name, allowed_values=[param_value])
 
     if not os.path.isfile(priors_cache_file):
         print('%s No cache file for task setup scores (expected: %s), will create one ... ' % (openmlpimp.utils.get_time(), priors_cache_file))
         study = openml.study.get_study(study_id, 'tasks')
-        cache_task_setup_scores(cache_directory, study, flow_id, setups, fixed_parameters, hyperparameters, bestN)
+        cache_task_setup_scores(cache_directory, study, flow_id, bestN)
         print('%s Cache created. Available in: %s' % (openmlpimp.utils.get_time(), priors_cache_file))
 
     with open(priors_cache_file, 'rb') as f:
         task_setup_scores = pickle.load(f)
-
 
     task_setups = _get_best_setups(task_setup_scores, holdout, bestN)
     all_setup_ids = set()
@@ -234,7 +235,7 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
             print(mismatch2)
             raise ValueError('FIX ME. old serialization bug still active.')
 
-    X = {parameter: list() for parameter in hyperparameters.keys()}
+    X = {hyperparameter.name: list() for hyperparameter in config_space.get_hyperparameters()}
 
     for task_id, best_setups in task_setups.items():
         if holdout is not None and task_id in holdout:
@@ -243,14 +244,15 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
 
         for setup_id in best_setups:
             paramname_paramidx = {param.parameter_name: idx for idx, param in setups[setup_id].parameters.items()}
-            for param_name, parameter in hyperparameters.items():
+            for hyperparameter in config_space.get_hyperparameters():
+                param_name = hyperparameter.name
                 param = setups[setup_id].parameters[paramname_paramidx[param_name]]
-                if isinstance(parameter, NumericalHyperparameter):
+                if isinstance(hyperparameter, NumericalHyperparameter):
                     try:
                         X[param_name].append(float(param.value))
                     except ValueError:
                         X[param_name].append(json.loads(param.value))
-                elif isinstance(parameter, CategoricalHyperparameter):
+                elif isinstance(hyperparameter, CategoricalHyperparameter):
                     X[param_name].append(json.loads(param.value))
                 else:
                     raise ValueError()
@@ -262,8 +264,8 @@ def obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_par
     return X
 
 
-def get_kde_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1, oob_strategy='resample'):
-    priors = obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout, bestN)
+def get_kde_paramgrid(cache_directory, study_id, flow_id, config_space, fixed_parameters, holdout=None, bestN=1, oob_strategy='resample'):
+    priors = obtain_priors(cache_directory, study_id, flow_id, config_space, fixed_parameters, holdout, bestN)
     param_grid = dict()
 
     for parameter_name, prior in priors.items():
@@ -272,31 +274,11 @@ def get_kde_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed
         if all(x == prior[0] for x in prior):
             warnings.warn('Skipping Hyperparameter %s: All prior values equals (%s). ' %(parameter_name, prior[0]))
             continue
-        hyperparameter = hyperparameters[parameter_name]
+        hyperparameter = config_space.get_hyperparameter(parameter_name)
         if isinstance(hyperparameter, CategoricalHyperparameter):
             param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
         elif isinstance(hyperparameter, NumericalHyperparameter):
             param_grid[parameter_name] = gaussian_kde_wrapper(hyperparameter, parameter_name, prior, oob_strategy)
-        else:
-            raise ValueError()
-    return param_grid
-
-
-def get_empericaldistribution_paramgrid(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout=None, bestN=1):
-    priors = obtain_priors(cache_directory, study_id, flow_id, hyperparameters, fixed_parameters, holdout, bestN)
-    param_grid = dict()
-
-    for parameter_name, prior in priors.items():
-        if fixed_parameters is not None and parameter_name in fixed_parameters.keys():
-            continue
-        if all(x == prior[0] for x in prior):
-            warnings.warn('Skipping Hyperparameter %s: All prior values equals (%s). ' %(parameter_name, prior[0]))
-            continue
-        hyperparameter = hyperparameters[parameter_name]
-        if isinstance(hyperparameter, CategoricalHyperparameter):
-            param_grid[parameter_name] = rv_discrete_wrapper(parameter_name, prior)
-        elif isinstance(hyperparameter, NumericalHyperparameter):
-            param_grid[parameter_name] = empirical_distribution_wrapper(hyperparameter, prior)
         else:
             raise ValueError()
     return param_grid

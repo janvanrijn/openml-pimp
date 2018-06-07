@@ -128,9 +128,6 @@ if __name__ == '__main__':
     results_dir = args.result_directory + '/hyperband_5/' + str(args.flow_id) + '/' + folder_suffix
 
     configspace = openmlpimp.utils.get_config_space_casualnames(args.classifier, args.fixed_parameters)
-    hyperparameters = {}
-    for name, hyperparameter in configspace._hyperparameters.items():
-        hyperparameters[name] = hyperparameter
 
     obtained_results = {}
     if args.result_directory is not None:
@@ -139,12 +136,12 @@ if __name__ == '__main__':
             if len(res):
                 obtained_results[strategy] = res
 
-    param_priors = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, hyperparameters, args.fixed_parameters, holdout=None, bestN=10)
+    param_priors = openmlpimp.utils.obtain_priors(cache_dir, args.study_id, args.flow_id, configspace, args.fixed_parameters, holdout=None, bestN=10)
 
     for param_name, priors in param_priors.items():
         if all(x == priors[0] for x in priors):
             continue
-        current_parameter = hyperparameters[param_name]
+        current_parameter = configspace.get_hyperparameter(param_name)
         histo_keys = set()
         if isinstance(current_parameter, NumericalHyperparameter):
             data = collections.OrderedDict({'gaussian_kde': priors})
