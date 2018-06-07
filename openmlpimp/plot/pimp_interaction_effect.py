@@ -1,16 +1,17 @@
 import argparse
-import collections
 import csv
-import json
 import matplotlib.pyplot as plt
 import openmlpimp
-import os
 from statistics import median
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate data for openml-pimp project')
-    parser.add_argument('--result_directory', type=str, default=os.path.expanduser('~') + '/experiments/fanova/triples/rbf', help='the directory to load the experiments from')
+    parser.add_argument('--result_directory', type=str, default='../../KDD2018/data/fanova/6970/vanilla',
+                        help='the directory to load the experiments from')
+    parser.add_argument('--max_interactions', type=int, default=3,
+                        help='the maximum interaction effects to be displayed (note that the maximum number of '
+                             'components in the interaction effect is determined by the input files)')
 
     args = parser.parse_args()
     return args
@@ -51,15 +52,15 @@ def _format(name):
     return ' / '.join(parts)
 
 
-def to_ranks_file(marginal_contribution, all_tasks):
+def to_ranks_file(marginal_contribution, keys, all_tasks):
     with open(args.result_directory + '/ranks_all.csv', 'w') as csvfile:
         fieldnames = ['task_id']
-        fieldnames.extend([_format(key) for key in marginal_contribution.keys()])
+        fieldnames.extend([_format(key) for key in keys])
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         writer.writeheader()
         for idx, task_id in enumerate(all_tasks):
-            current_point = {_format(hyperparameter): marginal_contribution[hyperparameter][idx] for hyperparameter in marginal_contribution.keys()}
+            current_point = {_format(hyperparameter): marginal_contribution[hyperparameter][idx] for hyperparameter in keys}
             current_point['task_id'] = 'Task %s' %task_id
             writer.writerow(current_point)
 
@@ -109,7 +110,7 @@ def determine_relevant(data, max_items=None, max_interactions=None):
 if __name__ == '__main__':
     args = parse_args()
     total_ranks, marginal_contribution, all_tasks = openmlpimp.utils.obtain_marginal_contributions(args.result_directory)
-    sorted_values, keys = determine_relevant(marginal_contribution, max_interactions=3)
+    sorted_values, keys = determine_relevant(marginal_contribution, max_interactions=args.max_interactions)
 
-    to_ranks_file(marginal_contribution, all_tasks)
+    to_ranks_file(marginal_contribution, keys, all_tasks)
     to_ranks_plain_file(sorted_values, keys, all_tasks)
