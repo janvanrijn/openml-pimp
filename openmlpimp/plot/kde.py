@@ -80,38 +80,38 @@ def plot_numeric(hyperparameter, data, histo_keys, output_dir, parameter_name, r
     max = np.power(hyperparameter.upper, factor)
     if max < hyperparameter.upper:
         max = hyperparameter.upper * factor
-    fig, axes = plt.subplots(2, figsize=(8, 12), sharex=True)
+    fig, axes = plt.subplots(1, figsize=(8, 6))
 
     for index, name in enumerate(data):
         if name in histo_keys:
             pass
             # axes[0].hist(data[name], resolution, normed=True, facecolor=colors[index], alpha=0.75)
         else:
-            X_values_plot = np.linspace(min, max, resolution)
+            if hyperparameter.log:
+                X_values_plot = np.logspace(np.log(min), np.log(max), resolution)
+                axes.set_xscale("log")
+            else:
+                X_values_plot = np.linspace(min, max, resolution)
 
             # plot pdfs
             distribution = openmlpimp.utils.priors.gaussian_kde_wrapper(hyperparameter, hyperparameter.name, data[name])
-            axes[0].plot(X_values_plot, distribution.pdf(X_values_plot), colors[index]+'-', lw=5, alpha=0.6, label=name)
+            axes.plot(X_values_plot, distribution.pdf(X_values_plot), colors[index]+'-', lw=5, alpha=0.6, label=name.replace('_', ' '))
 
         # plot cdfs
-        sorted = np.sort(np.array(data[name]))
-        yvals = np.arange(1, len(sorted) + 1) / float(len(sorted))
-        axes[1].step(sorted, yvals, linewidth=1, c=colors[index], label=name)
-
-
+        # sorted = np.sort(np.array(data[name]))
+        # yvals = np.arange(1, len(sorted) + 1) / float(len(sorted))
+        # axes[1].step(sorted, yvals, linewidth=1, c=colors[index], label=name)
 
     # add original data points
-    if 'gaussian_kde' in data:
-        axes[0].plot(data['gaussian_kde'], -0.005 - 0.01 * np.random.random(len(data['gaussian_kde'])), '+k')
+    #if 'gaussian_kde' in data:
+    #    axes.plot(data['gaussian_kde'], -0.005 - 0.01 * np.random.random(len(data['gaussian_kde'])), '+k')
 
     # axis and labels
-    axes[1].legend(loc='upper left')
-    axes[0].set_xlim(min, max)
-    if hyperparameter.log:
-        plt.xscale("log")
+    #axes[1].legend(loc='upper left')
+    axes.set_xlim(min, max)
 
     # plot
-    plt.savefig(output_dir + parameter_name + '.png', bbox_inches='tight')
+    plt.savefig(output_dir + parameter_name + '.pdf', bbox_inches='tight')
     plt.close()
 
 
@@ -119,6 +119,7 @@ if __name__ == '__main__':
     matplotlib.rcParams['ps.useafm'] = True
     matplotlib.rcParams['pdf.use14corefonts'] = True
     matplotlib.rcParams['text.usetex'] = True
+    matplotlib.rcParams['ytick.labelsize'] = 24
 
     args = parse_args()
 
