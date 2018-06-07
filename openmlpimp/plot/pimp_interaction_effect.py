@@ -28,6 +28,7 @@ def _format(name):
         'max_depth': 'max. depth',
         'n_estimators': 'iterations',
         'algorithm': 'algorithm',
+        'C': 'complexity',
     }
     mapping_short = {
         'strategy': 'imputation',
@@ -39,6 +40,7 @@ def _format(name):
         'max_depth': 'max. depth',
         'n_estimators': 'iterations',
         'algorithm': 'algo.',
+        'C': 'complexity',
     }
 
     parts = name.split('__')
