@@ -151,7 +151,7 @@ embed_fonts(pdf_output, outfile=pdf_output)
 
 
 pdf_output = "violin_sigmoid.pdf"
-baseclassifiers = getViolinPlot("../../KDD2018/data/fanova/7707/kernel_rbf/ranks_plain_all.csv", "variance_contribution", logscale=FALSE)
+baseclassifiers = getViolinPlot("../../KDD2018/data/fanova/7707/kernel_sigmoid/ranks_plain_all.csv", "variance_contribution", logscale=FALSE)
 ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600)
 embed_fonts(pdf_output, outfile=pdf_output)
 
