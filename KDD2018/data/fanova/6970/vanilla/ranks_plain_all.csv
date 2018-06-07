@@ -1,0 +1,801 @@
+task_id,param_id,param_name,variance_contribution
+9983,max. depth,max. depth,0.5636502747597587
+9983,learning rate,learning rate,0.1348225226846987
+9983,learning rate / max. depth,learning rate / max. depth,0.03020713603442604
+9983,algorithm / max. depth,algorithm / max. depth,0.0269561880333532
+9983,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03488768545343751
+9983,algorithm,algorithm,0.125439731529011
+9983,iterations,iterations,0.011970376495224163
+9983,imputation,imputation,0.0003754344394759774
+9985,max. depth,max. depth,0.7679526800472021
+9985,learning rate,learning rate,0.04680719093531584
+9985,learning rate / max. depth,learning rate / max. depth,0.041175033174061904
+9985,algorithm / max. depth,algorithm / max. depth,0.013550470811694248
+9985,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.017223688735950177
+9985,algorithm,algorithm,0.024635130964249734
+9985,iterations,iterations,0.01298772996823009
+9985,imputation,imputation,0.0003878355442633468
+3913,max. depth,max. depth,0.22653691835172735
+3913,learning rate,learning rate,0.28193382358126456
+3913,learning rate / max. depth,learning rate / max. depth,0.07368388918342705
+3913,algorithm / max. depth,algorithm / max. depth,0.139029964936695
+3913,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03340636649521905
+3913,algorithm,algorithm,0.029789375931631473
+3913,iterations,iterations,0.014803341267234042
+3913,imputation,imputation,0.0019488612145152563
+146195,max. depth,max. depth,0.574206212850297
+146195,learning rate,learning rate,0.09355566646454518
+146195,learning rate / max. depth,learning rate / max. depth,0.042211807784936384
+146195,algorithm / max. depth,algorithm / max. depth,0.03687392798250144
+146195,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.04440379052424118
+146195,algorithm,algorithm,0.0978488253486439
+146195,iterations,iterations,0.023040926947658448
+146195,imputation,imputation,0.0005834508462546716
+34537,max. depth,max. depth,0.553568843801492
+34537,learning rate,learning rate,0.05516155685524092
+34537,learning rate / max. depth,learning rate / max. depth,0.017072417096822834
+34537,algorithm / max. depth,algorithm / max. depth,0.08969792817371425
+34537,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.020607350552830972
+34537,algorithm,algorithm,0.20575342162253338
+34537,iterations,iterations,0.006513646648559097
+34537,imputation,imputation,0.00032143577038673944
+34536,max. depth,max. depth,0.3434207070486003
+34536,learning rate,learning rate,0.2559053319620244
+34536,learning rate / max. depth,learning rate / max. depth,0.12364435860263762
+34536,algorithm / max. depth,algorithm / max. depth,0.046631609247101524
+34536,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02575977713907429
+34536,algorithm,algorithm,0.0010749410738678613
+34536,iterations,iterations,0.03556334025738811
+34536,imputation,imputation,0.0008659392315873713
+9957,max. depth,max. depth,0.2705375902077129
+9957,learning rate,learning rate,0.16689350326117613
+9957,learning rate / max. depth,learning rate / max. depth,0.1093422232009868
+9957,algorithm / max. depth,algorithm / max. depth,0.19617586879863308
+9957,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.038603890444630584
+9957,algorithm,algorithm,0.003408121563758847
+9957,iterations,iterations,0.014195747019280742
+9957,imputation,imputation,0.0009017374401046206
+3493,max. depth,max. depth,0.5681127907631109
+3493,learning rate,learning rate,0.023863661518281728
+3493,learning rate / max. depth,learning rate / max. depth,0.07264470161091707
+3493,algorithm / max. depth,algorithm / max. depth,0.1061864103491369
+3493,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.04490045187194047
+3493,algorithm,algorithm,0.05779158603623467
+3493,iterations,iterations,0.018038285750074625
+3493,imputation,imputation,0.00045925908080982574
+3904,max. depth,max. depth,0.01094576088219074
+3904,learning rate,learning rate,0.5350709131417772
+3904,learning rate / max. depth,learning rate / max. depth,0.05636480934092797
+3904,algorithm / max. depth,algorithm / max. depth,0.011017705020579048
+3904,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02175477774525717
+3904,algorithm,algorithm,0.0273529159898457
+3904,iterations,iterations,0.06941611534438479
+3904,imputation,imputation,0.0012929351047575315
+3021,max. depth,max. depth,0.5563088523505091
+3021,learning rate,learning rate,0.032568061392153284
+3021,learning rate / max. depth,learning rate / max. depth,0.019448223810431098
+3021,algorithm / max. depth,algorithm / max. depth,0.18856594803770255
+3021,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.011826848778033583
+3021,algorithm,algorithm,0.023909751763989108
+3021,iterations,iterations,0.030096998852376038
+3021,imputation,imputation,0.0018505040984271443
+9960,max. depth,max. depth,0.6897940477555502
+9960,learning rate,learning rate,0.015696514165260342
+9960,learning rate / max. depth,learning rate / max. depth,0.055474335948362374
+9960,algorithm / max. depth,algorithm / max. depth,0.0634032473373406
+9960,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.06292137551224747
+9960,algorithm,algorithm,0.010801804815438302
+9960,iterations,iterations,0.005505598033062595
+9960,imputation,imputation,0.0013902841510760318
+3561,max. depth,max. depth,0.026615567385045537
+3561,learning rate,learning rate,0.3515939875463041
+3561,learning rate / max. depth,learning rate / max. depth,0.07264118547858447
+3561,algorithm / max. depth,algorithm / max. depth,0.07624157620242811
+3561,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.04993176961911722
+3561,algorithm,algorithm,0.1393541772464319
+3561,iterations,iterations,0.024019351978213848
+3561,imputation,imputation,0.001257704317312342
+3022,max. depth,max. depth,0.8760321891926268
+3022,learning rate,learning rate,0.041040363948366534
+3022,learning rate / max. depth,learning rate / max. depth,0.04059627225206419
+3022,algorithm / max. depth,algorithm / max. depth,0.0011782296063816977
+3022,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.0020412575366348037
+3022,algorithm,algorithm,0.0006011692005705856
+3022,iterations,iterations,0.005121231846528485
+3022,imputation,imputation,0.00021385121874403957
+24,max. depth,max. depth,0.3032414542772798
+24,learning rate,learning rate,0.0309655726168079
+24,learning rate / max. depth,learning rate / max. depth,0.3609327416322007
+24,algorithm / max. depth,algorithm / max. depth,0.06009977744192968
+24,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.029903759340608127
+24,algorithm,algorithm,0.006190081034077191
+24,iterations,iterations,0.008853813002606454
+24,imputation,imputation,0.0009709830195775418
+9978,max. depth,max. depth,0.21224304196135474
+9978,learning rate,learning rate,0.13828398308719217
+9978,learning rate / max. depth,learning rate / max. depth,0.20087973857809732
+9978,algorithm / max. depth,algorithm / max. depth,0.10695920961948013
+9978,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.09454967938490866
+9978,algorithm,algorithm,0.0038942111746347
+9978,iterations,iterations,0.0158396012603003
+9978,imputation,imputation,0.0015587947670713783
+10093,max. depth,max. depth,0.263081857587691
+10093,learning rate,learning rate,0.18174185239747243
+10093,learning rate / max. depth,learning rate / max. depth,0.1611842869859197
+10093,algorithm / max. depth,algorithm / max. depth,0.08437028598685015
+10093,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.042714224356025676
+10093,algorithm,algorithm,0.010117892687554562
+10093,iterations,iterations,0.060471751443400876
+10093,imputation,imputation,0.0002290664513611093
+6,max. depth,max. depth,0.8777814379486145
+6,learning rate,learning rate,0.00945261961046313
+6,learning rate / max. depth,learning rate / max. depth,0.013855422691472996
+6,algorithm / max. depth,algorithm / max. depth,0.01638880050758662
+6,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.010761615507676306
+6,algorithm,algorithm,0.024451745657358373
+6,iterations,iterations,0.006718019551832143
+6,imputation,imputation,0.00010121747254012308
+3954,max. depth,max. depth,0.49429573229283486
+3954,learning rate,learning rate,0.06261295539916197
+3954,learning rate / max. depth,learning rate / max. depth,0.09922665867027103
+3954,algorithm / max. depth,algorithm / max. depth,0.12839758964626435
+3954,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.033349175631897876
+3954,algorithm,algorithm,0.03815143070741389
+3954,iterations,iterations,0.022643204610093372
+3954,imputation,imputation,0.00038186792165886564
+9986,max. depth,max. depth,0.789711672401762
+9986,learning rate,learning rate,0.05285072426196323
+9986,learning rate / max. depth,learning rate / max. depth,0.06753814594899143
+9986,algorithm / max. depth,algorithm / max. depth,0.00435362297822095
+9986,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.005789855897797763
+9986,algorithm,algorithm,0.0011128805886789158
+9986,iterations,iterations,0.006846405148763221
+9986,imputation,imputation,0.00037240998663819473
+10101,max. depth,max. depth,0.39554284482441104
+10101,learning rate,learning rate,0.1487330827250941
+10101,learning rate / max. depth,learning rate / max. depth,0.1129149229309373
+10101,algorithm / max. depth,algorithm / max. depth,0.09861160100412353
+10101,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.040513552422633714
+10101,algorithm,algorithm,0.05317684407840388
+10101,iterations,iterations,0.008239297222115733
+10101,imputation,imputation,0.001175630666654506
+3899,max. depth,max. depth,0.3176110965322286
+3899,learning rate,learning rate,0.20090589640305276
+3899,learning rate / max. depth,learning rate / max. depth,0.15574750910216567
+3899,algorithm / max. depth,algorithm / max. depth,0.03764749529110217
+3899,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.04158217968828401
+3899,algorithm,algorithm,0.13889197193597952
+3899,iterations,iterations,0.01247055511135014
+3899,imputation,imputation,0.00034694410632949606
+3510,max. depth,max. depth,0.6864048876430502
+3510,learning rate,learning rate,0.07277315926958905
+3510,learning rate / max. depth,learning rate / max. depth,0.0748748765086733
+3510,algorithm / max. depth,algorithm / max. depth,0.017967782300909785
+3510,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.013438499505967788
+3510,algorithm,algorithm,0.02290644065254266
+3510,iterations,iterations,0.012798747764368281
+3510,imputation,imputation,0.0003731811044018257
+9980,max. depth,max. depth,0.4838966581514613
+9980,learning rate,learning rate,0.09224571825053421
+9980,learning rate / max. depth,learning rate / max. depth,0.12073013743969119
+9980,algorithm / max. depth,algorithm / max. depth,0.021136006371211713
+9980,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.035612359529947346
+9980,algorithm,algorithm,0.015166645262356917
+9980,iterations,iterations,0.02390748561425283
+9980,imputation,imputation,0.0010271736767088467
+34539,max. depth,max. depth,0.012118846367130443
+34539,learning rate,learning rate,0.5015768711012648
+34539,learning rate / max. depth,learning rate / max. depth,0.034200720105955665
+34539,algorithm / max. depth,algorithm / max. depth,0.004064985260957468
+34539,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02612080423963677
+34539,algorithm,algorithm,0.025206811255363934
+34539,iterations,iterations,0.03072720558616869
+34539,imputation,imputation,0.0018930307341177288
+31,max. depth,max. depth,0.06522171624033185
+31,learning rate,learning rate,0.2837888723029661
+31,learning rate / max. depth,learning rate / max. depth,0.12794008852104738
+31,algorithm / max. depth,algorithm / max. depth,0.04731736283005021
+31,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.030590088906696913
+31,algorithm,algorithm,0.025169393065826454
+31,iterations,iterations,0.04672080933094374
+31,imputation,imputation,0.0021462724437973607
+125921,max. depth,max. depth,0.014703247016290857
+125921,learning rate,learning rate,0.3840715327554039
+125921,learning rate / max. depth,learning rate / max. depth,0.09965627339803204
+125921,algorithm / max. depth,algorithm / max. depth,0.05868698191854409
+125921,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.042468794568872356
+125921,algorithm,algorithm,0.04928064019296037
+125921,iterations,iterations,0.012582385254068247
+125921,imputation,imputation,0.0005729307132802295
+41,max. depth,max. depth,0.6158928964573707
+41,learning rate,learning rate,0.067901773958741
+41,learning rate / max. depth,learning rate / max. depth,0.13148224568221523
+41,algorithm / max. depth,algorithm / max. depth,0.0446208758174127
+41,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.01788595115599184
+41,algorithm,algorithm,0.0057036876120666186
+41,iterations,iterations,0.0068576385513729205
+41,imputation,imputation,0.000727859228995158
+9955,max. depth,max. depth,0.849863565182177
+9955,learning rate,learning rate,0.029120431854767967
+9955,learning rate / max. depth,learning rate / max. depth,0.026582578418274383
+9955,algorithm / max. depth,algorithm / max. depth,0.0035849685504509843
+9955,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.006563530085700493
+9955,algorithm,algorithm,0.0004596815473619089
+9955,iterations,iterations,0.01535413013473272
+9955,imputation,imputation,0.0010274599771956797
+11,max. depth,max. depth,0.6783301007551616
+11,learning rate,learning rate,0.040793892765313006
+11,learning rate / max. depth,learning rate / max. depth,0.07701228910055558
+11,algorithm / max. depth,algorithm / max. depth,0.039660655074914564
+11,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.020062670088315526
+11,algorithm,algorithm,0.0031270014242481526
+11,iterations,iterations,0.010190247902411784
+11,imputation,imputation,0.00043463689796460655
+20,max. depth,max. depth,0.5952913010337412
+20,learning rate,learning rate,0.057818863390616246
+20,learning rate / max. depth,learning rate / max. depth,0.05885482692152444
+20,algorithm / max. depth,algorithm / max. depth,0.044071780130000904
+20,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03665949083105213
+20,algorithm,algorithm,0.018288889851740694
+20,iterations,iterations,0.01806023699919514
+20,imputation,imputation,0.0007812866577971947
+3917,max. depth,max. depth,0.012779492886343988
+3917,learning rate,learning rate,0.37606693088141613
+3917,learning rate / max. depth,learning rate / max. depth,0.04331239279237982
+3917,algorithm / max. depth,algorithm / max. depth,0.028478691958305415
+3917,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03269631904973964
+3917,algorithm,algorithm,0.028953260001667126
+3917,iterations,iterations,0.07943998082121186
+3917,imputation,imputation,0.001467554361721829
+21,max. depth,max. depth,0.8465832618883837
+21,learning rate,learning rate,0.024514860799177484
+21,learning rate / max. depth,learning rate / max. depth,0.03611827698405301
+21,algorithm / max. depth,algorithm / max. depth,0.017540388080925284
+21,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.011459745483124811
+21,algorithm,algorithm,0.001403887207758772
+21,iterations,iterations,0.0033768226451463277
+21,imputation,imputation,0.000553910514777625
+7592,max. depth,max. depth,0.030277073274182498
+7592,learning rate,learning rate,0.5516479052470462
+7592,learning rate / max. depth,learning rate / max. depth,0.07396155851137665
+7592,algorithm / max. depth,algorithm / max. depth,0.053927683538427265
+7592,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03448651740852081
+7592,algorithm,algorithm,0.0025478268925244888
+7592,iterations,iterations,0.09376884602731998
+7592,imputation,imputation,0.0008250239779765166
+28,max. depth,max. depth,0.6306739168059021
+28,learning rate,learning rate,0.05306241323264148
+28,learning rate / max. depth,learning rate / max. depth,0.07539562245305076
+28,algorithm / max. depth,algorithm / max. depth,0.03277948370890171
+28,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.030087908321453638
+28,algorithm,algorithm,0.029949996416169654
+28,iterations,iterations,0.014329724659483014
+28,imputation,imputation,0.0003518218872984707
+9976,max. depth,max. depth,0.18786403196574075
+9976,learning rate,learning rate,0.18752281930919165
+9976,learning rate / max. depth,learning rate / max. depth,0.07521386632672689
+9976,algorithm / max. depth,algorithm / max. depth,0.07064320338543623
+9976,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02446044881523765
+9976,algorithm,algorithm,0.33475320449551266
+9976,iterations,iterations,0.009408398712145109
+9976,imputation,imputation,0.0003794132973416462
+9981,max. depth,max. depth,0.37497315013986043
+9981,learning rate,learning rate,0.09991271434692583
+9981,learning rate / max. depth,learning rate / max. depth,0.12953408182331427
+9981,algorithm / max. depth,algorithm / max. depth,0.04122698963887661
+9981,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.038686185158755826
+9981,algorithm,algorithm,0.0033610892865500452
+9981,iterations,iterations,0.01792269363542444
+9981,imputation,imputation,0.0014052085264105421
+14965,max. depth,max. depth,0.10048885414144648
+14965,learning rate,learning rate,0.5133269442870292
+14965,learning rate / max. depth,learning rate / max. depth,0.11856119185189706
+14965,algorithm / max. depth,algorithm / max. depth,0.04469145651396178
+14965,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.021950947852676594
+14965,algorithm,algorithm,0.0014249462293657788
+14965,iterations,iterations,0.015706846720473736
+14965,imputation,imputation,0.0010050213344190446
+3560,max. depth,max. depth,0.15784574860110906
+3560,learning rate,learning rate,0.2900171451269434
+3560,learning rate / max. depth,learning rate / max. depth,0.08823965801628231
+3560,algorithm / max. depth,algorithm / max. depth,0.05618719425697555
+3560,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.055359876284396536
+3560,algorithm,algorithm,0.06614508105698023
+3560,iterations,iterations,0.014231915597536648
+3560,imputation,imputation,0.0014192217710448005
+3891,max. depth,max. depth,0.3994113526700386
+3891,learning rate,learning rate,0.2361289565659518
+3891,learning rate / max. depth,learning rate / max. depth,0.06717955369437334
+3891,algorithm / max. depth,algorithm / max. depth,0.11120128768598847
+3891,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03202959815239473
+3891,algorithm,algorithm,0.025407215999285897
+3891,iterations,iterations,0.016161056228865486
+3891,imputation,imputation,0.0009142132686795703
+37,max. depth,max. depth,0.10672468914373914
+37,learning rate,learning rate,0.13724612541358572
+37,learning rate / max. depth,learning rate / max. depth,0.09150594958733113
+37,algorithm / max. depth,algorithm / max. depth,0.11394974347123277
+37,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.05274504584627096
+37,algorithm,algorithm,0.16628389162766774
+37,iterations,iterations,0.03279899016464584
+37,imputation,imputation,0.0020927873076169844
+14,max. depth,max. depth,0.671610234685686
+14,learning rate,learning rate,0.02842866373229736
+14,learning rate / max. depth,learning rate / max. depth,0.042874858025300555
+14,algorithm / max. depth,algorithm / max. depth,0.04772391315136182
+14,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03746249028677168
+14,algorithm,algorithm,0.07951014981012622
+14,iterations,iterations,0.004812740955820932
+14,imputation,imputation,0.00040136071785691906
+3948,max. depth,max. depth,0.031116719495958366
+3948,learning rate,learning rate,0.41418731048058405
+3948,learning rate / max. depth,learning rate / max. depth,0.06782459388097414
+3948,algorithm / max. depth,algorithm / max. depth,0.06469736215022703
+3948,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02270995763537459
+3948,algorithm,algorithm,0.09511563218427732
+3948,iterations,iterations,0.011589708960672128
+3948,imputation,imputation,0.000569180116590927
+3494,max. depth,max. depth,0.4448615298140133
+3494,learning rate,learning rate,0.06158526136239026
+3494,learning rate / max. depth,learning rate / max. depth,0.06664702677457113
+3494,algorithm / max. depth,algorithm / max. depth,0.05780515791547036
+3494,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.08113520595154744
+3494,algorithm,algorithm,0.07458337488455558
+3494,iterations,iterations,0.008766793709630603
+3494,imputation,imputation,0.0008983325681150374
+29,max. depth,max. depth,0.1147929647462242
+29,learning rate,learning rate,0.18749583114466295
+29,learning rate / max. depth,learning rate / max. depth,0.2335483564534479
+29,algorithm / max. depth,algorithm / max. depth,0.041154304727085825
+29,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.05414624345801293
+29,algorithm,algorithm,0.07351443270759975
+29,iterations,iterations,0.019861993571104006
+29,imputation,imputation,0.0020258830547014374
+146607,max. depth,max. depth,0.12383164487260355
+146607,learning rate,learning rate,0.3149554567576599
+146607,learning rate / max. depth,learning rate / max. depth,0.11651828043819291
+146607,algorithm / max. depth,algorithm / max. depth,0.12803219683497336
+146607,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.05004778834647594
+146607,algorithm,algorithm,0.035570630522708896
+146607,iterations,iterations,0.01593765253422162
+146607,imputation,imputation,0.00106718762804761
+9946,max. depth,max. depth,0.652477466525139
+9946,learning rate,learning rate,0.08670122730079402
+9946,learning rate / max. depth,learning rate / max. depth,0.09617639953736501
+9946,algorithm / max. depth,algorithm / max. depth,0.01730104796650389
+9946,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.016666628230366853
+9946,algorithm,algorithm,0.0018495600386003032
+9946,iterations,iterations,0.008115792668044327
+9946,imputation,imputation,0.0013427107013713015
+125922,max. depth,max. depth,0.7079597069500236
+125922,learning rate,learning rate,0.02440579207179972
+125922,learning rate / max. depth,learning rate / max. depth,0.05576448105758458
+125922,algorithm / max. depth,algorithm / max. depth,0.07733536979524369
+125922,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.042354139763407406
+125922,algorithm,algorithm,0.023621544603810468
+125922,iterations,iterations,0.0021958101827030526
+125922,imputation,imputation,0.000667857390864377
+14970,max. depth,max. depth,0.7286788904438921
+14970,learning rate,learning rate,0.03402225361933438
+14970,learning rate / max. depth,learning rate / max. depth,0.02659791174513937
+14970,algorithm / max. depth,algorithm / max. depth,0.06991798392221837
+14970,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.00986910796559233
+14970,algorithm,algorithm,0.013283742011678468
+14970,iterations,iterations,0.047798664404350724
+14970,imputation,imputation,0.001985878297635648
+3896,max. depth,max. depth,0.043210398110430565
+3896,learning rate,learning rate,0.37060454279977284
+3896,learning rate / max. depth,learning rate / max. depth,0.09929841047943458
+3896,algorithm / max. depth,algorithm / max. depth,0.07683651853248
+3896,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.05337114466167664
+3896,algorithm,algorithm,0.10278244742216427
+3896,iterations,iterations,0.006877478573529779
+3896,imputation,imputation,0.0017839423842813075
+3567,max. depth,max. depth,0.05327886200427024
+3567,learning rate,learning rate,0.20648923373697886
+3567,learning rate / max. depth,learning rate / max. depth,0.23508743613605582
+3567,algorithm / max. depth,algorithm / max. depth,0.012781434835447296
+3567,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.11157936364677695
+3567,algorithm,algorithm,0.006738765104087307
+3567,iterations,iterations,0.06779292132159884
+3567,imputation,imputation,0.0014779346546223186
+9979,max. depth,max. depth,0.18634919037050623
+9979,learning rate,learning rate,0.12324962672553277
+9979,learning rate / max. depth,learning rate / max. depth,0.2435734146255456
+9979,algorithm / max. depth,algorithm / max. depth,0.05243332640483675
+9979,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.021022164939019455
+9979,algorithm,algorithm,0.006243001802470874
+9979,iterations,iterations,0.03069441807179494
+9979,imputation,imputation,0.0027177275476155238
+3946,max. depth,max. depth,0.009709295326065917
+3946,learning rate,learning rate,0.4713761331757399
+3946,learning rate / max. depth,learning rate / max. depth,0.052707826745722594
+3946,algorithm / max. depth,algorithm / max. depth,0.009550337246728477
+3946,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02308662203608572
+3946,algorithm,algorithm,0.03509197371829188
+3946,iterations,iterations,0.018612580155169707
+3946,imputation,imputation,0.0007184886302513039
+9952,max. depth,max. depth,0.7482463810127123
+9952,learning rate,learning rate,0.028375789251835593
+9952,learning rate / max. depth,learning rate / max. depth,0.016126379276008018
+9952,algorithm / max. depth,algorithm / max. depth,0.041905712389900374
+9952,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.01421555373692443
+9952,algorithm,algorithm,0.09759894200819666
+9952,iterations,iterations,0.005936440976727569
+9952,imputation,imputation,0.0002607379503390888
+2079,max. depth,max. depth,0.44465951990985597
+2079,learning rate,learning rate,0.10448866099714196
+2079,learning rate / max. depth,learning rate / max. depth,0.04107896735297867
+2079,algorithm / max. depth,algorithm / max. depth,0.06494061400746753
+2079,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.029885133990995738
+2079,algorithm,algorithm,0.1888227493943853
+2079,iterations,iterations,0.007118139888547648
+2079,imputation,imputation,0.0005953830724026794
+45,max. depth,max. depth,0.48443133147996925
+45,learning rate,learning rate,0.023735539151189818
+45,learning rate / max. depth,learning rate / max. depth,0.08316819887091392
+45,algorithm / max. depth,algorithm / max. depth,0.2502685828801576
+45,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.039426700820104854
+45,algorithm,algorithm,0.012754523911370108
+45,iterations,iterations,0.00453326049127243
+45,imputation,imputation,0.0005557396540198357
+9977,max. depth,max. depth,0.5281414230389914
+9977,learning rate,learning rate,0.0794341023110535
+9977,learning rate / max. depth,learning rate / max. depth,0.04847900582611597
+9977,algorithm / max. depth,algorithm / max. depth,0.09510422417112774
+9977,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.031753556949918216
+9977,algorithm,algorithm,0.0704461889561061
+9977,iterations,iterations,0.032247200073743806
+9977,imputation,imputation,0.0005024181976503929
+9964,max. depth,max. depth,0.6593267657382142
+9964,learning rate,learning rate,0.09453378298510881
+9964,learning rate / max. depth,learning rate / max. depth,0.05294608784297472
+9964,algorithm / max. depth,algorithm / max. depth,0.04475634841762843
+9964,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.032289199984033734
+9964,algorithm,algorithm,0.0013413719599943148
+9964,iterations,iterations,0.03256732203535954
+9964,imputation,imputation,0.0005932074067341268
+3573,max. depth,max. depth,0.7554029345143121
+3573,learning rate,learning rate,0.03260569537144965
+3573,learning rate / max. depth,learning rate / max. depth,0.04928345627258579
+3573,algorithm / max. depth,algorithm / max. depth,0.07136792717545204
+3573,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.013265664690080337
+3573,algorithm,algorithm,0.0014598571946974098
+3573,iterations,iterations,0.010050512921457783
+3573,imputation,imputation,0.00016685794333224296
+22,max. depth,max. depth,0.6050322195104084
+22,learning rate,learning rate,0.08128207362121984
+22,learning rate / max. depth,learning rate / max. depth,0.07283961409485662
+22,algorithm / max. depth,algorithm / max. depth,0.061445351461560715
+22,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.027082056372010693
+22,algorithm,algorithm,0.06171109993609148
+22,iterations,iterations,0.012927460619746598
+22,imputation,imputation,0.0007353682426805176
+36,max. depth,max. depth,0.7316028279903279
+36,learning rate,learning rate,0.009021723386652813
+36,learning rate / max. depth,learning rate / max. depth,0.029144155492543233
+36,algorithm / max. depth,algorithm / max. depth,0.05891515591568697
+36,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.015566200735694063
+36,algorithm,algorithm,0.025772523663450148
+36,iterations,iterations,0.009232067243356627
+36,imputation,imputation,0.0011239945642722903
+43,max. depth,max. depth,0.3987264061771181
+43,learning rate,learning rate,0.12336649316737655
+43,learning rate / max. depth,learning rate / max. depth,0.061664833904090166
+43,algorithm / max. depth,algorithm / max. depth,0.1345901126877722
+43,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03918003541545792
+43,algorithm,algorithm,0.026388841316058176
+43,iterations,iterations,0.04656660995427821
+43,imputation,imputation,0.0005751797420440394
+14964,max. depth,max. depth,0.8317886823449161
+14964,learning rate,learning rate,0.023414127100969497
+14964,learning rate / max. depth,learning rate / max. depth,0.057816416198477105
+14964,algorithm / max. depth,algorithm / max. depth,0.011220751283353203
+14964,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.010289170757328145
+14964,algorithm,algorithm,0.006089533592391517
+14964,iterations,iterations,0.00541195003012603
+14964,imputation,imputation,0.0004083702962706984
+53,max. depth,max. depth,0.6876273891598116
+53,learning rate,learning rate,0.019168893753265182
+53,learning rate / max. depth,learning rate / max. depth,0.03617162506559368
+53,algorithm / max. depth,algorithm / max. depth,0.06435059569512924
+53,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.020324714013254377
+53,algorithm,algorithm,0.010399054697279482
+53,iterations,iterations,0.02980481577993107
+53,imputation,imputation,0.0007213638354733898
+14967,max. depth,max. depth,0.24421704688740525
+14967,learning rate,learning rate,0.05747516813431285
+14967,learning rate / max. depth,learning rate / max. depth,0.08633774835682922
+14967,algorithm / max. depth,algorithm / max. depth,0.043836557041961655
+14967,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.15219581365115126
+14967,algorithm,algorithm,0.11428475335701031
+14967,iterations,iterations,0.03548551888661893
+14967,imputation,imputation,0.0011050106022808073
+14969,max. depth,max. depth,0.7955816509744928
+14969,learning rate,learning rate,0.019119765583320836
+14969,learning rate / max. depth,learning rate / max. depth,0.022463117139384647
+14969,algorithm / max. depth,algorithm / max. depth,0.058636059966234
+14969,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.01402192809651033
+14969,algorithm,algorithm,0.012443046462617149
+14969,iterations,iterations,0.0184770068758597
+14969,imputation,imputation,0.0001620227477958572
+3889,max. depth,max. depth,0.40340814320853086
+3889,learning rate,learning rate,0.028596125001689683
+3889,learning rate / max. depth,learning rate / max. depth,0.0284997398514093
+3889,algorithm / max. depth,algorithm / max. depth,0.44020867430566896
+3889,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.022741681946863546
+3889,algorithm,algorithm,0.021373490219924067
+3889,iterations,iterations,0.010648336316267078
+3889,imputation,imputation,0.00012736127477672843
+9950,max. depth,max. depth,0.7538296318504202
+9950,learning rate,learning rate,0.032530347443289115
+9950,learning rate / max. depth,learning rate / max. depth,0.0567571528713281
+9950,algorithm / max. depth,algorithm / max. depth,0.013426190691329443
+9950,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.023606616489816837
+9950,algorithm,algorithm,0.0018224058273466556
+9950,iterations,iterations,0.014693282180415063
+9950,imputation,imputation,0.0007556187352370171
+125920,max. depth,max. depth,0.19926526251960236
+125920,learning rate,learning rate,0.08008683397176874
+125920,learning rate / max. depth,learning rate / max. depth,0.15536285656984766
+125920,algorithm / max. depth,algorithm / max. depth,0.061035935240702444
+125920,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.06835646423469433
+125920,algorithm,algorithm,0.11617972194995937
+125920,iterations,iterations,0.014018871742474567
+125920,imputation,imputation,0.002386439918145246
+3485,max. depth,max. depth,0.21472959213748313
+3485,learning rate,learning rate,0.05900128648240159
+3485,learning rate / max. depth,learning rate / max. depth,0.06616979720125529
+3485,algorithm / max. depth,algorithm / max. depth,0.39447204622294574
+3485,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.05119860292627898
+3485,algorithm,algorithm,0.010276984240841645
+3485,iterations,iterations,0.02072654721943432
+3485,imputation,imputation,0.0004950156768910811
+146606,max. depth,max. depth,0.18691869822765547
+146606,learning rate,learning rate,0.17892738571749292
+146606,learning rate / max. depth,learning rate / max. depth,0.184348990754748
+146606,algorithm / max. depth,algorithm / max. depth,0.15682406200787094
+146606,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.06936854078340576
+146606,algorithm,algorithm,0.016867985684843607
+146606,iterations,iterations,0.022512727565197635
+146606,imputation,imputation,0.0014625180143712812
+3918,max. depth,max. depth,0.10280998250279748
+3918,learning rate,learning rate,0.109435398736381
+3918,learning rate / max. depth,learning rate / max. depth,0.11795568545161687
+3918,algorithm / max. depth,algorithm / max. depth,0.19293016203080715
+3918,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.06415024132510644
+3918,algorithm,algorithm,0.14136662308965686
+3918,iterations,iterations,0.018606199106855292
+3918,imputation,imputation,0.0037888731525847676
+9956,max. depth,max. depth,0.6585087987191103
+9956,learning rate,learning rate,0.05771789724936729
+9956,learning rate / max. depth,learning rate / max. depth,0.036525039237698564
+9956,algorithm / max. depth,algorithm / max. depth,0.013237693031200815
+9956,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02732999210828599
+9956,algorithm,algorithm,0.022431214014124665
+9956,iterations,iterations,0.013555170330105691
+9956,imputation,imputation,0.0010672132186137385
+2074,max. depth,max. depth,0.7390601609739555
+2074,learning rate,learning rate,0.007269360449435585
+2074,learning rate / max. depth,learning rate / max. depth,0.026675041051895554
+2074,algorithm / max. depth,algorithm / max. depth,0.04856831264772332
+2074,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.027605158065136456
+2074,algorithm,algorithm,0.06366424781339144
+2074,iterations,iterations,0.012831008116019348
+2074,imputation,imputation,0.0006216247696257181
+219,max. depth,max. depth,0.5519528880304467
+219,learning rate,learning rate,0.09080281374127311
+219,learning rate / max. depth,learning rate / max. depth,0.02890583479092823
+219,algorithm / max. depth,algorithm / max. depth,0.02523481984173781
+219,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.047645667034433126
+219,algorithm,algorithm,0.16863809698901946
+219,iterations,iterations,0.010618261554096127
+219,imputation,imputation,0.00034636103556044066
+3512,max. depth,max. depth,0.7518107174598524
+3512,learning rate,learning rate,0.011936030636650653
+3512,learning rate / max. depth,learning rate / max. depth,0.03262593678862302
+3512,algorithm / max. depth,algorithm / max. depth,0.05728335594124856
+3512,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.010674655188847054
+3512,algorithm,algorithm,0.010169966806341139
+3512,iterations,iterations,0.010817268812653236
+3512,imputation,imputation,0.0019072566706422028
+3903,max. depth,max. depth,0.05665991203031563
+3903,learning rate,learning rate,0.3282973705691177
+3903,learning rate / max. depth,learning rate / max. depth,0.26409347551065754
+3903,algorithm / max. depth,algorithm / max. depth,0.0034987130185139617
+3903,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.01258811751410071
+3903,algorithm,algorithm,0.0005299576892003867
+3903,iterations,iterations,0.06801045423610315
+3903,imputation,imputation,0.0020581799950095256
+18,max. depth,max. depth,0.7299375072904517
+18,learning rate,learning rate,0.04017434958148067
+18,learning rate / max. depth,learning rate / max. depth,0.06780310681534663
+18,algorithm / max. depth,algorithm / max. depth,0.009988242168848083
+18,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02348378179386776
+18,algorithm,algorithm,0.000779789864648511
+18,iterations,iterations,0.006126018801500354
+18,imputation,imputation,0.0005634155948830906
+3481,max. depth,max. depth,0.8512987740398159
+3481,learning rate,learning rate,0.008428262627305245
+3481,learning rate / max. depth,learning rate / max. depth,0.028649677803264884
+3481,algorithm / max. depth,algorithm / max. depth,0.01189219350002202
+3481,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.010637223089781656
+3481,algorithm,algorithm,0.02705949986068147
+3481,iterations,iterations,0.0033669722392126204
+3481,imputation,imputation,0.0005963384615680492
+34538,max. depth,max. depth,0.22860441590672673
+34538,learning rate,learning rate,0.0361591296737082
+34538,learning rate / max. depth,learning rate / max. depth,0.1926105573387241
+34538,algorithm / max. depth,algorithm / max. depth,0.17556344959019018
+34538,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.17419847297080263
+34538,algorithm,algorithm,0.034347644536131275
+34538,iterations,iterations,0.004195345579954571
+34538,imputation,imputation,0.0007067934673936266
+49,max. depth,max. depth,0.6233957366272249
+49,learning rate,learning rate,0.03643541875710858
+49,learning rate / max. depth,learning rate / max. depth,0.08745385978764486
+49,algorithm / max. depth,algorithm / max. depth,0.059405408743318455
+49,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.0823705987269307
+49,algorithm,algorithm,0.017249817674286103
+49,iterations,iterations,0.010199675625022973
+49,imputation,imputation,0.0003065487895133317
+3492,max. depth,max. depth,0.6810150453253608
+3492,learning rate,learning rate,0.02082769796257679
+3492,learning rate / max. depth,learning rate / max. depth,0.03717124524506554
+3492,algorithm / max. depth,algorithm / max. depth,0.1433240554954196
+3492,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.024654278656786738
+3492,algorithm,algorithm,0.045490519091779015
+3492,iterations,iterations,0.0015208748813953846
+3492,imputation,imputation,0.0007633241612802996
+9970,max. depth,max. depth,0.2714502618854798
+9970,learning rate,learning rate,0.2032730903215145
+9970,learning rate / max. depth,learning rate / max. depth,0.04118713491846704
+9970,algorithm / max. depth,algorithm / max. depth,0.025114308182168088
+9970,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.02561352819357285
+9970,algorithm,algorithm,0.27671789154084425
+9970,iterations,iterations,0.01702868528487789
+9970,imputation,imputation,0.0007124820524640956
+14968,max. depth,max. depth,0.14762768422730904
+14968,learning rate,learning rate,0.3770851724424037
+14968,learning rate / max. depth,learning rate / max. depth,0.050129503320452906
+14968,algorithm / max. depth,algorithm / max. depth,0.058424780501756035
+14968,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03098387162618732
+14968,algorithm,algorithm,0.02477085864600069
+14968,iterations,iterations,0.05521643517980064
+14968,imputation,imputation,0.00416261302643243
+9954,max. depth,max. depth,0.6781403950134488
+9954,learning rate,learning rate,0.05855374372611333
+9954,learning rate / max. depth,learning rate / max. depth,0.03666650672367089
+9954,algorithm / max. depth,algorithm / max. depth,0.02161639454049924
+9954,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.0215167219612383
+9954,algorithm,algorithm,0.017323476745651867
+9954,iterations,iterations,0.011045175117809083
+9954,imputation,imputation,0.0004450629643646272
+125923,max. depth,max. depth,0.12388236245898167
+125923,learning rate,learning rate,0.13681477812419246
+125923,learning rate / max. depth,learning rate / max. depth,0.25915166394225736
+125923,algorithm / max. depth,algorithm / max. depth,0.042164890301760335
+125923,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.08179101556573411
+125923,algorithm,algorithm,0.08005436576424663
+125923,iterations,iterations,0.016965950947920014
+125923,imputation,imputation,0.0009969132282577576
+32,max. depth,max. depth,0.8709337678177018
+32,learning rate,learning rate,0.018439311506190766
+32,learning rate / max. depth,learning rate / max. depth,0.032093746418018654
+32,algorithm / max. depth,algorithm / max. depth,0.007671258225767308
+32,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.011933154608071136
+32,algorithm,algorithm,0.0003967156683330361
+32,iterations,iterations,0.007994475422736489
+32,imputation,imputation,0.000170320515755028
+12,max. depth,max. depth,0.6325090059141761
+12,learning rate,learning rate,0.02259790464069777
+12,learning rate / max. depth,learning rate / max. depth,0.0486842243652148
+12,algorithm / max. depth,algorithm / max. depth,0.04204283763506411
+12,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.011457149182531795
+12,algorithm,algorithm,0.031244774890217993
+12,iterations,iterations,0.035137357631915764
+12,imputation,imputation,0.0009468305456245598
+14966,max. depth,max. depth,0.37711045535172194
+14966,learning rate,learning rate,0.14091182685701947
+14966,learning rate / max. depth,learning rate / max. depth,0.059823944973111554
+14966,algorithm / max. depth,algorithm / max. depth,0.06554243359115142
+14966,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03542640224145763
+14966,algorithm,algorithm,0.06823144558626357
+14966,iterations,iterations,0.04267182445101824
+14966,imputation,imputation,0.0010249406227258138
+9914,max. depth,max. depth,0.4797825247423853
+9914,learning rate,learning rate,0.10499972585984052
+9914,learning rate / max. depth,learning rate / max. depth,0.09646131900366223
+9914,algorithm / max. depth,algorithm / max. depth,0.09916631705695295
+9914,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.04228742985659659
+9914,algorithm,algorithm,0.018600332544571795
+9914,iterations,iterations,0.016858171493498903
+9914,imputation,imputation,0.0014469953170716807
+58,max. depth,max. depth,0.07713846455023593
+58,learning rate,learning rate,0.26845917839133443
+58,learning rate / max. depth,learning rate / max. depth,0.08947058655306384
+58,algorithm / max. depth,algorithm / max. depth,0.16424255498720705
+58,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.04675146405583727
+58,algorithm,algorithm,0.10826733975954259
+58,iterations,iterations,0.0260179500556217
+58,imputation,imputation,0.0010878290592537178
+3902,max. depth,max. depth,0.13765432267115313
+3902,learning rate,learning rate,0.15690926765091584
+3902,learning rate / max. depth,learning rate / max. depth,0.08850040746708132
+3902,algorithm / max. depth,algorithm / max. depth,0.07461444312217805
+3902,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.03256799862962076
+3902,algorithm,algorithm,0.008375694002692356
+3902,iterations,iterations,0.09512445541769905
+3902,imputation,imputation,0.0028543567433188767
+16,max. depth,max. depth,0.6303200411395229
+16,learning rate,learning rate,0.062013699789974404
+16,learning rate / max. depth,learning rate / max. depth,0.06146247728241627
+16,algorithm / max. depth,algorithm / max. depth,0.0076310536024893905
+16,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.018365612521099223
+16,algorithm,algorithm,0.01131327316883333
+16,iterations,iterations,0.04488379251511654
+16,imputation,imputation,0.001062429949747806
+9971,max. depth,max. depth,0.08061646939386084
+9971,learning rate,learning rate,0.20627966181041565
+9971,learning rate / max. depth,learning rate / max. depth,0.14793656909684594
+9971,algorithm / max. depth,algorithm / max. depth,0.03749984808334614
+9971,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.06618068506117206
+9971,algorithm,algorithm,0.0086960674460028
+9971,iterations,iterations,0.024758940487810497
+9971,imputation,imputation,0.0073151979091539265
+15,max. depth,max. depth,0.6132184902688016
+15,learning rate,learning rate,0.10952477047588349
+15,learning rate / max. depth,learning rate / max. depth,0.07155406034065381
+15,algorithm / max. depth,algorithm / max. depth,0.0030742318311030026
+15,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.016089193828427342
+15,algorithm,algorithm,0.0009447706273132586
+15,iterations,iterations,0.01472085409601828
+15,imputation,imputation,0.004475740025597896
+3543,max. depth,max. depth,0.3020718474648927
+3543,learning rate,learning rate,0.024640001627826966
+3543,learning rate / max. depth,learning rate / max. depth,0.1272204106111149
+3543,algorithm / max. depth,algorithm / max. depth,0.05882139550313514
+3543,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.060557815997093145
+3543,algorithm,algorithm,0.04957427236169541
+3543,iterations,iterations,0.03329455468323547
+3543,imputation,imputation,0.00980353491269548
+23,max. depth,max. depth,0.21013957711013012
+23,learning rate,learning rate,0.19107547226271426
+23,learning rate / max. depth,learning rate / max. depth,0.11452578670426991
+23,algorithm / max. depth,algorithm / max. depth,0.15000193920180385
+23,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.10064158572886236
+23,algorithm,algorithm,0.04383383641044501
+23,iterations,iterations,0.009832232373677006
+23,imputation,imputation,0.0014580412822142372
+9968,max. depth,max. depth,0.22903943844815344
+9968,learning rate,learning rate,0.22106011931765573
+9968,learning rate / max. depth,learning rate / max. depth,0.0853806159957709
+9968,algorithm / max. depth,algorithm / max. depth,0.023438892751849294
+9968,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.0648096369740252
+9968,algorithm,algorithm,0.018245947668741075
+9968,iterations,iterations,0.012506234778534651
+9968,imputation,imputation,0.0009131342709974244
+3549,max. depth,max. depth,0.5455078398253073
+3549,learning rate,learning rate,0.09780022001993445
+3549,learning rate / max. depth,learning rate / max. depth,0.15295804514002087
+3549,algorithm / max. depth,algorithm / max. depth,0.031684238202285164
+3549,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.023791935952382992
+3549,algorithm,algorithm,0.00976296305141322
+3549,iterations,iterations,0.030003281753707357
+3549,imputation,imputation,0.0006560013387212199
+3,max. depth,max. depth,0.45263969036818913
+3,learning rate,learning rate,0.10303303240006473
+3,learning rate / max. depth,learning rate / max. depth,0.08950918404050529
+3,algorithm / max. depth,algorithm / max. depth,0.11054873285513084
+3,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.046669912253683055
+3,algorithm,algorithm,0.05465084813302112
+3,iterations,iterations,0.005528384339203442
+3,imputation,imputation,0.0007699949154311225
+9967,max. depth,max. depth,0.18170285384308998
+9967,learning rate,learning rate,0.0633994776714121
+9967,learning rate / max. depth,learning rate / max. depth,0.18670590733212794
+9967,algorithm / max. depth,algorithm / max. depth,0.14929914792271015
+9967,algo. / learning r. / max. depth,algo. / learning r. / max. depth,0.1520702098157391
+9967,algorithm,algorithm,0.017212811842966025
+9967,iterations,iterations,0.03749360202709054
+9967,imputation,imputation,0.0006655755389361685

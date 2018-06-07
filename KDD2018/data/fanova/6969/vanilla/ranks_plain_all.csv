@@ -1,0 +1,865 @@
+task_id,param_id,param_name,variance_contribution
+9983,min. samples leaf,min. samples leaf,0.6692498207862665
+9983,max. features,max. features,0.13330080673881506
+9983,bootstrap,bootstrap,0.04810334226187174
+9983,bootstrap / max. features,bootstrap / max. features,0.02983148281223988
+9983,max. features / min. samples leaf,max. features / min. samples leaf,0.025888183207149584
+9983,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.014618219729074206
+9983,min. samples split,min. samples split,0.0036962567093002142
+9983,split criterion,split criterion,0.007248657035230161
+9983,imputation,imputation,0.0002742264205539036
+3913,min. samples leaf,min. samples leaf,0.1343103564110605
+3913,max. features,max. features,0.1745154752270111
+3913,bootstrap,bootstrap,0.09622483485349659
+3913,bootstrap / max. features,bootstrap / max. features,0.1619034970237646
+3913,max. features / min. samples leaf,max. features / min. samples leaf,0.12645192989114698
+3913,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.06184710326100179
+3913,min. samples split,min. samples split,0.005269722867093481
+3913,split criterion,split criterion,0.0010875147903090729
+3913,imputation,imputation,0.0013279462394087292
+146195,min. samples leaf,min. samples leaf,0.6101332014319832
+146195,max. features,max. features,0.15050662619399133
+146195,bootstrap,bootstrap,0.07045031525650447
+146195,bootstrap / max. features,bootstrap / max. features,0.03909551965132871
+146195,max. features / min. samples leaf,max. features / min. samples leaf,0.041765901236371694
+146195,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.02072810908876002
+146195,min. samples split,min. samples split,0.0009264178845399549
+146195,split criterion,split criterion,0.0018125506447726912
+146195,imputation,imputation,0.0005144087291710361
+34537,min. samples leaf,min. samples leaf,0.8314474934182515
+34537,max. features,max. features,0.04899390445878635
+34537,bootstrap,bootstrap,0.02884584630384696
+34537,bootstrap / max. features,bootstrap / max. features,0.009994033508073319
+34537,max. features / min. samples leaf,max. features / min. samples leaf,0.019270434883285614
+34537,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.010056112892336933
+34537,min. samples split,min. samples split,0.0024682816462200776
+34537,split criterion,split criterion,9.644493851744274e-05
+34537,imputation,imputation,0.00016191669327941186
+34536,min. samples leaf,min. samples leaf,0.7902518413907913
+34536,max. features,max. features,0.04086045059055178
+34536,bootstrap,bootstrap,0.0619737348844884
+34536,bootstrap / max. features,bootstrap / max. features,0.0051069235809861335
+34536,max. features / min. samples leaf,max. features / min. samples leaf,0.01747646550225268
+34536,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.012602376357148726
+34536,min. samples split,min. samples split,0.0011527087889233942
+34536,split criterion,split criterion,0.0003829439108680013
+34536,imputation,imputation,0.00011273384403728723
+9957,min. samples leaf,min. samples leaf,0.4678807425247883
+9957,max. features,max. features,0.09387084277417189
+9957,bootstrap,bootstrap,0.009957767497741883
+9957,bootstrap / max. features,bootstrap / max. features,0.06351783077211358
+9957,max. features / min. samples leaf,max. features / min. samples leaf,0.06545108276960943
+9957,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.029425338230167367
+9957,min. samples split,min. samples split,0.005466173295346368
+9957,split criterion,split criterion,0.027087818272704976
+9957,imputation,imputation,0.0008231698545653541
+3493,min. samples leaf,min. samples leaf,0.42416182624636894
+3493,max. features,max. features,0.20658709908933443
+3493,bootstrap,bootstrap,0.19537217712426896
+3493,bootstrap / max. features,bootstrap / max. features,0.035518752706127144
+3493,max. features / min. samples leaf,max. features / min. samples leaf,0.05417018712419608
+3493,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.018827605547671877
+3493,min. samples split,min. samples split,0.004246954749131495
+3493,split criterion,split criterion,3.7936993243894776e-05
+3493,imputation,imputation,0.00048375257124713434
+3904,min. samples leaf,min. samples leaf,0.10401366160676753
+3904,max. features,max. features,0.2587396979440787
+3904,bootstrap,bootstrap,0.029916791092519702
+3904,bootstrap / max. features,bootstrap / max. features,0.21474078797578294
+3904,max. features / min. samples leaf,max. features / min. samples leaf,0.1469863203573479
+3904,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.07795947735495218
+3904,min. samples split,min. samples split,0.0019327080844293676
+3904,split criterion,split criterion,0.0005707024485745931
+3904,imputation,imputation,0.0006527115686965057
+3021,min. samples leaf,min. samples leaf,0.2526988184188884
+3021,max. features,max. features,0.4972909488936549
+3021,bootstrap,bootstrap,0.04571850331339845
+3021,bootstrap / max. features,bootstrap / max. features,0.02176288889093303
+3021,max. features / min. samples leaf,max. features / min. samples leaf,0.08584905905369089
+3021,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.02312224227192905
+3021,min. samples split,min. samples split,0.0006634860894034039
+3021,split criterion,split criterion,0.002178469667726616
+3021,imputation,imputation,0.00041917107934288
+9960,min. samples leaf,min. samples leaf,0.22410027142441108
+9960,max. features,max. features,0.5255553278712037
+9960,bootstrap,bootstrap,0.03158650252511734
+9960,bootstrap / max. features,bootstrap / max. features,0.02823657657621259
+9960,max. features / min. samples leaf,max. features / min. samples leaf,0.05310967652705795
+9960,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.022485938404324668
+9960,min. samples split,min. samples split,0.0011737953527985062
+9960,split criterion,split criterion,0.0178714711998688
+9960,imputation,imputation,0.00039226108544649176
+3561,min. samples leaf,min. samples leaf,0.03733853423743193
+3561,max. features,max. features,0.1577588884612613
+3561,bootstrap,bootstrap,0.33426120709979135
+3561,bootstrap / max. features,bootstrap / max. features,0.17925941890340213
+3561,max. features / min. samples leaf,max. features / min. samples leaf,0.05805897740567058
+3561,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.044196004171320497
+3561,min. samples split,min. samples split,0.005295580948859603
+3561,split criterion,split criterion,0.003043326554817178
+3561,imputation,imputation,0.0006473734537631184
+3022,min. samples leaf,min. samples leaf,0.6875116815403324
+3022,max. features,max. features,0.19300783622352188
+3022,bootstrap,bootstrap,0.016778846094785416
+3022,bootstrap / max. features,bootstrap / max. features,0.009256196321550059
+3022,max. features / min. samples leaf,max. features / min. samples leaf,0.030456454702389557
+3022,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.008131038375094213
+3022,min. samples split,min. samples split,0.002754953599556202
+3022,split criterion,split criterion,0.0006186625472491036
+3022,imputation,imputation,0.0003194885419659647
+24,min. samples leaf,min. samples leaf,0.6868935939954203
+24,max. features,max. features,0.041202637160399874
+24,bootstrap,bootstrap,0.046600305042729585
+24,bootstrap / max. features,bootstrap / max. features,0.007250448868207908
+24,max. features / min. samples leaf,max. features / min. samples leaf,0.0764191521686215
+24,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.025120958498471846
+24,min. samples split,min. samples split,0.0007177876803571002
+24,split criterion,split criterion,0.0008027429559419836
+24,imputation,imputation,0.0003203086770804653
+9978,min. samples leaf,min. samples leaf,0.11842664335355915
+9978,max. features,max. features,0.24461698597319534
+9978,bootstrap,bootstrap,0.07242538349869775
+9978,bootstrap / max. features,bootstrap / max. features,0.17423749564448107
+9978,max. features / min. samples leaf,max. features / min. samples leaf,0.10331168379607375
+9978,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.04639225592341273
+9978,min. samples split,min. samples split,0.0038916038782455895
+9978,split criterion,split criterion,0.020683486749278345
+9978,imputation,imputation,0.0010446111655979026
+10093,min. samples leaf,min. samples leaf,0.595882079577199
+10093,max. features,max. features,0.014112799091061353
+10093,bootstrap,bootstrap,0.10234325820990922
+10093,bootstrap / max. features,bootstrap / max. features,0.01051580521482746
+10093,max. features / min. samples leaf,max. features / min. samples leaf,0.026496644278353076
+10093,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.02689424168449603
+10093,min. samples split,min. samples split,0.0038077829032492167
+10093,split criterion,split criterion,0.0006359061575935878
+10093,imputation,imputation,0.0005375950389619722
+6,min. samples leaf,min. samples leaf,0.6290418248364729
+6,max. features,max. features,0.19403603833853916
+6,bootstrap,bootstrap,0.05506077265195389
+6,bootstrap / max. features,bootstrap / max. features,0.014145276579867722
+6,max. features / min. samples leaf,max. features / min. samples leaf,0.032270062547788525
+6,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.012303036165147302
+6,min. samples split,min. samples split,0.0028631316541676104
+6,split criterion,split criterion,7.540749968718081e-05
+6,imputation,imputation,0.00030512491570618285
+3954,min. samples leaf,min. samples leaf,0.6434637806056709
+3954,max. features,max. features,0.10926024922703229
+3954,bootstrap,bootstrap,0.0014043800850583755
+3954,bootstrap / max. features,bootstrap / max. features,0.03688852053821437
+3954,max. features / min. samples leaf,max. features / min. samples leaf,0.06594890707958845
+3954,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.01936108590396654
+3954,min. samples split,min. samples split,0.004258280864011709
+3954,split criterion,split criterion,0.002228185115042698
+3954,imputation,imputation,0.0002626884069469263
+9986,min. samples leaf,min. samples leaf,0.29611749397067233
+9986,max. features,max. features,0.516098772556949
+9986,bootstrap,bootstrap,0.007972939327911361
+9986,bootstrap / max. features,bootstrap / max. features,0.025232714072414675
+9986,max. features / min. samples leaf,max. features / min. samples leaf,0.03798841148502752
+9986,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.008331308415050087
+9986,min. samples split,min. samples split,0.0012992711806450697
+9986,split criterion,split criterion,0.02348898696642538
+9986,imputation,imputation,0.00019496030248865973
+10101,min. samples leaf,min. samples leaf,0.2983117720720051
+10101,max. features,max. features,0.09347665635585128
+10101,bootstrap,bootstrap,0.0023750231587719196
+10101,bootstrap / max. features,bootstrap / max. features,0.01024545632144637
+10101,max. features / min. samples leaf,max. features / min. samples leaf,0.21262137292094285
+10101,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.05416780746427807
+10101,min. samples split,min. samples split,0.009005344016723158
+10101,split criterion,split criterion,0.0014185062886607023
+10101,imputation,imputation,0.0010764015704106621
+3899,min. samples leaf,min. samples leaf,0.6252446063598678
+3899,max. features,max. features,0.12429942642663418
+3899,bootstrap,bootstrap,0.13661424799957386
+3899,bootstrap / max. features,bootstrap / max. features,0.0052650287886450015
+3899,max. features / min. samples leaf,max. features / min. samples leaf,0.019269413939360547
+3899,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.01839291639870487
+3899,min. samples split,min. samples split,0.00342092321397923
+3899,split criterion,split criterion,0.0021655332156359313
+3899,imputation,imputation,0.00019716381513648997
+3510,min. samples leaf,min. samples leaf,0.5320345133572519
+3510,max. features,max. features,0.3100479270393652
+3510,bootstrap,bootstrap,0.03506716756654062
+3510,bootstrap / max. features,bootstrap / max. features,0.01320511144125025
+3510,max. features / min. samples leaf,max. features / min. samples leaf,0.04491178936789497
+3510,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.013718851482780958
+3510,min. samples split,min. samples split,0.0035904369748003978
+3510,split criterion,split criterion,6.22129784635629e-05
+3510,imputation,imputation,0.0001561317966595583
+9980,min. samples leaf,min. samples leaf,0.020401455802092225
+9980,max. features,max. features,0.18807544575990795
+9980,bootstrap,bootstrap,0.23478172876292489
+9980,bootstrap / max. features,bootstrap / max. features,0.15443106218420335
+9980,max. features / min. samples leaf,max. features / min. samples leaf,0.03277527168442208
+9980,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.035304605831805974
+9980,min. samples split,min. samples split,0.004159323930477547
+9980,split criterion,split criterion,0.010395026202988664
+9980,imputation,imputation,0.0007535730134246259
+34539,min. samples leaf,min. samples leaf,0.8851947493716126
+34539,max. features,max. features,0.0016593184793026654
+34539,bootstrap,bootstrap,0.011349931126096379
+34539,bootstrap / max. features,bootstrap / max. features,0.0017564228237163212
+34539,max. features / min. samples leaf,max. features / min. samples leaf,0.00943247738687003
+34539,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.004300643804016322
+34539,min. samples split,min. samples split,0.002268363783446273
+34539,split criterion,split criterion,0.019343624055602335
+34539,imputation,imputation,0.00014203378477878066
+31,min. samples leaf,min. samples leaf,0.21951223418888055
+31,max. features,max. features,0.24989801091102326
+31,bootstrap,bootstrap,0.0035002705996801152
+31,bootstrap / max. features,bootstrap / max. features,0.07740279010123091
+31,max. features / min. samples leaf,max. features / min. samples leaf,0.12960270258478324
+31,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.05505992481916655
+31,min. samples split,min. samples split,0.006241943765796555
+31,split criterion,split criterion,0.0028518519435774582
+31,imputation,imputation,0.0010840222941106447
+125921,min. samples leaf,min. samples leaf,0.45427033817757806
+125921,max. features,max. features,0.11331669953482162
+125921,bootstrap,bootstrap,0.0598154905652829
+125921,bootstrap / max. features,bootstrap / max. features,0.013839625456106897
+125921,max. features / min. samples leaf,max. features / min. samples leaf,0.12081910185951555
+125921,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.04012148571296181
+125921,min. samples split,min. samples split,0.005903216367962898
+125921,split criterion,split criterion,0.0011820815635420726
+125921,imputation,imputation,0.0005234928404073661
+41,min. samples leaf,min. samples leaf,0.7212694737968977
+41,max. features,max. features,0.011255391202600837
+41,bootstrap,bootstrap,0.0803282627809693
+41,bootstrap / max. features,bootstrap / max. features,0.011407334537778277
+41,max. features / min. samples leaf,max. features / min. samples leaf,0.021029262346139332
+41,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.01695415034508034
+41,min. samples split,min. samples split,0.0010582814556588265
+41,split criterion,split criterion,0.0035766750695091724
+41,imputation,imputation,0.0005667056285716095
+9955,min. samples leaf,min. samples leaf,0.6089104645904518
+9955,max. features,max. features,0.14698413508438413
+9955,bootstrap,bootstrap,0.05284594296326336
+9955,bootstrap / max. features,bootstrap / max. features,0.08172150696494554
+9955,max. features / min. samples leaf,max. features / min. samples leaf,0.02381039540555685
+9955,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.015061766028721862
+9955,min. samples split,min. samples split,0.008479796055707992
+9955,split criterion,split criterion,0.0008556823784946503
+9955,imputation,imputation,0.00011391911852620299
+11,min. samples leaf,min. samples leaf,0.012043614400986589
+11,max. features,max. features,0.33778636178123456
+11,bootstrap,bootstrap,0.47324152517339435
+11,bootstrap / max. features,bootstrap / max. features,0.07000241932580742
+11,max. features / min. samples leaf,max. features / min. samples leaf,0.011133161660684034
+11,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.01132557064345139
+11,min. samples split,min. samples split,0.001338059604455656
+11,split criterion,split criterion,0.01558431165264381
+11,imputation,imputation,0.0002501333947538586
+20,min. samples leaf,min. samples leaf,0.3229062520020544
+20,max. features,max. features,0.4388181023931721
+20,bootstrap,bootstrap,0.009387308156299538
+20,bootstrap / max. features,bootstrap / max. features,0.10373750902518897
+20,max. features / min. samples leaf,max. features / min. samples leaf,0.04178293382611359
+20,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.02155826268967992
+20,min. samples split,min. samples split,0.001399181128866855
+20,split criterion,split criterion,0.00027296183551254566
+20,imputation,imputation,0.0003268876391875414
+3917,min. samples leaf,min. samples leaf,0.0246414037515642
+3917,max. features,max. features,0.16098979444730876
+3917,bootstrap,bootstrap,0.2954285884255118
+3917,bootstrap / max. features,bootstrap / max. features,0.28312527604049076
+3917,max. features / min. samples leaf,max. features / min. samples leaf,0.03596223364266866
+3917,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.02924750158936562
+3917,min. samples split,min. samples split,0.0028097460765473857
+3917,split criterion,split criterion,0.0007769068372712978
+3917,imputation,imputation,0.0010487045735874233
+21,min. samples leaf,min. samples leaf,0.30115475174787265
+21,max. features,max. features,0.42741098719042436
+21,bootstrap,bootstrap,0.04054963710652959
+21,bootstrap / max. features,bootstrap / max. features,0.01593981464407468
+21,max. features / min. samples leaf,max. features / min. samples leaf,0.08406630615761979
+21,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.019723690642322267
+21,min. samples split,min. samples split,0.0021849445698875914
+21,split criterion,split criterion,0.00048780952266718895
+21,imputation,imputation,0.0003386654024550514
+7592,min. samples leaf,min. samples leaf,0.10066774397698552
+7592,max. features,max. features,0.2773007250855979
+7592,bootstrap,bootstrap,0.15337716326810535
+7592,bootstrap / max. features,bootstrap / max. features,0.17111510392889817
+7592,max. features / min. samples leaf,max. features / min. samples leaf,0.07687911748423082
+7592,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.04555080662896077
+7592,min. samples split,min. samples split,0.004804096117334319
+7592,split criterion,split criterion,0.00020128805057682174
+7592,imputation,imputation,0.0003670267008790719
+28,min. samples leaf,min. samples leaf,0.2658065922988777
+28,max. features,max. features,0.5985516573275573
+28,bootstrap,bootstrap,0.0018675601819856495
+28,bootstrap / max. features,bootstrap / max. features,0.03165556965788596
+28,max. features / min. samples leaf,max. features / min. samples leaf,0.04205583207516694
+28,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.01380964898794651
+28,min. samples split,min. samples split,0.000995585465952093
+28,split criterion,split criterion,0.00021541451438365674
+28,imputation,imputation,0.0001671724869383836
+9976,min. samples leaf,min. samples leaf,0.030054997857924065
+9976,max. features,max. features,0.3431264360994126
+9976,bootstrap,bootstrap,0.18244196724416628
+9976,bootstrap / max. features,bootstrap / max. features,0.3384570684196605
+9976,max. features / min. samples leaf,max. features / min. samples leaf,0.01681725032806694
+9976,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.016487125609938674
+9976,min. samples split,min. samples split,0.0011595313819288502
+9976,split criterion,split criterion,0.0028465698665182523
+9976,imputation,imputation,0.00037897150151374826
+9981,min. samples leaf,min. samples leaf,0.7000846468236815
+9981,max. features,max. features,0.129735095662604
+9981,bootstrap,bootstrap,0.0021409971361485126
+9981,bootstrap / max. features,bootstrap / max. features,0.0018851056057386795
+9981,max. features / min. samples leaf,max. features / min. samples leaf,0.05314625292326047
+9981,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.004560383288073344
+9981,min. samples split,min. samples split,0.0008267302676080619
+9981,split criterion,split criterion,0.03409673919625897
+9981,imputation,imputation,0.00011663620494213805
+14965,min. samples leaf,min. samples leaf,0.015252927670048128
+14965,max. features,max. features,0.4434882308655205
+14965,bootstrap,bootstrap,0.07140801779090432
+14965,bootstrap / max. features,bootstrap / max. features,0.20136126116851555
+14965,max. features / min. samples leaf,max. features / min. samples leaf,0.07357776280800973
+14965,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.0385492390897597
+14965,min. samples split,min. samples split,0.0017149140335142494
+14965,split criterion,split criterion,0.0054226665139388945
+14965,imputation,imputation,0.0004862525991582463
+3560,min. samples leaf,min. samples leaf,0.20437066577174107
+3560,max. features,max. features,0.3304305298654281
+3560,bootstrap,bootstrap,0.02180117286842958
+3560,bootstrap / max. features,bootstrap / max. features,0.0391959967725784
+3560,max. features / min. samples leaf,max. features / min. samples leaf,0.1379807292974578
+3560,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.039400975833220164
+3560,min. samples split,min. samples split,0.0045460191679547015
+3560,split criterion,split criterion,0.0006855259721190219
+3560,imputation,imputation,0.0008794735763721661
+3891,min. samples leaf,min. samples leaf,0.21039007429614626
+3891,max. features,max. features,0.3359289321954773
+3891,bootstrap,bootstrap,0.05423765759784536
+3891,bootstrap / max. features,bootstrap / max. features,0.1521491509711202
+3891,max. features / min. samples leaf,max. features / min. samples leaf,0.028148484568998655
+3891,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.018392494469682247
+3891,min. samples split,min. samples split,0.0008664963006019693
+3891,split criterion,split criterion,0.09645976537796722
+3891,imputation,imputation,0.00035778345955338675
+37,min. samples leaf,min. samples leaf,0.05003821314710219
+37,max. features,max. features,0.20280468844173338
+37,bootstrap,bootstrap,0.008610499123454757
+37,bootstrap / max. features,bootstrap / max. features,0.10499663811124732
+37,max. features / min. samples leaf,max. features / min. samples leaf,0.1279487854037066
+37,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.08325803131927514
+37,min. samples split,min. samples split,0.005957232795350874
+37,split criterion,split criterion,0.002063736296894532
+37,imputation,imputation,0.0037274567861071426
+14,min. samples leaf,min. samples leaf,0.3122576926330115
+14,max. features,max. features,0.426202889636368
+14,bootstrap,bootstrap,0.0339128563394521
+14,bootstrap / max. features,bootstrap / max. features,0.021391328014909283
+14,max. features / min. samples leaf,max. features / min. samples leaf,0.044045120682634
+14,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.013075625937874591
+14,min. samples split,min. samples split,0.0018213493226497833
+14,split criterion,split criterion,0.04412003407647294
+14,imputation,imputation,0.00046065349156683
+3948,min. samples leaf,min. samples leaf,0.12864689784386302
+3948,max. features,max. features,0.20826001142023845
+3948,bootstrap,bootstrap,0.0087336623861988
+3948,bootstrap / max. features,bootstrap / max. features,0.109903468849226
+3948,max. features / min. samples leaf,max. features / min. samples leaf,0.12478946209433933
+3948,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.048199483217351125
+3948,min. samples split,min. samples split,0.010927851613411688
+3948,split criterion,split criterion,0.007891828042289708
+3948,imputation,imputation,0.0024738273666953287
+3494,min. samples leaf,min. samples leaf,0.7392818094075118
+3494,max. features,max. features,0.02069092069199089
+3494,bootstrap,bootstrap,0.04623732520478435
+3494,bootstrap / max. features,bootstrap / max. features,0.005499746053407466
+3494,max. features / min. samples leaf,max. features / min. samples leaf,0.03503220351676273
+3494,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.016043712804047205
+3494,min. samples split,min. samples split,0.0006603284190707754
+3494,split criterion,split criterion,4.4746145943292236e-05
+3494,imputation,imputation,0.00013752703002783495
+29,min. samples leaf,min. samples leaf,0.022155075738156137
+29,max. features,max. features,0.0830348927424219
+29,bootstrap,bootstrap,0.14047265376361925
+29,bootstrap / max. features,bootstrap / max. features,0.07370125881074102
+29,max. features / min. samples leaf,max. features / min. samples leaf,0.10105069091452862
+29,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.10390682833718223
+29,min. samples split,min. samples split,0.0058061238834261775
+29,split criterion,split criterion,0.0034531225887261276
+29,imputation,imputation,0.05473844926716266
+146607,min. samples leaf,min. samples leaf,0.024221868357874335
+146607,max. features,max. features,0.37372241945998846
+146607,bootstrap,bootstrap,0.06557031000665237
+146607,bootstrap / max. features,bootstrap / max. features,0.2900664080950112
+146607,max. features / min. samples leaf,max. features / min. samples leaf,0.051921079279026214
+146607,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.040822847199138035
+146607,min. samples split,min. samples split,0.0020253095800915255
+146607,split criterion,split criterion,0.01005491961563734
+146607,imputation,imputation,0.0024122804697002077
+9946,min. samples leaf,min. samples leaf,0.44726054668839854
+9946,max. features,max. features,0.23584914734363682
+9946,bootstrap,bootstrap,0.004049958067588904
+9946,bootstrap / max. features,bootstrap / max. features,0.042744998037006154
+9946,max. features / min. samples leaf,max. features / min. samples leaf,0.06134589946875568
+9946,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.024685594656665977
+9946,min. samples split,min. samples split,0.003139570844300294
+9946,split criterion,split criterion,0.006413825122003219
+9946,imputation,imputation,0.0005292304584052493
+125922,min. samples leaf,min. samples leaf,0.49218273865106876
+125922,max. features,max. features,0.30371684889338063
+125922,bootstrap,bootstrap,0.012978105948419243
+125922,bootstrap / max. features,bootstrap / max. features,0.04025962217696677
+125922,max. features / min. samples leaf,max. features / min. samples leaf,0.0375921300896257
+125922,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.012559627740117318
+125922,min. samples split,min. samples split,0.002041329971972949
+125922,split criterion,split criterion,0.010188896265090865
+125922,imputation,imputation,0.0002542887284226703
+14970,min. samples leaf,min. samples leaf,0.29185233024229734
+14970,max. features,max. features,0.2656998880532997
+14970,bootstrap,bootstrap,0.012517105845604866
+14970,bootstrap / max. features,bootstrap / max. features,0.08511205442247188
+14970,max. features / min. samples leaf,max. features / min. samples leaf,0.03226352405445748
+14970,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.014639185732531868
+14970,min. samples split,min. samples split,0.000948121452252604
+14970,split criterion,split criterion,0.17913024430615776
+14970,imputation,imputation,0.00021454201130638787
+3896,min. samples leaf,min. samples leaf,0.051341845612215234
+3896,max. features,max. features,0.3976334522084134
+3896,bootstrap,bootstrap,0.18167870875651204
+3896,bootstrap / max. features,bootstrap / max. features,0.1419305315535706
+3896,max. features / min. samples leaf,max. features / min. samples leaf,0.048442618787622335
+3896,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.02887678366631649
+3896,min. samples split,min. samples split,0.0046481145344926785
+3896,split criterion,split criterion,0.0001835283310316189
+3896,imputation,imputation,0.0007398803390163094
+3567,min. samples leaf,min. samples leaf,0.5785622785299475
+3567,max. features,max. features,0.0233554232667718
+3567,bootstrap,bootstrap,0.07317530421290745
+3567,bootstrap / max. features,bootstrap / max. features,0.005919059590311471
+3567,max. features / min. samples leaf,max. features / min. samples leaf,0.030650699452729357
+3567,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.018801617180045582
+3567,min. samples split,min. samples split,0.0012857714719503094
+3567,split criterion,split criterion,0.06805220398349122
+3567,imputation,imputation,0.00032002171211781673
+9979,min. samples leaf,min. samples leaf,0.05055342511115229
+9979,max. features,max. features,0.3720559643011759
+9979,bootstrap,bootstrap,0.012968851364561837
+9979,bootstrap / max. features,bootstrap / max. features,0.10024516313469095
+9979,max. features / min. samples leaf,max. features / min. samples leaf,0.16497317621673468
+9979,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.05277477777555949
+9979,min. samples split,min. samples split,0.005300712474867225
+9979,split criterion,split criterion,0.004045696840064817
+9979,imputation,imputation,0.001056872664058851
+3946,min. samples leaf,min. samples leaf,0.17925491770224283
+3946,max. features,max. features,0.14176200105683037
+3946,bootstrap,bootstrap,0.021766013863639976
+3946,bootstrap / max. features,bootstrap / max. features,0.06954284378862269
+3946,max. features / min. samples leaf,max. features / min. samples leaf,0.2665178258410697
+3946,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.07254569094784075
+3946,min. samples split,min. samples split,0.004776614693750906
+3946,split criterion,split criterion,0.0010463083218751868
+3946,imputation,imputation,0.0027774683812878355
+9952,min. samples leaf,min. samples leaf,0.7297665165523748
+9952,max. features,max. features,0.026571064341075853
+9952,bootstrap,bootstrap,0.14363511428287767
+9952,bootstrap / max. features,bootstrap / max. features,0.010971799245411099
+9952,max. features / min. samples leaf,max. features / min. samples leaf,0.014020721995123053
+9952,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.012675335152026942
+9952,min. samples split,min. samples split,0.005773605858608586
+9952,split criterion,split criterion,0.0005371256961563224
+9952,imputation,imputation,0.00012409891444099586
+2079,min. samples leaf,min. samples leaf,0.4156783679631146
+2079,max. features,max. features,0.2288855944583073
+2079,bootstrap,bootstrap,0.01956171473631429
+2079,bootstrap / max. features,bootstrap / max. features,0.028167907512414547
+2079,max. features / min. samples leaf,max. features / min. samples leaf,0.09591798200328233
+2079,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.033689131071203915
+2079,min. samples split,min. samples split,0.003990024011971168
+2079,split criterion,split criterion,0.001096454403986725
+2079,imputation,imputation,0.0013403821671591906
+45,min. samples leaf,min. samples leaf,0.2296055266429694
+45,max. features,max. features,0.5686208093864126
+45,bootstrap,bootstrap,0.0069069430419971805
+45,bootstrap / max. features,bootstrap / max. features,0.013483581811409184
+45,max. features / min. samples leaf,max. features / min. samples leaf,0.07749496573332237
+45,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.024529667721956167
+45,min. samples split,min. samples split,0.0016946144348757514
+45,split criterion,split criterion,0.0010101315800988418
+45,imputation,imputation,0.0005788855899782424
+9977,min. samples leaf,min. samples leaf,0.6742984815821301
+9977,max. features,max. features,0.06763262502564202
+9977,bootstrap,bootstrap,0.09782484309966763
+9977,bootstrap / max. features,bootstrap / max. features,0.039492916435512615
+9977,max. features / min. samples leaf,max. features / min. samples leaf,0.025728627004595994
+9977,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.014331719520621122
+9977,min. samples split,min. samples split,0.0019944692988926346
+9977,split criterion,split criterion,0.0030657868355259887
+9977,imputation,imputation,0.00035767752407441487
+9964,min. samples leaf,min. samples leaf,0.40384100908225906
+9964,max. features,max. features,0.47638097082689324
+9964,bootstrap,bootstrap,0.00046283686054444446
+9964,bootstrap / max. features,bootstrap / max. features,0.03220654826946512
+9964,max. features / min. samples leaf,max. features / min. samples leaf,0.032420259576352084
+9964,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.013973152828516355
+9964,min. samples split,min. samples split,0.0007666645647229341
+9964,split criterion,split criterion,8.016354378613685e-05
+9964,imputation,imputation,0.0002331045745791957
+3573,min. samples leaf,min. samples leaf,0.29203520773786207
+3573,max. features,max. features,0.44826948357581353
+3573,bootstrap,bootstrap,0.011685844040827462
+3573,bootstrap / max. features,bootstrap / max. features,0.11658063021233
+3573,max. features / min. samples leaf,max. features / min. samples leaf,0.05007047283821531
+3573,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.022011873486943834
+3573,min. samples split,min. samples split,0.002680503615406652
+3573,split criterion,split criterion,0.00019109552515891268
+3573,imputation,imputation,0.00037497375554035783
+22,min. samples leaf,min. samples leaf,0.3000752590918631
+22,max. features,max. features,0.4535318169365757
+22,bootstrap,bootstrap,0.015589547566248595
+22,bootstrap / max. features,bootstrap / max. features,0.09093507793998151
+22,max. features / min. samples leaf,max. features / min. samples leaf,0.0375496165535385
+22,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.019582273899654334
+22,min. samples split,min. samples split,0.0024496072530263485
+22,split criterion,split criterion,0.0005649574908098174
+22,imputation,imputation,0.00031449609686363196
+36,min. samples leaf,min. samples leaf,0.7456411282265173
+36,max. features,max. features,0.06740450502140292
+36,bootstrap,bootstrap,0.037701083419813715
+36,bootstrap / max. features,bootstrap / max. features,0.020503861548601746
+36,max. features / min. samples leaf,max. features / min. samples leaf,0.03487681487867966
+36,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.01792927033684409
+36,min. samples split,min. samples split,0.0024860277997884057
+36,split criterion,split criterion,0.0020208472233273606
+36,imputation,imputation,0.00039595958646502973
+43,min. samples leaf,min. samples leaf,0.625981059905558
+43,max. features,max. features,0.07291597159329011
+43,bootstrap,bootstrap,0.07867621650006623
+43,bootstrap / max. features,bootstrap / max. features,0.01576827761167071
+43,max. features / min. samples leaf,max. features / min. samples leaf,0.021038062365344556
+43,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.007956685443966383
+43,min. samples split,min. samples split,0.0008279566189643193
+43,split criterion,split criterion,0.09071786972851846
+43,imputation,imputation,0.00020048472750883325
+14964,min. samples leaf,min. samples leaf,0.8083238910028152
+14964,max. features,max. features,0.004705427926701654
+14964,bootstrap,bootstrap,0.09092562231667012
+14964,bootstrap / max. features,bootstrap / max. features,0.0011895926996649724
+14964,max. features / min. samples leaf,max. features / min. samples leaf,0.005945878660411297
+14964,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.004354734949090371
+14964,min. samples split,min. samples split,0.008790121848161568
+14964,split criterion,split criterion,0.00014254385980641478
+14964,imputation,imputation,0.00025838105787605445
+53,min. samples leaf,min. samples leaf,0.6633267238409286
+53,max. features,max. features,0.02807944282467445
+53,bootstrap,bootstrap,0.022846160998919587
+53,bootstrap / max. features,bootstrap / max. features,0.013438181001798014
+53,max. features / min. samples leaf,max. features / min. samples leaf,0.04649871389569371
+53,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.02753208678588874
+53,min. samples split,min. samples split,0.002717162861491115
+53,split criterion,split criterion,0.015361112906849456
+53,imputation,imputation,0.0010478562915966698
+14969,min. samples leaf,min. samples leaf,0.6511670204945608
+14969,max. features,max. features,0.05075506522696641
+14969,bootstrap,bootstrap,0.14025267341174338
+14969,bootstrap / max. features,bootstrap / max. features,0.044551728237688014
+14969,max. features / min. samples leaf,max. features / min. samples leaf,0.02242298129271081
+14969,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.016130164110790303
+14969,min. samples split,min. samples split,0.00544577378026342
+14969,split criterion,split criterion,0.002925869062181753
+14969,imputation,imputation,0.00027544639785384036
+3889,min. samples leaf,min. samples leaf,0.42755898844384466
+3889,max. features,max. features,0.19192674137190624
+3889,bootstrap,bootstrap,0.03340377502205166
+3889,bootstrap / max. features,bootstrap / max. features,0.08900768682086041
+3889,max. features / min. samples leaf,max. features / min. samples leaf,0.05806755644360451
+3889,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.030228887942605698
+3889,min. samples split,min. samples split,0.0018847453685000362
+3889,split criterion,split criterion,0.01055082879763146
+3889,imputation,imputation,0.000835253175555056
+9950,min. samples leaf,min. samples leaf,0.4871252311307261
+9950,max. features,max. features,0.22000953619787503
+9950,bootstrap,bootstrap,0.0022492954052159976
+9950,bootstrap / max. features,bootstrap / max. features,0.05962357147564698
+9950,max. features / min. samples leaf,max. features / min. samples leaf,0.04375661358826849
+9950,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.024957036589244724
+9950,min. samples split,min. samples split,0.0022992774979741218
+9950,split criterion,split criterion,0.00026303054729283744
+9950,imputation,imputation,0.0007302963694970269
+125920,min. samples leaf,min. samples leaf,0.22956552256809126
+125920,max. features,max. features,0.16426689658503055
+125920,bootstrap,bootstrap,0.18798130289868947
+125920,bootstrap / max. features,bootstrap / max. features,0.10111057596642428
+125920,max. features / min. samples leaf,max. features / min. samples leaf,0.03901582653780822
+125920,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.028740119440677475
+125920,min. samples split,min. samples split,0.0070746110037103165
+125920,split criterion,split criterion,0.001877902435229383
+125920,imputation,imputation,0.0010430267727969003
+3485,min. samples leaf,min. samples leaf,0.02567352977232273
+3485,max. features,max. features,0.1481968023560984
+3485,bootstrap,bootstrap,0.010432622325520237
+3485,bootstrap / max. features,bootstrap / max. features,0.041516893098998864
+3485,max. features / min. samples leaf,max. features / min. samples leaf,0.011613637141802916
+3485,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.006094323820814929
+3485,min. samples split,min. samples split,0.0013419895197130036
+3485,split criterion,split criterion,0.6563047458252003
+3485,imputation,imputation,0.0005231355254285004
+146606,min. samples leaf,min. samples leaf,0.004955592588317965
+146606,max. features,max. features,0.56675427161374
+146606,bootstrap,bootstrap,0.03498435794430213
+146606,bootstrap / max. features,bootstrap / max. features,0.257276613542737
+146606,max. features / min. samples leaf,max. features / min. samples leaf,0.03011704115053076
+146606,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.011111975001130717
+146606,min. samples split,min. samples split,0.0023915808979558606
+146606,split criterion,split criterion,0.0010850900029038555
+146606,imputation,imputation,0.0003278979068578248
+3918,min. samples leaf,min. samples leaf,0.33467189412666426
+3918,max. features,max. features,0.12641342962786098
+3918,bootstrap,bootstrap,0.028431286608611567
+3918,bootstrap / max. features,bootstrap / max. features,0.08614573358540212
+3918,max. features / min. samples leaf,max. features / min. samples leaf,0.08804244318655824
+3918,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.06751857279021822
+3918,min. samples split,min. samples split,0.005484986799021024
+3918,split criterion,split criterion,0.00048796007514910077
+3918,imputation,imputation,0.001173369422950769
+9956,min. samples leaf,min. samples leaf,0.300814208676576
+9956,max. features,max. features,0.27551438614666646
+9956,bootstrap,bootstrap,0.1222530883896831
+9956,bootstrap / max. features,bootstrap / max. features,0.14650301910137187
+9956,max. features / min. samples leaf,max. features / min. samples leaf,0.0362528222267578
+9956,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.021510646877331008
+9956,min. samples split,min. samples split,0.006176231507145537
+9956,split criterion,split criterion,0.0012892916748278665
+9956,imputation,imputation,0.00022007764344547737
+2074,min. samples leaf,min. samples leaf,0.6644825570154576
+2074,max. features,max. features,0.16232057247107434
+2074,bootstrap,bootstrap,0.051522245132185104
+2074,bootstrap / max. features,bootstrap / max. features,0.02912550298781219
+2074,max. features / min. samples leaf,max. features / min. samples leaf,0.02797190058204002
+2074,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.012042028562741336
+2074,min. samples split,min. samples split,0.004035434975505226
+2074,split criterion,split criterion,0.00015500080051727936
+2074,imputation,imputation,0.0001462004403783213
+219,min. samples leaf,min. samples leaf,0.351075238460658
+219,max. features,max. features,0.46167295827849775
+219,bootstrap,bootstrap,0.09170190656444298
+219,bootstrap / max. features,bootstrap / max. features,0.006618758934762381
+219,max. features / min. samples leaf,max. features / min. samples leaf,0.027370180616783646
+219,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.01264546600718952
+219,min. samples split,min. samples split,0.0011337001612885303
+219,split criterion,split criterion,0.001745898995728182
+219,imputation,imputation,0.00025463643356508534
+3512,min. samples leaf,min. samples leaf,0.20879150325871404
+3512,max. features,max. features,0.41969128154016105
+3512,bootstrap,bootstrap,0.11969861354191585
+3512,bootstrap / max. features,bootstrap / max. features,0.11756386913645128
+3512,max. features / min. samples leaf,max. features / min. samples leaf,0.030398424621935427
+3512,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.018620048106860687
+3512,min. samples split,min. samples split,0.0012761064279611647
+3512,split criterion,split criterion,0.008226966693089177
+3512,imputation,imputation,0.00021284256982537344
+3903,min. samples leaf,min. samples leaf,0.031743278800575495
+3903,max. features,max. features,0.25985533094038216
+3903,bootstrap,bootstrap,0.17654000464201267
+3903,bootstrap / max. features,bootstrap / max. features,0.21173828933442795
+3903,max. features / min. samples leaf,max. features / min. samples leaf,0.06876223478248698
+3903,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.042949392242314643
+3903,min. samples split,min. samples split,0.003956427173630328
+3903,split criterion,split criterion,0.0049283045880327185
+3903,imputation,imputation,0.0018058008724096803
+18,min. samples leaf,min. samples leaf,0.10155314392588521
+18,max. features,max. features,0.31886346030508284
+18,bootstrap,bootstrap,0.006460132918061164
+18,bootstrap / max. features,bootstrap / max. features,0.06956897612394897
+18,max. features / min. samples leaf,max. features / min. samples leaf,0.17961159315313557
+18,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.03500881990061852
+18,min. samples split,min. samples split,0.012699446893268455
+18,split criterion,split criterion,0.0027973533790723645
+18,imputation,imputation,0.0018678665910316285
+3481,min. samples leaf,min. samples leaf,0.18781656090000232
+3481,max. features,max. features,0.6252549383365424
+3481,bootstrap,bootstrap,0.015452257420811796
+3481,bootstrap / max. features,bootstrap / max. features,0.08111507246041738
+3481,max. features / min. samples leaf,max. features / min. samples leaf,0.025435307377108196
+3481,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.014822747364915123
+3481,min. samples split,min. samples split,0.0012150786002691704
+3481,split criterion,split criterion,0.0003039191299713355
+3481,imputation,imputation,0.00037519189120529726
+49,min. samples leaf,min. samples leaf,0.32500798283426363
+49,max. features,max. features,0.398626504399279
+49,bootstrap,bootstrap,0.03615493627363281
+49,bootstrap / max. features,bootstrap / max. features,0.044760855013183165
+49,max. features / min. samples leaf,max. features / min. samples leaf,0.07407069891958107
+49,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.040945956436935715
+49,min. samples split,min. samples split,0.001370026006270635
+49,split criterion,split criterion,0.00015517816768952677
+49,imputation,imputation,0.0003793550458557015
+3492,min. samples leaf,min. samples leaf,0.3915957172524288
+3492,max. features,max. features,0.20495976312200934
+3492,bootstrap,bootstrap,0.07994280337117418
+3492,bootstrap / max. features,bootstrap / max. features,0.05218551570075905
+3492,max. features / min. samples leaf,max. features / min. samples leaf,0.09425608335698077
+3492,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.04652115635188189
+3492,min. samples split,min. samples split,0.0013618051508995407
+3492,split criterion,split criterion,0.00015509270799259815
+3492,imputation,imputation,0.0005884383444890065
+9970,min. samples leaf,min. samples leaf,0.6258767108361869
+9970,max. features,max. features,0.011824253095259227
+9970,bootstrap,bootstrap,0.018112926512887994
+9970,bootstrap / max. features,bootstrap / max. features,0.010993858564777019
+9970,max. features / min. samples leaf,max. features / min. samples leaf,0.036447071183562496
+9970,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.018484981550298818
+9970,min. samples split,min. samples split,0.004076342927436749
+9970,split criterion,split criterion,0.038820744756690374
+9970,imputation,imputation,0.0007184989778806984
+14968,min. samples leaf,min. samples leaf,0.636938155064626
+14968,max. features,max. features,0.07832923378208559
+14968,bootstrap,bootstrap,0.0011617251282486543
+14968,bootstrap / max. features,bootstrap / max. features,0.01921317914063013
+14968,max. features / min. samples leaf,max. features / min. samples leaf,0.04091144333644303
+14968,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.010369713338466272
+14968,min. samples split,min. samples split,0.00359656967700395
+14968,split criterion,split criterion,0.002518931025571916
+14968,imputation,imputation,0.02954764788725046
+9954,min. samples leaf,min. samples leaf,0.24174741249008025
+9954,max. features,max. features,0.377590500636077
+9954,bootstrap,bootstrap,0.14548323504747596
+9954,bootstrap / max. features,bootstrap / max. features,0.13638880697118405
+9954,max. features / min. samples leaf,max. features / min. samples leaf,0.023568801011846774
+9954,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.015177893800128572
+9954,min. samples split,min. samples split,0.0024379241528076617
+9954,split criterion,split criterion,0.0008292489114479713
+9954,imputation,imputation,0.0004277046922157176
+125923,min. samples leaf,min. samples leaf,0.05909873018663129
+125923,max. features,max. features,0.06824739214844922
+125923,bootstrap,bootstrap,0.22891109346113078
+125923,bootstrap / max. features,bootstrap / max. features,0.08690846340795202
+125923,max. features / min. samples leaf,max. features / min. samples leaf,0.10796539575376848
+125923,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.05218010563492965
+125923,min. samples split,min. samples split,0.018393620415884333
+125923,split criterion,split criterion,0.0075903632399128675
+125923,imputation,imputation,0.001988236039520244
+32,min. samples leaf,min. samples leaf,0.4892033389791749
+32,max. features,max. features,0.25933982793080435
+32,bootstrap,bootstrap,0.022078443081874503
+32,bootstrap / max. features,bootstrap / max. features,0.06037363606264595
+32,max. features / min. samples leaf,max. features / min. samples leaf,0.047397443598970135
+32,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.022337507699921322
+32,min. samples split,min. samples split,0.0019193447143288668
+32,split criterion,split criterion,0.009719880979386673
+32,imputation,imputation,0.0003929320745494888
+12,min. samples leaf,min. samples leaf,0.164757342135886
+12,max. features,max. features,0.3938769936012485
+12,bootstrap,bootstrap,0.059897491950736875
+12,bootstrap / max. features,bootstrap / max. features,0.1548405377414428
+12,max. features / min. samples leaf,max. features / min. samples leaf,0.022854557519494056
+12,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.015823373860801432
+12,min. samples split,min. samples split,0.002700572708228898
+12,split criterion,split criterion,0.08185084179542965
+12,imputation,imputation,0.0003577601527772881
+14966,min. samples leaf,min. samples leaf,0.40852464935306676
+14966,max. features,max. features,0.232690199108651
+14966,bootstrap,bootstrap,0.060569608370072414
+14966,bootstrap / max. features,bootstrap / max. features,0.06280722752542647
+14966,max. features / min. samples leaf,max. features / min. samples leaf,0.04937944950857043
+14966,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.021175472558922576
+14966,min. samples split,min. samples split,0.0024429160566148246
+14966,split criterion,split criterion,0.002485953867218413
+14966,imputation,imputation,0.0007927780720360363
+9914,min. samples leaf,min. samples leaf,0.12006194233487749
+9914,max. features,max. features,0.7767697692624644
+9914,bootstrap,bootstrap,0.02731727564719736
+9914,bootstrap / max. features,bootstrap / max. features,0.00505395775088191
+9914,max. features / min. samples leaf,max. features / min. samples leaf,0.01648441294054709
+9914,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.009760137180480494
+9914,min. samples split,min. samples split,0.00038366944569746234
+9914,split criterion,split criterion,0.0107613790000083
+9914,imputation,imputation,7.892273347929427e-05
+58,min. samples leaf,min. samples leaf,0.007357983062114487
+58,max. features,max. features,0.5590118624484861
+58,bootstrap,bootstrap,0.21681788983834183
+58,bootstrap / max. features,bootstrap / max. features,0.16988693171199887
+58,max. features / min. samples leaf,max. features / min. samples leaf,0.008442104871604522
+58,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.007185067047283656
+58,min. samples split,min. samples split,0.0004707071746569507
+58,split criterion,split criterion,0.00011391146990965217
+58,imputation,imputation,0.00024102064023280952
+3902,min. samples leaf,min. samples leaf,0.34933868726658396
+3902,max. features,max. features,0.08355431324450849
+3902,bootstrap,bootstrap,0.07627591829336272
+3902,bootstrap / max. features,bootstrap / max. features,0.07061252347495359
+3902,max. features / min. samples leaf,max. features / min. samples leaf,0.04058356811102254
+3902,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.04031170966941269
+3902,min. samples split,min. samples split,0.01042764862711762
+3902,split criterion,split criterion,0.006851910504460251
+3902,imputation,imputation,0.0017107028417835948
+16,min. samples leaf,min. samples leaf,0.1727638693433929
+16,max. features,max. features,0.6649440784730143
+16,bootstrap,bootstrap,0.012005280291753628
+16,bootstrap / max. features,bootstrap / max. features,0.07089178926293926
+16,max. features / min. samples leaf,max. features / min. samples leaf,0.032874888828383214
+16,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.013584701777485886
+16,min. samples split,min. samples split,0.0013286238956899358
+16,split criterion,split criterion,0.00013959734749667828
+16,imputation,imputation,0.00014078716654459313
+9971,min. samples leaf,min. samples leaf,0.02114634714706753
+9971,max. features,max. features,0.5639903807699351
+9971,bootstrap,bootstrap,0.08624486016189072
+9971,bootstrap / max. features,bootstrap / max. features,0.04094789907433294
+9971,max. features / min. samples leaf,max. features / min. samples leaf,0.030552771998976772
+9971,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.022206431789587266
+9971,min. samples split,min. samples split,0.0060336800118908655
+9971,split criterion,split criterion,0.011067260153640249
+9971,imputation,imputation,0.0014575293639173437
+15,min. samples leaf,min. samples leaf,0.027759095190407798
+15,max. features,max. features,0.703116250938247
+15,bootstrap,bootstrap,0.08592737489684885
+15,bootstrap / max. features,bootstrap / max. features,0.06515516175034963
+15,max. features / min. samples leaf,max. features / min. samples leaf,0.01609470223901606
+15,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.010715162262805972
+15,min. samples split,min. samples split,0.0016315548874943978
+15,split criterion,split criterion,0.0022766214185385744
+15,imputation,imputation,0.001562876352116489
+3543,min. samples leaf,min. samples leaf,0.5928737100955067
+3543,max. features,max. features,0.18906723978338966
+3543,bootstrap,bootstrap,0.004495771475152061
+3543,bootstrap / max. features,bootstrap / max. features,0.002794919329787676
+3543,max. features / min. samples leaf,max. features / min. samples leaf,0.08180429933624489
+3543,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.010561009572902652
+3543,min. samples split,min. samples split,0.004047151493921924
+3543,split criterion,split criterion,0.0005505465233854056
+3543,imputation,imputation,0.0006007645710192221
+23,min. samples leaf,min. samples leaf,0.14281083059999655
+23,max. features,max. features,0.4739440605490605
+23,bootstrap,bootstrap,0.04054124904727754
+23,bootstrap / max. features,bootstrap / max. features,0.037498946180830106
+23,max. features / min. samples leaf,max. features / min. samples leaf,0.06311045021072886
+23,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.02031075440007113
+23,min. samples split,min. samples split,0.009049126667103426
+23,split criterion,split criterion,0.00804873323636921
+23,imputation,imputation,0.001283037255471586
+3549,min. samples leaf,min. samples leaf,0.19097308462356363
+3549,max. features,max. features,0.6279173453312568
+3549,bootstrap,bootstrap,0.006765629881354014
+3549,bootstrap / max. features,bootstrap / max. features,0.025101497559425034
+3549,max. features / min. samples leaf,max. features / min. samples leaf,0.06835012815617117
+3549,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.015827951260903805
+3549,min. samples split,min. samples split,0.00125796080379941
+3549,split criterion,split criterion,0.0005788630651016076
+3549,imputation,imputation,0.00021411238969406567
+3,min. samples leaf,min. samples leaf,0.8035886386092411
+3,max. features,max. features,0.04149253962650709
+3,bootstrap,bootstrap,0.056547581689197254
+3,bootstrap / max. features,bootstrap / max. features,0.008619807223804635
+3,max. features / min. samples leaf,max. features / min. samples leaf,0.019997491892746133
+3,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.016910610893022135
+3,min. samples split,min. samples split,0.0035220981600059143
+3,split criterion,split criterion,0.00012786658134781445
+3,imputation,imputation,9.768175046187236e-05
+9967,min. samples leaf,min. samples leaf,0.03914493268660914
+9967,max. features,max. features,0.7575568573288605
+9967,bootstrap,bootstrap,0.003446264520155898
+9967,bootstrap / max. features,bootstrap / max. features,0.010455120875117463
+9967,max. features / min. samples leaf,max. features / min. samples leaf,0.08974616123634536
+9967,bootstrap / max. feat. / samples leaf,bootstrap / max. feat. / samples leaf,0.007619694099604148
+9967,min. samples split,min. samples split,0.0011032890709185628
+9967,split criterion,split criterion,0.0032310479201420033
+9967,imputation,imputation,0.00025782775627086426
