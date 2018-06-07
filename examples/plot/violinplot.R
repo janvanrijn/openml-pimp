@@ -1,4 +1,5 @@
 # important for the font: https://github.com/wch/fontcm
+# requires once: font_install('fontcm')
 
 library("reshape2")
 library("ggplot2")
