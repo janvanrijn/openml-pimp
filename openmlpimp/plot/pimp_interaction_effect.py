@@ -29,6 +29,7 @@ def _format(name):
         'n_estimators': 'iterations',
         'algorithm': 'algorithm',
         'C': 'complexity',
+        'tol': 'tolerance',
     }
     mapping_short = {
         'strategy': 'imputation',
@@ -41,6 +42,7 @@ def _format(name):
         'n_estimators': 'iterations',
         'algorithm': 'algo.',
         'C': 'complexity',
+        'tol': 'tolerance',
     }
 
     parts = name.split('__')

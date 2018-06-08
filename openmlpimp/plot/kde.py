@@ -8,9 +8,10 @@ import openmlpimp
 import os
 import matplotlib.pyplot as plt
 
+from matplotlib.ticker import MaxNLocator
 from scipy.stats import rv_discrete
 
-from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter
+from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter, UniformIntegerHyperparameter
 
 
 def parse_args():
@@ -92,6 +93,9 @@ def plot_numeric(hyperparameter, data, histo_keys, output_dir, parameter_name, r
                 axes.set_xscale("log")
             else:
                 X_values_plot = np.linspace(min, max, resolution)
+
+            if isinstance(hyperparameter, UniformIntegerHyperparameter):
+                axes.xaxis.set_major_locator(MaxNLocator(integer=True))
 
             # plot pdfs
             distribution = openmlpimp.utils.priors.gaussian_kde_wrapper(hyperparameter, hyperparameter.name, data[name])
