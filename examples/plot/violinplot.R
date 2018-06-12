@@ -134,24 +134,24 @@ getViolinPlot = function(data, measure = "predictive_accuracy", group = FALSE,
 
 pdf_output = "violin_rf.pdf"
 baseclassifiers = getViolinPlot("../../KDD2018/data/fanova/6969/vanilla/ranks_plain_all.csv", "variance_contribution", logscale=FALSE)
-ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600)
+ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600, useDingbats=FALSE)
 embed_fonts(pdf_output, outfile=pdf_output)
 
 
 pdf_output = "violin_adaboost.pdf"
 baseclassifiers = getViolinPlot("../../KDD2018/data/fanova/6970/vanilla/ranks_plain_all.csv", "variance_contribution", logscale=FALSE)
-ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600)
+ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600, useDingbats=FALSE)
 embed_fonts(pdf_output, outfile=pdf_output)
 
 
 pdf_output = "violin_rbf.pdf"
 baseclassifiers = getViolinPlot("../../KDD2018/data/fanova/7707/kernel_rbf/ranks_plain_all.csv", "variance_contribution", logscale=FALSE)
-ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600)
+ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600, useDingbats=FALSE)
 embed_fonts(pdf_output, outfile=pdf_output)
 
 
 pdf_output = "violin_sigmoid.pdf"
 baseclassifiers = getViolinPlot("../../KDD2018/data/fanova/7707/kernel_sigmoid/ranks_plain_all.csv", "variance_contribution", logscale=FALSE)
-ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600)
+ggsave(plot = baseclassifiers, file = pdf_output, width = 8, height = 6, dpi = 600, useDingbats=FALSE)
 embed_fonts(pdf_output, outfile=pdf_output)
 
