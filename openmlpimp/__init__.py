@@ -1,3 +1,4 @@
+import openmlpimp.search
 import openmlpimp.utils
 import openmlpimp.configspaces
 
