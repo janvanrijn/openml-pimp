@@ -3,10 +3,8 @@ This work aims to answer the questions:
 * Which hyperparameters to optimize
 * Over what ranges / priors
 
-## Short Video:
-
+## Short Video
 [![Youtube Video](https://img.youtube.com/vi/mS4vL7_rSWQ/0.jpg)](https://www.youtube.com/watch?v=mS4vL7_rSWQ)
-
 (Explanation of the work in less than 3 minutes)
 
 ## Data
@@ -16,7 +14,7 @@ All data in this paper can be reproduced using [this notebook](https://github.co
 
 [Hyperparameter Importance Across Datasets](https://dl.acm.org/citation.cfm?id=3220058) by Jan N. van Rijn and Frank Hutter [(ArXiv)](https://arxiv.org/abs/1710.04725)
 
-## Bibtex:
+## Bibtex
 If you find this work useful, please cite:
 ```
 @inproceedings{Rijn2018Hyperparameter,
