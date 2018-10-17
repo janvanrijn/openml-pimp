@@ -1,11 +1,11 @@
 % {"flow_id": 6970, "openml_server": "https://www.openml.org/api/v1/xml", "measure": "predictive_accuracy", "normalized_y": false, "study_id": "OpenML100", "num_runs": 400}
 @RELATION openml-meta-flow-6970
 
-@ATTRIBUTE algorithm {SAMME, SAMME.R}
-@ATTRIBUTE learning_rate NUMERIC
-@ATTRIBUTE max_depth NUMERIC
-@ATTRIBUTE n_estimators NUMERIC
-@ATTRIBUTE strategy {median, mean, most_frequent}
+@ATTRIBUTE classifier__algorithm {SAMME, SAMME.R}
+@ATTRIBUTE classifier__learning_rate NUMERIC
+@ATTRIBUTE classifier__max_depth NUMERIC
+@ATTRIBUTE classifier__n_estimators NUMERIC
+@ATTRIBUTE imputation__strategy {median, mean, most_frequent}
 @ATTRIBUTE y NUMERIC
 @ATTRIBUTE task_id NUMERIC
 

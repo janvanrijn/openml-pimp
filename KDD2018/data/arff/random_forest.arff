@@ -1,16 +1,16 @@
-% {"flow_id": 6969, "openml_server": "https://www.openml.org/api/v1/xml", "measure": "predictive_accuracy", "normalized_y": false, "study_id": "OpenML100", "num_runs": 500}
+% {"flow_id": 6969, "openml_server": "https://www.openml.org/api/v1/xml", "measure": ["predictive_accuracy"], "normalized_y": false, "study_id": "OpenML100", "num_runs": 500}
 @RELATION openml-meta-flow-6969
 
-@ATTRIBUTE bootstrap {True, False}
-@ATTRIBUTE criterion {entropy, gini}
-@ATTRIBUTE max_depth {None}
-@ATTRIBUTE max_features NUMERIC
-@ATTRIBUTE max_leaf_nodes {None}
-@ATTRIBUTE min_samples_leaf {18, 20, 2, 7, 3, 6, 16, 14, 9, 15, 4, 8, 17, 12, 10, 13, 5, 11, 19, 1}
-@ATTRIBUTE min_samples_split {9, 19, 15, 2, 4, 10, 18, 20, 5, 8, 3, 17, 7, 14, 6, 12, 16, 11, 13}
-@ATTRIBUTE min_weight_fraction_leaf NUMERIC
-@ATTRIBUTE n_estimators {100}
-@ATTRIBUTE strategy {median, most_frequent, mean}
+@ATTRIBUTE classifier__bootstrap {True, False}
+@ATTRIBUTE classifier__criterion {entropy, gini}
+@ATTRIBUTE classifier__max_depth {None}
+@ATTRIBUTE classifier__max_features NUMERIC
+@ATTRIBUTE classifier__max_leaf_nodes {None}
+@ATTRIBUTE classifier__min_samples_leaf {18, 20, 2, 7, 3, 6, 16, 14, 9, 15, 4, 8, 17, 12, 10, 13, 5, 11, 19, 1}
+@ATTRIBUTE classifier__min_samples_split {9, 19, 15, 2, 4, 10, 18, 20, 5, 8, 3, 17, 7, 14, 6, 12, 16, 11, 13}
+@ATTRIBUTE classifier__min_weight_fraction_leaf NUMERIC
+@ATTRIBUTE classifier__n_estimators {100}
+@ATTRIBUTE imputation__strategy {median, most_frequent, mean}
 @ATTRIBUTE y NUMERIC
 @ATTRIBUTE task_id NUMERIC
 
