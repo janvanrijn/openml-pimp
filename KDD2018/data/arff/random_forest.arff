@@ -6,10 +6,10 @@
 @ATTRIBUTE classifier__max_depth {None}
 @ATTRIBUTE classifier__max_features NUMERIC
 @ATTRIBUTE classifier__max_leaf_nodes {None}
-@ATTRIBUTE classifier__min_samples_leaf NUMERIC
-@ATTRIBUTE classifier__min_samples_split NUMERIC
+@ATTRIBUTE classifier__min_samples_leaf {18, 20, 2, 7, 3, 6, 16, 14, 9, 15, 4, 8, 17, 12, 10, 13, 5, 11, 19, 1}
+@ATTRIBUTE classifier__min_samples_split {9, 19, 15, 2, 4, 10, 18, 20, 5, 8, 3, 17, 7, 14, 6, 12, 16, 11, 13}
 @ATTRIBUTE classifier__min_weight_fraction_leaf NUMERIC
-@ATTRIBUTE classifier__n_estimators NUMERIC
+@ATTRIBUTE classifier__n_estimators {100}
 @ATTRIBUTE imputation__strategy {median, most_frequent, mean}
 @ATTRIBUTE y NUMERIC
 @ATTRIBUTE task_id NUMERIC
