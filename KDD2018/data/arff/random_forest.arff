@@ -11,7 +11,7 @@
 @ATTRIBUTE classifier__min_weight_fraction_leaf NUMERIC
 @ATTRIBUTE classifier__n_estimators {100}
 @ATTRIBUTE imputation__strategy {median, most_frequent, mean}
-@ATTRIBUTE y NUMERIC
+@ATTRIBUTE predictive_accuracy NUMERIC
 @ATTRIBUTE task_id NUMERIC
 
 @DATA
