@@ -1,4 +1,4 @@
-% {"flow_id": 6969, "openml_server": "https://www.openml.org/api/v1/xml", "measure": ["predictive_accuracy"], "normalized_y": false, "study_id": "OpenML100", "num_runs": 500}
+% {"flow_id": 6969, "openml_server": "https://www.openml.org/api/v1/xml", "col_parameters": ["classifier__bootstrap", "classifier__criterion", "classifier__max_depth", "classifier__max_features", "classifier__max_leaf_nodes", "classifier__min_samples_leaf", "classifier__min_samples_split", "classifier__min_weight_fraction_leaf", "classifier__n_estimators", "imputation__strategy"], "col_measures": ["predictive_accuracy"], "normalized_y": false, "study_id": "OpenML100", "num_runs": 500}
 @RELATION openml-meta-flow-6969
 
 @ATTRIBUTE classifier__bootstrap {True, False}
