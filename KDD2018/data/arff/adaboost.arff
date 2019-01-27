@@ -1,11 +1,11 @@
-% {"flow_id": 6970, "openml_server": "https://www.openml.org/api/v1/xml", "col_parameters": ["classifier__algorithm", "classifier__learning_rate", "classifier__max_depth", "classifier__n_estimators", "imputation__strategy"], "col_measures": ["predictive_accuracy"], "normalized_y": false, "study_id": "OpenML100", "num_runs": 400}
+% {"flow_id": 6970, "openml_server": "https://www.openml.org/api/v1/xml", "col_parameters": ["adaboostclassifier__algorithm", "adaboostclassifier__learning_rate", "adaboostclassifier__max_depth", "adaboostclassifier__n_estimators", "columntransformer__numeric__imputer__strategy"], "col_measures": ["predictive_accuracy"], "normalized_y": false, "study_id": "OpenML100", "num_runs": 400}
 @RELATION openml-meta-flow-6970
 
-@ATTRIBUTE classifier__algorithm {SAMME, SAMME.R}
-@ATTRIBUTE classifier__learning_rate NUMERIC
-@ATTRIBUTE classifier__base_estimator__max_depth NUMERIC
-@ATTRIBUTE classifier__n_estimators NUMERIC
-@ATTRIBUTE imputation__strategy {median, mean, most_frequent}
+@ATTRIBUTE adaboostclassifier__algorithm {SAMME, SAMME.R}
+@ATTRIBUTE adaboostclassifier__learning_rate NUMERIC
+@ATTRIBUTE adaboostclassifier__base_estimator__max_depth NUMERIC
+@ATTRIBUTE adaboostclassifier__n_estimators NUMERIC
+@ATTRIBUTE columntransformer__numeric__imputer__strategy {median, mean, most_frequent}
 @ATTRIBUTE predictive_accuracy NUMERIC
 @ATTRIBUTE task_id NUMERIC
 

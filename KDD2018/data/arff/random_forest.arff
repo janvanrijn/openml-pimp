@@ -1,16 +1,16 @@
-% {"flow_id": 6969, "openml_server": "https://www.openml.org/api/v1/xml", "col_parameters": ["classifier__bootstrap", "classifier__criterion", "classifier__max_depth", "classifier__max_features", "classifier__max_leaf_nodes", "classifier__min_samples_leaf", "classifier__min_samples_split", "classifier__min_weight_fraction_leaf", "classifier__n_estimators", "imputation__strategy"], "col_measures": ["predictive_accuracy"], "normalized_y": false, "study_id": "OpenML100", "num_runs": 500}
+% {"flow_id": 6969, "openml_server": "https://www.openml.org/api/v1/xml", "col_parameters": ["randomforestclassifier__bootstrap", "randomforestclassifier__criterion", "randomforestclassifier__max_depth", "randomforestclassifier__max_features", "randomforestclassifier__max_leaf_nodes", "randomforestclassifier__min_samples_leaf", "randomforestclassifier__min_samples_split", "randomforestclassifier__min_weight_fraction_leaf", "randomforestclassifier__n_estimators", "columntransformer__numeric__imputer__strategy"], "col_measures": ["predictive_accuracy"], "normalized_y": false, "study_id": "OpenML100", "num_runs": 500}
 @RELATION openml-meta-flow-6969
 
-@ATTRIBUTE classifier__bootstrap {True, False}
-@ATTRIBUTE classifier__criterion {entropy, gini}
-@ATTRIBUTE classifier__max_depth {None}
-@ATTRIBUTE classifier__max_features NUMERIC
-@ATTRIBUTE classifier__max_leaf_nodes {None}
-@ATTRIBUTE classifier__min_samples_leaf {18, 20, 2, 7, 3, 6, 16, 14, 9, 15, 4, 8, 17, 12, 10, 13, 5, 11, 19, 1}
-@ATTRIBUTE classifier__min_samples_split {9, 19, 15, 2, 4, 10, 18, 20, 5, 8, 3, 17, 7, 14, 6, 12, 16, 11, 13}
-@ATTRIBUTE classifier__min_weight_fraction_leaf NUMERIC
-@ATTRIBUTE classifier__n_estimators {100}
-@ATTRIBUTE imputation__strategy {median, most_frequent, mean}
+@ATTRIBUTE randomforestclassifier__bootstrap {True, False}
+@ATTRIBUTE randomforestclassifier__criterion {entropy, gini}
+@ATTRIBUTE randomforestclassifier__max_depth {None}
+@ATTRIBUTE randomforestclassifier__max_features NUMERIC
+@ATTRIBUTE randomforestclassifier__max_leaf_nodes {None}
+@ATTRIBUTE randomforestclassifier__min_samples_leaf {18, 20, 2, 7, 3, 6, 16, 14, 9, 15, 4, 8, 17, 12, 10, 13, 5, 11, 19, 1}
+@ATTRIBUTE randomforestclassifier__min_samples_split {9, 19, 15, 2, 4, 10, 18, 20, 5, 8, 3, 17, 7, 14, 6, 12, 16, 11, 13}
+@ATTRIBUTE randomforestclassifier__min_weight_fraction_leaf NUMERIC
+@ATTRIBUTE randomforestclassifier__n_estimators {100}
+@ATTRIBUTE columntransformer__numeric__imputer__strategy {median, most_frequent, mean}
 @ATTRIBUTE predictive_accuracy NUMERIC
 @ATTRIBUTE task_id NUMERIC
 
