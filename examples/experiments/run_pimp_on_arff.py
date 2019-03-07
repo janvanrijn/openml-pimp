@@ -11,14 +11,14 @@ import os
 import pandas as pd
 import sklearnbot
 
-
+# to plot: <openml_pimp_root>/examples/plot/plot_fanova.py
 def read_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_path', default='../../KDD2018/data/arff/adaboost.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--classifier', default='adaboost', type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
-    parser.add_argument('--comb_size', default=1, type=int)
+    parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
     parser.add_argument('--resolution', default=100, type=int)
     args_, misc = parser.parse_known_args()
@@ -95,7 +95,10 @@ def run(args):
                 
                 result.append(current)
     df_result = pd.DataFrame(result)
-    df_result.to_csv(os.path.join(args.output_directory, 'fanova_%s_depth_%d.csv' % (args.classifier, args.comb_size)))
+    result_path = os.path.join(args.output_directory, 'fanova_%s_depth_%d.csv' % (args.classifier, args.comb_size))
+    df_result.to_csv(result_path)
+    logging.info('resulting csv: %s' % result_path)
+    logging.info('To plot, run <openml_pimp_root>/examples/plot/plot_fanova.py')
 
 
 if __name__ == '__main__':
