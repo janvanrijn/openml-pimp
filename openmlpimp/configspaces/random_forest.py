@@ -4,7 +4,7 @@ from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
 UnParametrizedHyperparameter, Constant
 
 
-def get_random_forest_default_search_space(seed):
+def get_hyperparameter_search_space(seed):
     cs = ConfigurationSpace('sklearn.ensemble.RandomForestClassifier', seed)
     imputation = CategoricalHyperparameter('imputation__strategy', ['mean', 'median', 'most_frequent'])
     n_estimators = Constant("classifier__n_estimators", 100)

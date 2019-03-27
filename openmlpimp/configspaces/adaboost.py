@@ -4,7 +4,7 @@ from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
 import sklearn.tree
 
 
-def get_adaboost_default_search_space(seed):
+def get_hyperparameter_search_space(seed):
     cs = ConfigurationSpace('sklearn.ensemble.AdaBoostClassifier',
                             seed,
                             meta={"adaboostclassifier__base_estimator": sklearn.tree.DecisionTreeClassifier()})

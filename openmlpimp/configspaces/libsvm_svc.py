@@ -4,7 +4,7 @@ from ConfigSpace.hyperparameters import CategoricalHyperparameter, \
     UniformFloatHyperparameter, UniformIntegerHyperparameter, UnParametrizedHyperparameter
 
 
-def get_libsvm_svc_default_search_space(seed):
+def get_hyperparameter_search_space(seed):
 
     imputation = CategoricalHyperparameter('imputation__strategy', ['mean', 'median', 'most_frequent'])
 
