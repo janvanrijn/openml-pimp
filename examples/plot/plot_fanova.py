@@ -3,9 +3,10 @@ import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import logging
-import seaborn as sns
+import openml
 import os
 import pandas as pd
+import seaborn as sns
 import typing
 
 
@@ -13,6 +14,9 @@ def read_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fanova_result_file',
                         default=os.path.expanduser('~/experiments/openml-pimp/fanova_adaboost_depth_1.csv'),
+                        type=str)
+    parser.add_argument('--meta_file',
+                        default=os.path.expanduser('~/projetcs/openml-pimp/fanova_adaboost_depth_1.csv'),
                         type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
@@ -38,6 +42,7 @@ def run(args):
     medians = df.groupby('hyperparameter')['n_hyperparameters', 'importance_variance', 'importance_max_min'].median()
     df = df.join(medians, on='hyperparameter', how='left', rsuffix='median_')
 
+    # vanilla boxplots
     cutoff_value = calculate_cutoff_value(medians, 'importance_variance', args.n_combi_params)
     df = df.query('n_hyperparameters == 1 or importance_variance > %f' % cutoff_value)
 
@@ -53,10 +58,13 @@ def run(args):
 
     os.makedirs(args.output_directory, exist_ok=True)
     output_file = os.path.join(args.output_directory, '%s.png' % os.path.basename(args.fanova_result_file))
-    # ax1.set_yscale('log')
     plt.tight_layout()
     plt.savefig(output_file)
     logging.info('stored figure to %s' % output_file)
+
+    # best per data feature
+    qualities = pd.DataFrame.from_dict(openml.tasks.list_tasks(task_id=df['task_id'].unique()), orient='index')
+    qualities = qualities[['tid', 'NumberOfInstances', 'NumberOfFeatures']]
 
 
 if __name__ == '__main__':

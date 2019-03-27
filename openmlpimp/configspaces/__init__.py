@@ -1,3 +1,1 @@
-from openmlpimp.configspaces.adaboost import *
-from openmlpimp.configspaces.libsvm_svc import *
-from openmlpimp.configspaces.random_forest import *
+from .bootstrap import get_config_space, get_available_config_spaces

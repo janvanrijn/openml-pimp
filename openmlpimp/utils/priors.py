@@ -12,7 +12,6 @@ import warnings
 from sklearn.neighbors import KernelDensity
 from scipy.stats import gaussian_kde, rv_discrete, uniform, randint
 from ConfigSpace.hyperparameters import CategoricalHyperparameter, NumericalHyperparameter, UniformFloatHyperparameter, UniformIntegerHyperparameter
-from openmlstudy14.distributions import loguniform, loguniform_int
 
 
 class rv_discrete_wrapper(object):
@@ -272,26 +271,3 @@ def get_kde_paramgrid(cache_directory, study_id, flow_id, config_space, fixed_pa
     return param_grid
 
 
-def get_uniform_paramgrid(hyperparameters, fixed_parameters):
-    param_grid = dict()
-    for param_name, hyperparameter in hyperparameters.items():
-        if fixed_parameters is not None and param_name in fixed_parameters.keys():
-            continue
-        if isinstance(hyperparameter, CategoricalHyperparameter):
-            all_values = hyperparameter.choices
-            if all(item in ['True', 'False'] for item in all_values):
-                all_values = [bool(item) for item in all_values]
-            param_grid[param_name] = all_values
-        elif isinstance(hyperparameter, UniformFloatHyperparameter):
-            if hyperparameter.log:
-                param_grid[param_name] = loguniform(base=2, low=hyperparameter.lower, high=hyperparameter.upper)
-            else:
-                param_grid[param_name] = uniform(loc=hyperparameter.lower, scale=hyperparameter.upper-hyperparameter.lower)
-        elif isinstance(hyperparameter, UniformIntegerHyperparameter):
-            if hyperparameter.log:
-                param_grid[param_name] = loguniform_int(base=2, low=hyperparameter.lower, high=hyperparameter.upper)
-            else:
-                param_grid[param_name] = randint(low=hyperparameter.lower, high=hyperparameter.upper+1)
-        else:
-            raise ValueError()
-    return param_grid

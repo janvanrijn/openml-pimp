@@ -7,6 +7,7 @@ import json
 import numpy as np
 import logging
 import openmlcontrib
+import openmlpimp
 import os
 import pandas as pd
 import sklearnbot
@@ -17,6 +18,7 @@ def read_cmd():
     parser.add_argument('--dataset_path', default='../../KDD2018/data/arff/adaboost.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--classifier', default='adaboost', type=str)
+    parser.add_argument('--config_library', default='sklearnbot', type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
     parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
@@ -41,7 +43,13 @@ def run(args):
     
     with open(args.dataset_path, 'r') as fp:
         arff_dataset = arff.load(fp)
-    config_space = sklearnbot.config_spaces.get_config_space(args.classifier, None)
+    if args.config_library == 'openmlpimp':
+        config_space = sklearnbot.config_spaces.get_config_space(args.classifier, None)
+    elif args.config_library == 'sklearnbot':
+        config_space = openmlpimp.configspaces.get_config_space(args.classifier, None)
+    else:
+        raise ValueError('Could not identify config library: %s' % args.config_library)
+
     data = openmlcontrib.meta.arff_to_dataframe(arff_dataset, config_space)
     data = openmlcontrib.meta.integer_encode_dataframe(data, config_space)
     meta_data = get_dataset_metadata(args.dataset_path)
