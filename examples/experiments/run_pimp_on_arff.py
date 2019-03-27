@@ -23,6 +23,7 @@ def read_cmd():
     parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
     parser.add_argument('--resolution', default=100, type=int)
+    parser.add_argument('--task_id_column', default='dataset', type=str)
     args_, misc = parser.parse_known_args()
 
     return args_
@@ -43,9 +44,9 @@ def run(args):
     
     with open(args.dataset_path, 'r') as fp:
         arff_dataset = arff.load(fp)
-    if args.config_library == 'openmlpimp':
+    if args.config_library == 'sklearnbot':
         config_space = sklearnbot.config_spaces.get_config_space(args.classifier, None)
-    elif args.config_library == 'sklearnbot':
+    elif args.config_library == 'openmlpimp':
         config_space = openmlpimp.configspaces.get_config_space(args.classifier, None)
     else:
         raise ValueError('Could not identify config library: %s' % args.config_library)
@@ -60,12 +61,12 @@ def run(args):
         missing_ds = set(config_space.get_hyperparameter_names()) - set(meta_data['col_parameters'])
         raise ValueError('ConfigSpace and hyperparameters of dataset do not '
                          'align. ConfigSpace misses: %s, dataset misses: %s' % (missing_cs, missing_ds))
-    task_ids = data['task_id'].unique()
+    task_ids = data[args.task_id_column].unique()
 
     result = list()
     for idx, task_id in enumerate(task_ids):
-        logging.info('Running fanova on task %d (%d/%d)' % (task_id, idx + 1, len(task_ids)))
-        data_task = data[data['task_id'] == task_id]
+        logging.info('Running fanova on task %s (%d/%d)' % (task_id, idx + 1, len(task_ids)))
+        data_task = data[data[args.task_id_column] == task_id]
         
         evaluator = fanova.fanova.fANOVA(X=data_task[config_space.get_hyperparameter_names()].values,
                                          Y=data_task[args.measure].values,

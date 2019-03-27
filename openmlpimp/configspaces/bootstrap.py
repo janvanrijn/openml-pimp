@@ -1,5 +1,5 @@
 import ConfigSpace
-import sklearnbot
+import openmlpimp
 import typing
 
 
@@ -43,4 +43,4 @@ def get_config_space(classifier_name: str, seed: typing.Optional[int]) \
     """
     if classifier_name not in get_available_config_spaces():
         raise ValueError('Classifier search space not implemented: %s' % classifier_name)
-    return getattr(sklearnbot.config_spaces, classifier_name).get_hyperparameter_search_space(seed)
+    return getattr(openmlpimp.configspaces, classifier_name).get_hyperparameter_search_space(seed)
