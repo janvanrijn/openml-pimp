@@ -23,7 +23,7 @@ def read_cmd():
     parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
     parser.add_argument('--resolution', default=100, type=int)
-    parser.add_argument('--task_id_column', default='dataset', type=str)
+    parser.add_argument('--task_id_column', default='task_id', type=str)
     args_, misc = parser.parse_known_args()
 
     return args_
