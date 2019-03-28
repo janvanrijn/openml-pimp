@@ -71,9 +71,9 @@ def plot_pairwise_marginal(config_space: ConfigSpace.ConfigurationSpace,
         outfile_name = os.path.join(directory, hp1.replace(os.sep, "_") + "__" + hp2.replace(os.sep, "_") + ".pdf")
         visualizer.plot_pairwise_marginal(hp1_hp2, resolution=20, show=False)
 
-        x1, x2, y1, y2, _, _ = plt.axis()
+        ax = plt.gca()
         if z_range:
-            plt.axis((x1, x2, y1, y2, z_range[0], z_range[1]))
+            ax.set_zlim3d(z_range[0], z_range[1])
         plt.savefig(outfile_name)
         logging.info('saved marginal to: %s' % outfile_name)
 
