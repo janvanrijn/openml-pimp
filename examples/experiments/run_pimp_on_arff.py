@@ -43,7 +43,7 @@ def plot_single_marginal(config_space: ConfigSpace.ConfigurationSpace,
     plt.clf()
     hyperparameter = config_space.get_hyperparameter_by_idx(hyperparameter_idx)
     os.makedirs(directory, exist_ok=True)
-    outfile_name = os.path.join(directory, hyperparameter.replace(os.sep, "__") + ".pdf")
+    outfile_name = os.path.join(directory, hyperparameter.replace(os.sep, "_") + ".pdf")
     visualizer.plot_marginal(hyperparameter_idx, show=False)
 
     x1, x2, _, _ = plt.axis()
@@ -51,6 +51,30 @@ def plot_single_marginal(config_space: ConfigSpace.ConfigurationSpace,
         plt.axis((x1, x2, y_range[0], y_range[1]))
     plt.savefig(outfile_name)
     logging.info('saved marginal to: %s' % outfile_name)
+
+
+def plot_pairwise_marginal(config_space: ConfigSpace.ConfigurationSpace,
+                           hyperparameter_idx: typing.Tuple[int],
+                           visualizer: fanova.visualizer.Visualizer,
+                           directory: str,
+                           z_range: typing.Optional[typing.Tuple[int, int]]):
+    plt.close('all')
+    plt.clf()
+    if len(hyperparameter_idx) != 2:
+        raise ValueError()
+    indices = [hyperparameter_idx, (hyperparameter_idx[1], hyperparameter_idx[0])]
+    for hp1_hp2 in indices:
+        hp1 = config_space.get_hyperparameter_by_idx(hp1_hp2[0])
+        hp2 = config_space.get_hyperparameter_by_idx(hp1_hp2[1])
+        os.makedirs(directory, exist_ok=True)
+        outfile_name = os.path.join(directory, hp1.replace(os.sep, "_") + "__" + hp2.replace(os.sep, "_") + ".pdf")
+        visualizer.plot_pairwise_marginal([hp1, hp2], resolution=20, show=False)
+
+        x1, x2, y1, y2, _, _ = plt.axis()
+        if z_range:
+            plt.axis((x1, x2, y1, y2, z_range[0], z_range[1]))
+        plt.savefig(outfile_name)
+        logging.info('saved marginal to: %s' % outfile_name)
 
 
 def get_dataset_metadata(dataset_path):
@@ -91,6 +115,7 @@ def run(args):
     for idx, task_id in enumerate(task_ids):
         logging.info('Running fanova on task %s (%d/%d)' % (task_id, idx + 1, len(task_ids)))
         data_task = data[data[args.task_id_column] == task_id]
+        logging.info('Dimensions: %s (out of (%s))' % (str(data_task.shape), str(data.shape)))
         
         evaluator = fanova.fanova.fANOVA(X=data_task[config_space.get_hyperparameter_names()].values,
                                          Y=data_task[args.measure].values,
@@ -112,8 +137,8 @@ def run(args):
                     visualizer_res = vis.generate_marginal(idx[0], args.resolution)
                     # visualizer returns mean, std and potentially grid
                     avg_marginal = np.array(visualizer_res[0])
-                    if args.plot_marginals:
 
+                    if args.plot_marginals:
                         plot_single_marginal(
                             config_space, idx[0], vis, os.path.join(args.output_directory, task_id), None
                         )
@@ -121,6 +146,11 @@ def run(args):
                     visualizer_res = vis.generate_pairwise_marginal(idx, args.resolution)
                     # visualizer returns grid names and values
                     avg_marginal = np.array(visualizer_res[1])
+
+                    if args.plot_marginals:
+                        plot_pairwise_marginal(
+                            config_space, idx, vis, os.path.join(args.output_directory, task_id), None
+                        )
                 else:
                     raise ValueError('No support yet for higher dimensions than 2. Got: %d' % comb_size)
                 difference_max_min = max(avg_marginal.reshape((-1,))) - min(avg_marginal.reshape((-1,)))
