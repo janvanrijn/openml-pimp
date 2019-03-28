@@ -115,7 +115,7 @@ def run(args):
                     if args.plot_marginals:
 
                         plot_single_marginal(
-                            config_space, idx, vis, os.path.join(args.output_directory, task_id), None
+                            config_space, idx[0], vis, os.path.join(args.output_directory, task_id), None
                         )
                 elif comb_size == 2:
                     visualizer_res = vis.generate_pairwise_marginal(idx, args.resolution)
