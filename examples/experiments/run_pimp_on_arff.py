@@ -43,7 +43,7 @@ def plot_single_marginal(config_space: ConfigSpace.ConfigurationSpace,
     plt.clf()
     hyperparameter = config_space.get_hyperparameter_by_idx(hyperparameter_idx)
     os.makedirs(directory, exist_ok=True)
-    outfile_name = os.path.join(directory, hyperparameter.name.replace(os.sep, "_") + ".pdf")
+    outfile_name = os.path.join(directory, hyperparameter.replace(os.sep, "__") + ".pdf")
     visualizer.plot_marginal(hyperparameter_idx, show=False)
 
     x1, x2, _, _ = plt.axis()
