@@ -29,6 +29,7 @@ def read_cmd():
     parser.add_argument('--n_trees', default=16, type=int)
     parser.add_argument('--resolution', default=100, type=int)
     parser.add_argument('--task_id_column', default='dataset', type=str)
+    parser.add_argument('--subsample', default=None, type=int)
     args_, misc = parser.parse_known_args()
 
     return args_
@@ -115,7 +116,12 @@ def run(args):
     for idx, task_id in enumerate(task_ids):
         logging.info('Running fanova on task %s (%d/%d)' % (task_id, idx + 1, len(task_ids)))
         data_task = data[data[args.task_id_column] == task_id]
-        logging.info('Dimensions: %s (out of (%s))' % (str(data_task.shape), str(data.shape)))
+        if args.subsample:
+            indices = np.random.choice(len(data_task), args.subsample, replace=False)
+            data_task = data_task.iloc[indices]
+        logging.info('Dimensions: %s (out of (%s)) %s' % (str(data_task.shape),
+                                                          str(data.shape),
+                                                          '[Subsampled]' if args.subsample else ''))
         
         evaluator = fanova.fanova.fANOVA(X=data_task[config_space.get_hyperparameter_names()].values,
                                          Y=data_task[args.measure].values,
