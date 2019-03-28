@@ -1,9 +1,13 @@
 import arff
 import argparse
-import fanova
-from fanova.visualizer import Visualizer
+import ConfigSpace
+import fanova.fanova
+import fanova.visualizer
 import itertools
 import json
+import matplotlib
+matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
 import numpy as np
 import logging
 import openmlcontrib
@@ -11,22 +15,44 @@ import openmlpimp
 import os
 import pandas as pd
 import sklearnbot
+import typing
+
 
 # to plot: <openml_pimp_root>/examples/plot/plot_fanova.py
 def read_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', default='../../KDD2018/data/arff/adaboost.arff', type=str)
+    parser.add_argument('--dataset_path', default='../../../hypeCNN/data/12param/fanova-resnet.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
-    parser.add_argument('--classifier', default='adaboost', type=str)
-    parser.add_argument('--config_library', default='sklearnbot', type=str)
+    parser.add_argument('--classifier', default='resnet', type=str)
+    parser.add_argument('--config_library', default='openmlpimp', type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
+    parser.add_argument('--plot_marginals', action='store_true', default=True)
     parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
     parser.add_argument('--resolution', default=100, type=int)
-    parser.add_argument('--task_id_column', default='task_id', type=str)
+    parser.add_argument('--task_id_column', default='dataset', type=str)
     args_, misc = parser.parse_known_args()
 
     return args_
+
+
+def plot_single_marginal(config_space: ConfigSpace.ConfigurationSpace,
+                         hyperparameter_idx: int,
+                         visualizer: fanova.visualizer.Visualizer,
+                         directory: str,
+                         y_range: typing.Optional[typing.Tuple[int, int]]):
+    plt.close('all')
+    plt.clf()
+    hyperparameter = config_space.get_hyperparameter_by_idx(hyperparameter_idx)
+    os.makedirs(directory, exist_ok=True)
+    outfile_name = os.path.join(directory, hyperparameter.name.replace(os.sep, "_") + ".pdf")
+    visualizer.plot_marginal(hyperparameter_idx, show=False)
+
+    x1, x2, _, _ = plt.axis()
+    if y_range:
+        plt.axis((x1, x2, y_range[0], y_range[1]))
+    plt.savefig(outfile_name)
+    logging.info('saved marginal to: %s' % outfile_name)
 
 
 def get_dataset_metadata(dataset_path):
@@ -75,7 +101,9 @@ def run(args):
 
         os.makedirs(args.output_directory, exist_ok=True)
 
-        vis = Visualizer(evaluator, config_space, args.output_directory, y_label='Predictive Accuracy')
+        vis = fanova.visualizer.Visualizer(evaluator,
+                                           config_space,
+                                           args.output_directory, y_label='Predictive Accuracy')
         indices = list(range(len(config_space.get_hyperparameters())))
         for comb_size in range(1, args.comb_size + 1):
             for idx in itertools.combinations(indices, comb_size):
@@ -86,6 +114,11 @@ def run(args):
                     visualizer_res = vis.generate_marginal(idx[0], args.resolution)
                     # visualizer returns mean, std and potentially grid
                     avg_marginal = np.array(visualizer_res[0])
+                    if args.plot_marginals:
+
+                        plot_single_marginal(
+                            config_space, idx, vis, os.path.join(args.output_directory, task_id), None
+                        )
                 elif comb_size == 2:
                     visualizer_res = vis.generate_pairwise_marginal(idx, args.resolution)
                     # visualizer returns grid names and values
