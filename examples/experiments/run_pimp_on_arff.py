@@ -150,7 +150,7 @@ def run(args):
                     if args.plot_marginals:
                         plot_single_marginal(
                             config_space, idx[0], vis,
-                            os.path.join(args.output_directory, str(task_id), 'pairwise'),
+                            os.path.join(args.output_directory, str(task_id), 'singular'),
                             None
                         )
                 elif comb_size == 2:
