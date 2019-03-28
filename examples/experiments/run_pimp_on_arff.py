@@ -93,6 +93,7 @@ def get_dataset_metadata(dataset_path):
 def run(args):
     root = logging.getLogger()
     root.setLevel(logging.INFO)
+    logging.info('Start %s: %s' % (os.path.basename(__file__), vars(args)))
     
     with open(args.dataset_path, 'r') as fp:
         arff_dataset = arff.load(fp)
