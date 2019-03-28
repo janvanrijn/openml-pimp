@@ -69,13 +69,16 @@ def plot_pairwise_marginal(config_space: ConfigSpace.ConfigurationSpace,
         hp2 = config_space.get_hyperparameter_by_idx(hp1_hp2[1])
         os.makedirs(directory, exist_ok=True)
         outfile_name = os.path.join(directory, hp1.replace(os.sep, "_") + "__" + hp2.replace(os.sep, "_") + ".pdf")
-        visualizer.plot_pairwise_marginal(hp1_hp2, resolution=20, show=False)
+        try:
+            visualizer.plot_pairwise_marginal(hp1_hp2, resolution=20, show=False)
 
-        ax = plt.gca()
-        if z_range:
-            ax.set_zlim3d(z_range[0], z_range[1])
-        plt.savefig(outfile_name)
-        logging.info('saved marginal to: %s' % outfile_name)
+            ax = plt.gca()
+            if z_range:
+                ax.set_zlim3d(z_range[0], z_range[1])
+            plt.savefig(outfile_name)
+            logging.info('saved marginal to: %s' % outfile_name)
+        except IndexError as e:
+            logging.warning('IndexError with hyperparameters %s and %s: %s' % (hp1, hp2, e))
 
 
 def get_dataset_metadata(dataset_path):
@@ -157,6 +160,7 @@ def run(args):
                         plot_pairwise_marginal(
                             config_space, idx, vis, os.path.join(args.output_directory, task_id), None
                         )
+
                 else:
                     raise ValueError('No support yet for higher dimensions than 2. Got: %d' % comb_size)
                 difference_max_min = max(avg_marginal.reshape((-1,))) - min(avg_marginal.reshape((-1,)))
