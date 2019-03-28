@@ -69,7 +69,7 @@ def plot_pairwise_marginal(config_space: ConfigSpace.ConfigurationSpace,
         hp2 = config_space.get_hyperparameter_by_idx(hp1_hp2[1])
         os.makedirs(directory, exist_ok=True)
         outfile_name = os.path.join(directory, hp1.replace(os.sep, "_") + "__" + hp2.replace(os.sep, "_") + ".pdf")
-        visualizer.plot_pairwise_marginal([hp1, hp2], resolution=20, show=False)
+        visualizer.plot_pairwise_marginal(hp1_hp2, resolution=20, show=False)
 
         x1, x2, y1, y2, _, _ = plt.axis()
         if z_range:
