@@ -164,7 +164,7 @@ def run(args):
         logging.info('Dimensions: %s (out of (%s)) %s' % (str(data_task.shape),
                                                           str(data.shape),
                                                           '[Subsampled]' if args.subsample else ''))
-        assert len(data_task) > 100
+        assert len(data_task) >= min(100, args.subsample if args.subsample is not None else 100)
         os.makedirs(args.output_directory, exist_ok=True)
         X_data = data_task[config_space.get_hyperparameter_names()].values
         y_data = data_task[args.measure].values
