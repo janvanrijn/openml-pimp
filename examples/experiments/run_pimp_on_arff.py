@@ -95,6 +95,7 @@ def plot_pairwise_marginal(X: np.array, y: np.array,
     plt.clf()
     if len(hyperparameter_idx) != 2:
         raise ValueError()
+
     indices = [hyperparameter_idx, (hyperparameter_idx[1], hyperparameter_idx[0])]
     for hp1_hp2 in indices:
         hp1 = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[0])
@@ -105,6 +106,12 @@ def plot_pairwise_marginal(X: np.array, y: np.array,
                                                                   hp2.replace(os.sep, "_"),
                                                                   extension))
         try:
+            if isinstance(config_space.get_hyperparameter(hp2),
+                          ConfigSpace.hyperparameters.NumericalHyperparameter) and \
+                    isinstance(config_space.get_hyperparameter(hp1),
+                               ConfigSpace.hyperparameters.CategoricalHyperparameter):
+                logging.warning('Skipping %s and %s, see #86' % (hp1, hp2))
+                continue
             if isinstance(config_space.get_hyperparameter(hp1),
                           ConfigSpace.hyperparameters.NumericalHyperparameter) and \
                     isinstance(config_space.get_hyperparameter(hp2),
