@@ -43,14 +43,14 @@ def apply_logscale(X: np.array, config_space: ConfigSpace.ConfigurationSpace):
     for idx, hp in enumerate(config_space.get_hyperparameters()):
         if isinstance(hp, ConfigSpace.hyperparameters.NumericalHyperparameter):
             if hp.log:
-                X[:idx] = np.log(X[:idx])
+                X[:, idx] = np.log(X[:, idx])
                 hp.lower = np.log(hp.lower)
                 hp.upper = np.log(hp.upper)
                 hp.log = False
     for idx, hp in enumerate(config_space.get_hyperparameters()):
         if isinstance(hp, ConfigSpace.hyperparameters.NumericalHyperparameter):
-            lowest = np.min(X[:idx])
-            highest = np.max(X[:idx])
+            lowest = np.min(X[:, idx])
+            highest = np.max(X[:, idx])
             assert hp.lower <= lowest <= highest <= hp.upper
             assert hp.log is False
     return X, config_space
@@ -158,6 +158,9 @@ def run(args):
     for t_idx, task_id in enumerate(task_ids):
         logging.info('Running fanova on task %s (%d/%d)' % (task_id, t_idx + 1, len(task_ids)))
         data_task = data[data[args.task_id_column] == task_id]
+        del data_task[args.task_id_column]
+        # now dataset is gone, and all categoricals are converted, we can convert to float
+        data_task = data_task.astype(np.float)
         if args.subsample:
             indices = np.random.choice(len(data_task), args.subsample, replace=False)
             data_task = data_task.iloc[indices]
