@@ -89,7 +89,7 @@ def plot_single_marginal(X: np.array,
     if y_range:
         plt.axis((x1, x2, y_range[0], y_range[1]))
     plt.savefig(outfile_name)
-    logging.info('saved marginal to: %s' % outfile_name)
+    logging.info('saved marginal plot to: %s' % outfile_name)
 
 
 def plot_pairwise_marginal(X: np.array,
@@ -131,7 +131,7 @@ def plot_pairwise_marginal(X: np.array,
             if z_range:
                 ax.set_zlim3d(z_range[0], z_range[1])
             plt.savefig(outfile_name)
-            logging.info('saved marginal to: %s' % outfile_name)
+            logging.info('saved marginal plot (3D) to: %s' % outfile_name)
         except IndexError as e:
             logging.warning('IndexError with hyperparameters %s and %s: %s' % (hp1_name, hp2_name, e))
 
@@ -198,7 +198,7 @@ def run(args):
                 plot_single_marginal(
                     X_data, y_data,
                     config_space, task_id, hyperparameters[0],
-                    os.path.join(args.output_directory, str(task_id), 'singular'),
+                    os.path.join(args.output_directory, 'marginal_plots'),
                     None,
                     args.measure,
                     args.n_trees,
@@ -209,7 +209,7 @@ def run(args):
                 plot_pairwise_marginal(
                     X_data, y_data,
                     config_space, task_id, hyperparameters,
-                    os.path.join(args.output_directory, str(task_id), 'pairwise'),
+                    os.path.join(args.output_directory, 'marginal_plots'),
                     None,
                     args.measure,
                     args.n_trees,
