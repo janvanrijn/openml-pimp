@@ -4,7 +4,6 @@ import ConfigSpace
 import copy
 import fanova.fanova
 import fanova.visualizer
-import itertools
 import json
 import matplotlib.cm
 import matplotlib.pyplot as plt
@@ -13,7 +12,6 @@ import logging
 import openmlcontrib
 import openmlpimp
 import os
-import pandas as pd
 import sklearnbot
 import typing
 
@@ -137,8 +135,11 @@ def plot_pairwise_marginal(X: np.array,
             ax = plt.gca()
             if z_range:
                 ax.set_zlim3d(z_range[0], z_range[1])
-            ax.set_xlabel(hp1_name.replace('_', ' ').capitalize())
-            ax.set_ylabel(hp2_name.replace('_', ' ').capitalize())
+            # note that we use original config space
+            xlabel_log_str = ' (log)' if config_space.get_hyperparameter(hp1_name).log else ''
+            ylabel_log_str = ' (log)' if config_space.get_hyperparameter(hp2_name).log else ''
+            ax.set_xlabel(hp1_name.replace('_', ' ').capitalize() + xlabel_log_str)
+            ax.set_ylabel(hp2_name.replace('_', ' ').capitalize() + ylabel_log_str)
             ax.set_zlabel(measure_name.replace('_', ' ').capitalize())
             plt.tight_layout()
             plt.savefig(outfile_name)
