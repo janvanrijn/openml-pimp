@@ -120,6 +120,8 @@ def run(args):
         raise ValueError('ConfigSpace and hyperparameters of dataset do not '
                          'align. ConfigSpace misses: %s, dataset misses: %s' % (missing_cs, missing_ds))
     task_ids = data[args.task_id_column].unique()
+    if args.task_id:
+        task_ids = [args.task_id]
 
     result = list()
     for t_idx, task_id in enumerate(task_ids):
@@ -131,6 +133,7 @@ def run(args):
         logging.info('Dimensions: %s (out of (%s)) %s' % (str(data_task.shape),
                                                           str(data.shape),
                                                           '[Subsampled]' if args.subsample else ''))
+        assert len(data_task) > 100
         
         evaluator = fanova.fanova.fANOVA(X=data_task[config_space.get_hyperparameter_names()].values,
                                          Y=data_task[args.measure].values,
