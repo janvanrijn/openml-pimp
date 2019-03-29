@@ -74,12 +74,12 @@ def plot_single_marginal(X: np.array,
                          hyperparameter_name: str,
                          directory: str,
                          y_range: typing.Optional[typing.Tuple[int, int]],
-                         y_label: str,
+                         measure_name: str,
                          n_trees: int,
                          resolution: int,
                          extension: str):
     evaluator = fanova.fanova.fANOVA(X=X, Y=y, config_space=config_space, n_trees=n_trees)
-    visualizer = fanova.visualizer.Visualizer(evaluator, config_space, '/tmp/', y_label=y_label)
+    visualizer = fanova.visualizer.Visualizer(evaluator, config_space, '/tmp/', y_label=measure_name)
 
     plt.close('all')
     plt.clf()
@@ -91,6 +91,11 @@ def plot_single_marginal(X: np.array,
     x1, x2, _, _ = plt.axis()
     if y_range:
         plt.axis((x1, x2, y_range[0], y_range[1]))
+    ax = plt.gca()
+    ax.set_xlabel(hyperparameter_name.replace('_', ' ').capitalize())
+    ax.set_ylabel(measure_name.replace('_', ' ').capitalize())
+
+    plt.tight_layout()
     plt.savefig(outfile_name)
     logging.info('saved marginal plot to: %s' % outfile_name)
 
@@ -102,13 +107,13 @@ def plot_pairwise_marginal(X: np.array,
                            hyperparameter_names: typing.Tuple[str],
                            directory: str,
                            z_range: typing.Optional[typing.Tuple[int, int]],
-                           y_label: str,
+                           measure_name: str,
                            n_trees: int,
                            resolution: int,
                            extension: str):
     X_prime, config_space_prime = apply_logscale(X, config_space)
     evaluator = fanova.fanova.fANOVA(X=X_prime, Y=y, config_space=config_space_prime, n_trees=n_trees)
-    visualizer = fanova.visualizer.Visualizer(evaluator, config_space_prime, '/tmp/', y_label=y_label)
+    visualizer = fanova.visualizer.Visualizer(evaluator, config_space_prime, '/tmp/', y_label=measure_name)
 
     plt.close('all')
     plt.clf()
@@ -129,10 +134,13 @@ def plot_pairwise_marginal(X: np.array,
         try:
             visualizer.plot_pairwise_marginal(hp1_hp2, resolution=resolution, show=False,
                                               colormap=matplotlib.cm.viridis, add_colorbar=False)
-
             ax = plt.gca()
             if z_range:
                 ax.set_zlim3d(z_range[0], z_range[1])
+            ax.set_xlabel(hp1_name.replace('_', ' ').capitalize())
+            ax.set_ylabel(hp2_name.replace('_', ' ').capitalize())
+            ax.set_zlabel(measure_name.replace('_', ' ').capitalize())
+            plt.tight_layout()
             plt.savefig(outfile_name)
             logging.info('saved marginal plot (3D) to: %s' % outfile_name)
         except IndexError as e:
