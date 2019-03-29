@@ -1,6 +1,7 @@
 import arff
 import argparse
 import ConfigSpace
+import copy
 import fanova.fanova
 import fanova.visualizer
 import itertools
@@ -48,20 +49,22 @@ def read_cmd():
 
 
 def apply_logscale(X: np.array, config_space: ConfigSpace.ConfigurationSpace):
-    for idx, hp in enumerate(config_space.get_hyperparameters()):
+    X_prime = np.array(X)
+    config_space_prime = copy.deepcopy(config_space)
+    for idx, hp in enumerate(config_space_prime.get_hyperparameters()):
         if isinstance(hp, ConfigSpace.hyperparameters.NumericalHyperparameter):
             if hp.log:
-                X[:, idx] = np.log(X[:, idx])
+                X_prime[:, idx] = np.log(X_prime[:, idx])
                 hp.lower = np.log(hp.lower)
                 hp.upper = np.log(hp.upper)
                 hp.log = False
-    for idx, hp in enumerate(config_space.get_hyperparameters()):
+    for idx, hp in enumerate(config_space_prime.get_hyperparameters()):
         if isinstance(hp, ConfigSpace.hyperparameters.NumericalHyperparameter):
-            lowest = np.min(X[:, idx])
-            highest = np.max(X[:, idx])
+            lowest = np.min(X_prime[:, idx])
+            highest = np.max(X_prime[:, idx])
             assert hp.lower <= lowest <= highest <= hp.upper
             assert hp.log is False
-    return X, config_space
+    return X_prime, config_space_prime
 
 
 def plot_single_marginal(X: np.array,
