@@ -13,10 +13,7 @@ import typing
 def read_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fanova_result_file',
-                        default=os.path.expanduser('~/experiments/openml-pimp/fanova_adaboost_depth_1.csv'),
-                        type=str)
-    parser.add_argument('--meta_file',
-                        default=os.path.expanduser('~/projetcs/openml-pimp/fanova_adaboost_depth_1.csv'),
+                        default=os.path.expanduser('~/experiments/cnn_fanova/fanova_resnet_depth_2.csv'),
                         type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
@@ -40,19 +37,19 @@ def run(args):
 
     df = pd.read_csv(args.fanova_result_file)
     medians = df.groupby('hyperparameter')['n_hyperparameters', 'importance_variance', 'importance_max_min'].median()
-    df = df.join(medians, on='hyperparameter', how='left', rsuffix='median_')
+    df = df.join(medians, on='hyperparameter', how='left', rsuffix='_median')
 
     # vanilla boxplots
-    cutoff_value = calculate_cutoff_value(medians, 'importance_variance', args.n_combi_params)
-    df = df.query('n_hyperparameters == 1 or importance_variance > %f' % cutoff_value)
-
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-
-    sns.boxplot(x='hyperparameter', y='importance_variance', data=df, ax=ax1)
+    cutoff_value_variance = calculate_cutoff_value(medians, 'importance_variance', args.n_combi_params) - 0.000001
+    sns.boxplot(x='hyperparameter', y='importance_variance',
+                data=df.query('n_hyperparameters == 1 or importance_variance_median >= %f' % cutoff_value_variance).sort_values('importance_variance_median'), ax=ax1)
     ax1.set_title('fanova (variance)')
     ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, ha='right')
 
-    sns.boxplot(x='hyperparameter', y='importance_max_min', data=df, ax=ax2)
+    cutoff_value_max_min = calculate_cutoff_value(medians, 'importance_max_min', args.n_combi_params) - 0.000001
+    sns.boxplot(x='hyperparameter', y='importance_max_min',
+                data=df.query('n_hyperparameters == 1 or importance_max_min_median >= %f' % cutoff_value_max_min).sort_values('importance_max_min_median'), ax=ax2)
     ax2.set_title('fanova (max-min)')
     ax2.set_xticklabels(ax2.get_xticklabels(), rotation=45, ha='right')
 
@@ -63,8 +60,8 @@ def run(args):
     logging.info('stored figure to %s' % output_file)
 
     # best per data feature
-    qualities = pd.DataFrame.from_dict(openml.tasks.list_tasks(task_id=df['task_id'].unique()), orient='index')
-    qualities = qualities[['tid', 'NumberOfInstances', 'NumberOfFeatures']]
+    #qualities = pd.DataFrame.from_dict(openml.tasks.list_tasks(task_id=df['task_id'].unique()), orient='index')
+    #qualities = qualities[['tid', 'NumberOfInstances', 'NumberOfFeatures']]
 
 
 if __name__ == '__main__':
