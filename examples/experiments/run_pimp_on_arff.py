@@ -1,12 +1,9 @@
 import arff
 import argparse
-import ConfigSpace
 import fanova.fanova
 import fanova.visualizer
 import itertools
 import json
-import matplotlib.cm
-import matplotlib.pyplot as plt
 import numpy as np
 import logging
 import openmlcontrib
@@ -14,10 +11,9 @@ import openmlpimp
 import os
 import pandas as pd
 import sklearnbot
-import typing
 
 
-# to plot: <openml_pimp_root>/examples/plot/plot_fanova.py
+# to plot: <openml_pimp_root>/examples/plot/plot_fanova_aggregates.py
 def read_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_path', default='../../../hypeCNN/data/12param/fanova-resnet.arff', type=str)
@@ -25,109 +21,18 @@ def read_cmd():
     parser.add_argument('--classifier', default='resnet', type=str)
     parser.add_argument('--config_library', default='openmlpimp', type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
-    parser.add_argument('--plot_marginals', action='store_true', default=True)
-    parser.add_argument('--plot_extension', default='pdf', type=str)
-    parser.add_argument('--plot_resolution', default=100, type=int)
+    # parser.add_argument('--plot_marginals', action='store_true', default=True)
+    # parser.add_argument('--plot_extension', default='pdf', type=str)
+    # parser.add_argument('--plot_resolution', default=100, type=int)
     parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
-    parser.add_argument('--resolution', default=100, type=int)
+    # parser.add_argument('--resolution', default=100, type=int)
     parser.add_argument('--task_id', default=None, type=str)
     parser.add_argument('--task_id_column', default='dataset', type=str)
     parser.add_argument('--subsample', default=None, type=int)
     args_, misc = parser.parse_known_args()
 
     return args_
-
-
-def apply_logscale(X: np.array, config_space: ConfigSpace.ConfigurationSpace):
-    for idx, hp in enumerate(config_space.get_hyperparameters()):
-        if isinstance(hp, ConfigSpace.hyperparameters.NumericalHyperparameter):
-            if hp.log:
-                X[:, idx] = np.log(X[:, idx])
-                hp.lower = np.log(hp.lower)
-                hp.upper = np.log(hp.upper)
-                hp.log = False
-    for idx, hp in enumerate(config_space.get_hyperparameters()):
-        if isinstance(hp, ConfigSpace.hyperparameters.NumericalHyperparameter):
-            lowest = np.min(X[:, idx])
-            highest = np.max(X[:, idx])
-            assert hp.lower <= lowest <= highest <= hp.upper
-            assert hp.log is False
-    return X, config_space
-
-
-def plot_single_marginal(config_space: ConfigSpace.ConfigurationSpace,
-                         name_prefix: str,
-                         hyperparameter_idx: int,
-                         visualizer: fanova.visualizer.Visualizer,
-                         directory: str,
-                         y_range: typing.Optional[typing.Tuple[int, int]],
-                         resolution: int,
-                         extension: str):
-    plt.close('all')
-    plt.clf()
-    hyperparameter = config_space.get_hyperparameter_by_idx(hyperparameter_idx)
-    os.makedirs(directory, exist_ok=True)
-    outfile_name = os.path.join(directory, '%s__%s.%s' % (name_prefix, hyperparameter.replace(os.sep, "_"), extension))
-    visualizer.plot_marginal(hyperparameter_idx, resolution=resolution, show=False)
-
-    x1, x2, _, _ = plt.axis()
-    if y_range:
-        plt.axis((x1, x2, y_range[0], y_range[1]))
-    plt.savefig(outfile_name)
-    logging.info('saved marginal to: %s' % outfile_name)
-
-
-def plot_pairwise_marginal(X: np.array, y: np.array,
-                           config_space: ConfigSpace.ConfigurationSpace,
-                           name_prefix: str,
-                           hyperparameter_idx: typing.Tuple[int],
-                           directory: str,
-                           z_range: typing.Optional[typing.Tuple[int, int]],
-                           n_trees: int,
-                           resolution: int,
-                           extension: str):
-    X_prime, config_space_prime = apply_logscale(X, config_space)
-    evaluator = fanova.fanova.fANOVA(X=X_prime, Y=y, config_space=config_space_prime, n_trees=n_trees)
-    visualizer = fanova.visualizer.Visualizer(evaluator, config_space_prime, '/tmp/', y_label='Predictive Accuracy')
-
-    plt.close('all')
-    plt.clf()
-    if len(hyperparameter_idx) != 2:
-        raise ValueError()
-
-    indices = [hyperparameter_idx, (hyperparameter_idx[1], hyperparameter_idx[0])]
-    for hp1_hp2 in indices:
-        hp1 = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[0])
-        hp2 = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[1])
-        os.makedirs(directory, exist_ok=True)
-        outfile_name = os.path.join(directory, '%s__%s__%s.%s' % (name_prefix,
-                                                                  hp1.replace(os.sep, "_"),
-                                                                  hp2.replace(os.sep, "_"),
-                                                                  extension))
-        try:
-            if isinstance(config_space.get_hyperparameter(hp2),
-                          ConfigSpace.hyperparameters.NumericalHyperparameter) and \
-                    isinstance(config_space.get_hyperparameter(hp1),
-                               ConfigSpace.hyperparameters.CategoricalHyperparameter):
-                logging.warning('Skipping %s and %s, see #86' % (hp1, hp2))
-                continue
-            if isinstance(config_space.get_hyperparameter(hp1),
-                          ConfigSpace.hyperparameters.NumericalHyperparameter) and \
-                    isinstance(config_space.get_hyperparameter(hp2),
-                               ConfigSpace.hyperparameters.CategoricalHyperparameter):
-                logging.warning('Skipping %s and %s, see #86' % (hp1, hp2))
-                continue
-            visualizer.plot_pairwise_marginal(hp1_hp2, resolution=resolution, show=False,
-                                              colormap=matplotlib.cm.viridis, add_colorbar=False)
-
-            ax = plt.gca()
-            if z_range:
-                ax.set_zlim3d(z_range[0], z_range[1])
-            plt.savefig(outfile_name)
-            logging.info('saved marginal to: %s' % outfile_name)
-        except IndexError as e:
-            logging.warning('IndexError with hyperparameters %s and %s: %s' % (hp1, hp2, e))
 
 
 def get_dataset_metadata(dataset_path):
@@ -202,31 +107,10 @@ def run(args):
                     visualizer_res = vis.generate_marginal(h_idx[0], args.resolution)
                     # visualizer returns mean, std and potentially grid
                     avg_marginal = np.array(visualizer_res[0])
-
-                    if args.plot_marginals:
-                        plot_single_marginal(
-                            config_space, task_id, h_idx[0], vis,
-                            os.path.join(args.output_directory, str(task_id), 'singular'),
-                            None,
-                            args.plot_resolution,
-                            args.plot_extension,
-                        )
                 elif comb_size == 2:
                     visualizer_res = vis.generate_pairwise_marginal(h_idx, args.resolution)
                     # visualizer returns grid names and values
                     avg_marginal = np.array(visualizer_res[1])
-
-                    if args.plot_marginals:
-                        plot_pairwise_marginal(
-                            X_data, y_data,
-                            config_space, task_id, h_idx,
-                            os.path.join(args.output_directory, str(task_id), 'pairwise'),
-                            None,
-                            args.n_trees,
-                            args.plot_resolution,
-                            args.plot_extension,
-                        )
-
                 else:
                     raise ValueError('No support yet for higher dimensions than 2. Got: %d' % comb_size)
                 difference_max_min = max(avg_marginal.reshape((-1,))) - min(avg_marginal.reshape((-1,)))
@@ -245,7 +129,7 @@ def run(args):
         args.classifier, args.comb_size, '_%s' % args.task_id if args.task_id else ''))
     df_result.to_csv(result_path)
     logging.info('resulting csv: %s' % result_path)
-    logging.info('To plot, run <openml_pimp_root>/examples/plot/plot_fanova.py')
+    logging.info('To plot, run <openml_pimp_root>/examples/plot/plot_fanova_aggregates.py')
 
 
 if __name__ == '__main__':
