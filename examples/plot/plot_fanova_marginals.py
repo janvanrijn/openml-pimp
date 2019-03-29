@@ -30,11 +30,12 @@ def read_cmd():
     parser.add_argument('--plot_resolution', default=100, type=int)
     parser.add_argument('--hyperparameters', nargs='+', default=[
         'epochs',
+        'momentum',
         'learning_rate_init',
         'weight_decay',
         'epochs__learning_rate_init',
-        'batch_size__weight_decay',
         'epochs__weight_decay',
+        'learning_rate_init__momentum',
     ])
     parser.add_argument('--n_trees', default=16, type=int)
     parser.add_argument('--resolution', default=100, type=int)
@@ -115,12 +116,12 @@ def plot_pairwise_marginal(X: np.array,
 
     indices = [(idx1, idx2), (idx2, idx1)]
     for hp1_hp2 in indices:
-        hp1 = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[0])
-        hp2 = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[1])
+        hp1_name = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[0])
+        hp2_name = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[1])
         os.makedirs(directory, exist_ok=True)
         outfile_name = os.path.join(directory, '%s__%s__%s.%s' % (name_prefix,
-                                                                  hp1.replace(os.sep, "_"),
-                                                                  hp2.replace(os.sep, "_"),
+                                                                  hp1_name.replace(os.sep, "_"),
+                                                                  hp2_name.replace(os.sep, "_"),
                                                                   extension))
         try:
             visualizer.plot_pairwise_marginal(hp1_hp2, resolution=resolution, show=False,
@@ -132,7 +133,7 @@ def plot_pairwise_marginal(X: np.array,
             plt.savefig(outfile_name)
             logging.info('saved marginal to: %s' % outfile_name)
         except IndexError as e:
-            logging.warning('IndexError with hyperparameters %s and %s: %s' % (hp1, hp2, e))
+            logging.warning('IndexError with hyperparameters %s and %s: %s' % (hp1_name, hp2_name, e))
 
 
 def get_dataset_metadata(dataset_path):
