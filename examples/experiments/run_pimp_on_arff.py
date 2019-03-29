@@ -105,6 +105,10 @@ def plot_pairwise_marginal(X: np.array, y: np.array,
                                                                   hp2.replace(os.sep, "_"),
                                                                   extension))
         try:
+            if isinstance(hp1, ConfigSpace.hyperparameters.NumericalHyperparameter) and \
+                    isinstance(hp2, ConfigSpace.hyperparameters.CategoricalHyperparameter):
+                logging.warning('Skipping %s and %s, see #86' % (hp1, hp2))
+                continue
             visualizer.plot_pairwise_marginal(hp1_hp2, resolution=resolution, show=False,
                                               colormap=matplotlib.cm.viridis, add_colorbar=False)
 
