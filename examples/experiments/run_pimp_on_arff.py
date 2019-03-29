@@ -5,6 +5,7 @@ import fanova.fanova
 import fanova.visualizer
 import itertools
 import json
+import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 import logging
@@ -25,6 +26,8 @@ def read_cmd():
     parser.add_argument('--config_library', default='openmlpimp', type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
     parser.add_argument('--plot_marginals', action='store_true', default=True)
+    parser.add_argument('--plot_extension', default='pdf', type=str)
+    parser.add_argument('--plot_resolution', default=100, type=int)
     parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
     parser.add_argument('--resolution', default=100, type=int)
@@ -36,18 +39,37 @@ def read_cmd():
     return args_
 
 
+def apply_logscale(X: np.array, config_space: ConfigSpace.ConfigurationSpace):
+    for idx, hp in enumerate(config_space.get_hyperparameters()):
+        if isinstance(hp, ConfigSpace.hyperparameters.NumericalHyperparameter):
+            if hp.log:
+                X[:idx] = np.log(X[:idx])
+                hp.lower = np.log(hp.lower)
+                hp.upper = np.log(hp.upper)
+                hp.log = False
+    for idx, hp in enumerate(config_space.get_hyperparameters()):
+        if isinstance(hp, ConfigSpace.hyperparameters.NumericalHyperparameter):
+            lowest = np.min(X[:idx])
+            highest = np.max(X[:idx])
+            assert hp.lower <= lowest <= highest <= hp.upper
+            assert hp.log is False
+    return X, config_space
+
+
 def plot_single_marginal(config_space: ConfigSpace.ConfigurationSpace,
                          name_prefix: str,
                          hyperparameter_idx: int,
                          visualizer: fanova.visualizer.Visualizer,
                          directory: str,
-                         y_range: typing.Optional[typing.Tuple[int, int]]):
+                         y_range: typing.Optional[typing.Tuple[int, int]],
+                         resolution: int,
+                         extension: str):
     plt.close('all')
     plt.clf()
     hyperparameter = config_space.get_hyperparameter_by_idx(hyperparameter_idx)
     os.makedirs(directory, exist_ok=True)
-    outfile_name = os.path.join(directory, '%s__%s.png' % (name_prefix, hyperparameter.replace(os.sep, "_")))
-    visualizer.plot_marginal(hyperparameter_idx, show=False)
+    outfile_name = os.path.join(directory, '%s__%s.%s' % (name_prefix, hyperparameter.replace(os.sep, "_"), extension))
+    visualizer.plot_marginal(hyperparameter_idx, resolution=resolution, show=False)
 
     x1, x2, _, _ = plt.axis()
     if y_range:
@@ -56,26 +78,35 @@ def plot_single_marginal(config_space: ConfigSpace.ConfigurationSpace,
     logging.info('saved marginal to: %s' % outfile_name)
 
 
-def plot_pairwise_marginal(config_space: ConfigSpace.ConfigurationSpace,
+def plot_pairwise_marginal(X: np.array, y: np.array,
+                           config_space: ConfigSpace.ConfigurationSpace,
                            name_prefix: str,
                            hyperparameter_idx: typing.Tuple[int],
-                           visualizer: fanova.visualizer.Visualizer,
                            directory: str,
-                           z_range: typing.Optional[typing.Tuple[int, int]]):
+                           z_range: typing.Optional[typing.Tuple[int, int]],
+                           n_trees: int,
+                           resolution: int,
+                           extension: str):
+    X_prime, config_space_prime = apply_logscale(X, config_space)
+    evaluator = fanova.fanova.fANOVA(X=X_prime, Y=y, config_space=config_space_prime, n_trees=n_trees)
+    visualizer = fanova.visualizer.Visualizer(evaluator, config_space_prime, '/tmp/', y_label='Predictive Accuracy')
+
     plt.close('all')
     plt.clf()
     if len(hyperparameter_idx) != 2:
         raise ValueError()
     indices = [hyperparameter_idx, (hyperparameter_idx[1], hyperparameter_idx[0])]
     for hp1_hp2 in indices:
-        hp1 = config_space.get_hyperparameter_by_idx(hp1_hp2[0])
-        hp2 = config_space.get_hyperparameter_by_idx(hp1_hp2[1])
+        hp1 = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[0])
+        hp2 = config_space_prime.get_hyperparameter_by_idx(hp1_hp2[1])
         os.makedirs(directory, exist_ok=True)
-        outfile_name = os.path.join(directory, '%s__%s__%s.png' % (name_prefix,
-                                                                   hp1.replace(os.sep, "_"),
-                                                                   hp2.replace(os.sep, "_")))
+        outfile_name = os.path.join(directory, '%s__%s__%s.%s' % (name_prefix,
+                                                                  hp1.replace(os.sep, "_"),
+                                                                  hp2.replace(os.sep, "_"),
+                                                                  extension))
         try:
-            visualizer.plot_pairwise_marginal(hp1_hp2, resolution=100, show=False)
+            visualizer.plot_pairwise_marginal(hp1_hp2, resolution=resolution, show=False,
+                                              colormap=matplotlib.cm.viridis, add_colorbar=False)
 
             ax = plt.gca()
             if z_range:
@@ -134,17 +165,17 @@ def run(args):
                                                           str(data.shape),
                                                           '[Subsampled]' if args.subsample else ''))
         assert len(data_task) > 100
-        
-        evaluator = fanova.fanova.fANOVA(X=data_task[config_space.get_hyperparameter_names()].values,
-                                         Y=data_task[args.measure].values,
+        os.makedirs(args.output_directory, exist_ok=True)
+        X_data = data_task[config_space.get_hyperparameter_names()].values
+        y_data = data_task[args.measure].values
+        evaluator = fanova.fanova.fANOVA(X=X_data,
+                                         Y=y_data,
                                          config_space=config_space,
                                          n_trees=args.n_trees)
-
-        os.makedirs(args.output_directory, exist_ok=True)
-
         vis = fanova.visualizer.Visualizer(evaluator,
                                            config_space,
-                                           args.output_directory, y_label='Predictive Accuracy')
+                                           args.output_directory,
+                                           y_label='Predictive Accuracy')
         indices = list(range(len(config_space.get_hyperparameters())))
         for comb_size in range(1, args.comb_size + 1):
             for h_idx in itertools.combinations(indices, comb_size):
@@ -160,7 +191,9 @@ def run(args):
                         plot_single_marginal(
                             config_space, task_id, h_idx[0], vis,
                             os.path.join(args.output_directory, str(task_id), 'singular'),
-                            None
+                            None,
+                            args.plot_resolution,
+                            args.plot_extension,
                         )
                 elif comb_size == 2:
                     visualizer_res = vis.generate_pairwise_marginal(h_idx, args.resolution)
@@ -169,9 +202,13 @@ def run(args):
 
                     if args.plot_marginals:
                         plot_pairwise_marginal(
-                            config_space, task_id, h_idx, vis,
+                            X_data, y_data,
+                            config_space, task_id, h_idx,
                             os.path.join(args.output_directory, str(task_id), 'pairwise'),
-                            None
+                            None,
+                            args.n_trees,
+                            args.plot_resolution,
+                            args.plot_extension,
                         )
 
                 else:
