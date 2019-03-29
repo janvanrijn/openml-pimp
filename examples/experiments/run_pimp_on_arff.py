@@ -24,7 +24,7 @@ def read_cmd():
     parser.add_argument('--classifier', default='resnet', type=str)
     parser.add_argument('--config_library', default='openmlpimp', type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
-    parser.add_argument('--plot_marginals', action='store_true', default=False)
+    parser.add_argument('--plot_marginals', action='store_true', default=True)
     parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
     parser.add_argument('--resolution', default=100, type=int)
