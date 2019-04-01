@@ -5,13 +5,13 @@ import typing
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_directory', type=str, default=os.path.expanduser('~/experiments/openml-pimp/plots'))
+    parser.add_argument('--input_directory', type=str, default=os.path.expanduser('~/experiments/openml-pimp/marginal_plots'))
     parser.add_argument('--image_width', type=str, default='.189\\textwidth')
     parser.add_argument('--default_extension', type=str, default='pdf')
     parser.add_argument('--images_per_page', type=int, default=7)
     parser.add_argument('--caption', type=str, default='Marginal plots for test accuracy per dataset')
     parser.add_argument('--hyperparameters', type=str, nargs='+',  default=[
-        'singular/epochs', 'singular/learning_rate_init', 'singular/weight_decay', 'singular/momentum', 'singular/tolerance']
+        'epochs', 'learning_rate_init', 'weight_decay', 'momentum', 'epochs__learning_rate_init']
     )
     parser.add_argument('--datasets', type=str, nargs='+',  default=[
         'cifar10', 'cifar100', 'dvc', 'flower', 'fmnist', 'fruits', 'mnist', 'scmnist', 'stl10', 'svhn']
@@ -42,11 +42,11 @@ def run(args):
 
         dataset_latex = []
         for h_idx, hyperparameter_plot in enumerate(args.hyperparameters):
-            relative_path = os.path.join(dataset, '%s.%s' % (hyperparameter_plot, args.default_extension))
+            relative_path = os.path.join('%s__%s.%s' % (dataset, hyperparameter_plot, args.default_extension))
             full_path = os.path.join(args.input_directory, relative_path)
             if not os.path.isfile(full_path):
                 raise ValueError('Could not find plot: %s' % full_path)
-            dataset_latex.append('\t\t\t\\includegraphics[width=%s]{images/%s}' % (args.image_width, relative_path))
+            dataset_latex.append('\t\t\t\\includegraphics[width=%s]{images/marginal_plots/%s}' % (args.image_width, relative_path))
         current_latex.append('\t\t\\subfigure[%s] {\n%s\n\t\t}' % (dataset, '\n'.join(dataset_latex)))
     if len(current_latex) > 0:
         output_latex(current_latex, args.caption, last_output)
