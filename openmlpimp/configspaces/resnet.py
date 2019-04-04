@@ -28,7 +28,7 @@ def get_hyperparameter_search_space(seed=None):
     weight_decay = ConfigSpace.UniformFloatHyperparameter(
         name='weight_decay', lower=1e-6, upper=1e-2, log=True, default_value=5e-4)
     lr_decay = ConfigSpace.UniformIntegerHyperparameter(
-        name='lr_decay', lower=2, upper=1000, log=True, default_value=10)
+        name='learning_rate_decay', lower=2, upper=1000, log=True, default_value=10)
     patience = ConfigSpace.UniformIntegerHyperparameter(
         name='patience', lower=2, upper=200, log=False, default_value=10)
     tolerance = ConfigSpace.UniformFloatHyperparameter(
@@ -36,9 +36,9 @@ def get_hyperparameter_search_space(seed=None):
     resize_crop = ConfigSpace.CategoricalHyperparameter(
         name='resize_crop', choices=[True, False], default_value=False)
     h_flip = ConfigSpace.CategoricalHyperparameter(
-        name='h_flip', choices=[True, False], default_value=False)
+        name='horizontal_flip', choices=[True, False], default_value=False)
     v_flip = ConfigSpace.CategoricalHyperparameter(
-        name='v_flip', choices=[True, False], default_value=False)
+        name='vertical_flip', choices=[True, False], default_value=False)
     shuffle = ConfigSpace.CategoricalHyperparameter(
         name='shuffle', choices=[True, False], default_value=True)
 
