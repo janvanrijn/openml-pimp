@@ -19,7 +19,7 @@ import typing
 # to plot: <openml_pimp_root>/examples/plot/plot_fanova_aggregates.py
 def read_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', default='../../../hypeCNN/data/12param/fanova-resnet.arff', type=str)
+    parser.add_argument('--dataset_path', default='../../../hypeCNN/data/12param/resnet.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--classifier', default='resnet', type=str)
     parser.add_argument('--config_library', default='openmlpimp', type=str)
