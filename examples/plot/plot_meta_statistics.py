@@ -12,7 +12,7 @@ def read_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_path', default='../../../hypeCNN/data/12param/fanova-resnet.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
-    parser.add_argument('--y_column', default='runtime', type=str)
+    parser.add_argument('--y_column', default='predictive_accuracy', type=str)
     parser.add_argument('--task_id_column', default='dataset', type=str)
     parser.add_argument('--index_columns', nargs='+', type=str, default=[
         'batch_size', 'horizontal_flip', 'learning_rate_init', 'learning_rate_decay', 'momentum', 'patience',
@@ -31,10 +31,9 @@ def run(args):
     with open(args.dataset_path) as fp:
         arff_dict = arff.load(fp)
     df = openmlcontrib.meta.arff_to_dataframe(arff_dict)
-    print(df.shape)
     df = df.loc[df.reset_index().groupby(args.index_columns)[args.selection_column].idxmax()]
-    print(df.shape)
-    print(df.head(5))
+
+    print(df.groupby('dataset')[args.y_column].max())
 
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     sns.boxplot(x=args.task_id_column, y=args.y_column, ax=ax, data=df)

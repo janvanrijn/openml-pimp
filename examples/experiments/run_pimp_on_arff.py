@@ -16,7 +16,7 @@ import sklearnbot
 # to plot: <openml_pimp_root>/examples/plot/plot_fanova_aggregates.py
 def read_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', default='/home/janvanrijn/data/text_classification.arff', type=str)
+    parser.add_argument('--dataset_path', default=os.path.expanduser('~/data/text_classification.arff'), type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--classifier', default='text_classification', type=str)
     parser.add_argument('--config_library', default='openmlpimp', type=str)
