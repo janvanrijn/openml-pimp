@@ -53,6 +53,62 @@ def critical_dist(numModels, numDatasets):
     return alpha005[numModels] * math.sqrt((numModels * (numModels + 1)) / (6 * numDatasets))
 
 
+def nemenyi_plot(df: pd.DataFrame, output_file: str, nemenyi_width: int, nemenyi_textspace: int):
+    # nemenyi test
+    pivoted = df.pivot(index='task_id', columns='hyperparameter', values='importance_variance')
+    avg_ranks = 1 + pivoted.shape[1] - pivoted.rank(axis=1, method='average').sum(axis=0) / pivoted.shape[0]
+
+    cd = critical_dist(pivoted.shape[1], pivoted.shape[0])
+
+    # print some statistics, for sanity checking
+    logging.info("cd = %f, %s" % (cd, avg_ranks.to_dict()))
+
+    # and plot
+    Orange.evaluation.scoring.graph_ranks(
+        list(avg_ranks.to_dict().values()),
+        list(avg_ranks.to_dict().keys()),
+        cd=cd, filename=output_file, width=nemenyi_width,
+        textspace=nemenyi_textspace)
+    logging.info('stored figure to %s' % output_file)
+
+
+def boxplots(df: pd.DataFrame, output_file: str, n_combi_params: int):
+    medians = df.groupby('hyperparameter')['n_hyperparameters', 'importance_variance', 'importance_max_min'].median()
+    df = df.join(medians, on='hyperparameter', how='left', rsuffix='_median')
+
+    # vanilla boxplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    cutoff_value_variance = calculate_cutoff_value(medians, 'importance_variance', n_combi_params) - 0.000001
+    sns.boxplot(x='hyperparameter', y='importance_variance',
+                data=df.query(
+                    'n_hyperparameters == 1 or importance_variance_median >= %f' % cutoff_value_variance).sort_values(
+                    'importance_variance_median'), ax=ax1)
+    ax1.set_title('fanova (variance)')
+    ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, ha='right')
+    ax1.set_ylabel('Variance')
+
+    cutoff_value_max_min = calculate_cutoff_value(medians, 'importance_max_min', n_combi_params) - 0.000001
+    sns.boxplot(x='hyperparameter', y='importance_max_min',
+                data=df.query(
+                    'n_hyperparameters == 1 or importance_max_min_median >= %f' % cutoff_value_max_min).sort_values(
+                    'importance_max_min_median'), ax=ax2)
+    ax2.set_title('fanova (max-min)')
+    ax2.set_xticklabels(ax2.get_xticklabels(), rotation=45, ha='right')
+    ax2.set_ylabel('Importance (max-min)')
+
+    plt.tight_layout()
+    plt.savefig(output_file)
+    logging.info('stored figure to %s' % output_file)
+
+
+def best_per_dataset_scatter(df: pd.DataFrame):
+    # best per data feature
+    #qualities = pd.DataFrame.from_dict(openml.tasks.list_tasks(task_id=df['task_id'].unique()), orient='index')
+    #qualities = qualities[['tid', 'NumberOfInstances', 'NumberOfFeatures']]
+    #logging.info('stored figure to %s' % output_file)
+    pass
+
+
 def calculate_cutoff_value(medians: pd.DataFrame, column_name: str, n_combi_params: typing.Optional[int]):
     medians_sorted = medians[medians['n_hyperparameters'] > 1].sort_values(column_name)
     cutoff = 0.0
@@ -74,61 +130,20 @@ def run(args):
         'text.latex.unicode': True,
     }
     matplotlib.rcParams.update(params)
+    os.makedirs(args.output_directory, exist_ok=True)
 
     df = pd.read_csv(args.fanova_result_file)
     df['hyperparameter'] = df['hyperparameter'].apply(lambda x: x.replace('_', ' '))
 
-    # nemenyi test
-    pivoted = df.pivot(index='task_id', columns='hyperparameter', values='importance_variance')
-    avg_ranks = 1 + pivoted.shape[1] - pivoted.rank(axis=1, method='average').sum(axis=0) / pivoted.shape[0]
-
-    cd = critical_dist(pivoted.shape[1], pivoted.shape[0])
-
-    # print some statistics, for sanity checking
-    logging.info("cd = %f, %s" % (cd, avg_ranks.to_dict()))
-
-    # determine output file
-    output_file_nemenyi = os.path.join(
+    nemenyi_output_file = os.path.join(
         args.output_directory,
         '%s_nemenyi.%s' % (os.path.basename(args.fanova_result_file), args.plot_extension)
     )
-
-    # and plot
-    Orange.evaluation.scoring.graph_ranks(
-        list(avg_ranks.to_dict().values()),
-        list(avg_ranks.to_dict().keys()),
-        cd=cd, filename=output_file_nemenyi, width=args.nemenyi_width,
-        textspace=args.nemenyi_textspace)
-
-    medians = df.groupby('hyperparameter')['n_hyperparameters', 'importance_variance', 'importance_max_min'].median()
-    df = df.join(medians, on='hyperparameter', how='left', rsuffix='_median')
-
-    # vanilla boxplots
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-    cutoff_value_variance = calculate_cutoff_value(medians, 'importance_variance', args.n_combi_params) - 0.000001
-    sns.boxplot(x='hyperparameter', y='importance_variance',
-                data=df.query('n_hyperparameters == 1 or importance_variance_median >= %f' % cutoff_value_variance).sort_values('importance_variance_median'), ax=ax1)
-    ax1.set_title('fanova (variance)')
-    ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, ha='right')
-    ax1.set_ylabel('Variance')
-
-    cutoff_value_max_min = calculate_cutoff_value(medians, 'importance_max_min', args.n_combi_params) - 0.000001
-    sns.boxplot(x='hyperparameter', y='importance_max_min',
-                data=df.query('n_hyperparameters == 1 or importance_max_min_median >= %f' % cutoff_value_max_min).sort_values('importance_max_min_median'), ax=ax2)
-    ax2.set_title('fanova (max-min)')
-    ax2.set_xticklabels(ax2.get_xticklabels(), rotation=45, ha='right')
-    ax2.set_ylabel('Importance (max-min)')
-
-    os.makedirs(args.output_directory, exist_ok=True)
-    output_file_boxplots = os.path.join(args.output_directory, '%s_boxplots.%s' % (os.path.basename(args.fanova_result_file),
-                                                                                   args.plot_extension))
-    plt.tight_layout()
-    plt.savefig(output_file_boxplots)
-    logging.info('stored figure to %s' % output_file_boxplots)
-
-    # best per data feature
-    #qualities = pd.DataFrame.from_dict(openml.tasks.list_tasks(task_id=df['task_id'].unique()), orient='index')
-    #qualities = qualities[['tid', 'NumberOfInstances', 'NumberOfFeatures']]
+    output_file_boxplots = os.path.join(args.output_directory,
+                                        '%s_boxplots.%s' % (os.path.basename(args.fanova_result_file),
+                                                            args.plot_extension))
+    nemenyi_plot(df, nemenyi_output_file, args.nemenyi_width, args.nemenyi_textspace)
+    boxplots(df, output_file_boxplots, args.n_combi_params)
 
 
 if __name__ == '__main__':
