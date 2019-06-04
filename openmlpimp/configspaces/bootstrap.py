@@ -17,7 +17,8 @@ def get_available_config_spaces():
         'adaboost',
         'libsvm_svc'
         'random_forest',
-        'resnet'
+        'resnet',
+        'text_classification',
     ]
     return config_spaces
 

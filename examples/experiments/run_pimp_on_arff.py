@@ -16,9 +16,9 @@ import sklearnbot
 # to plot: <openml_pimp_root>/examples/plot/plot_fanova_aggregates.py
 def read_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', default='../../../hypeCNN/data/12param/fanova-resnet.arff', type=str)
+    parser.add_argument('--dataset_path', default='/home/janvanrijn/data/text_classification.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
-    parser.add_argument('--classifier', default='resnet', type=str)
+    parser.add_argument('--classifier', default='text_classification', type=str)
     parser.add_argument('--config_library', default='openmlpimp', type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
     # parser.add_argument('--plot_marginals', action='store_true', default=True)
@@ -26,7 +26,7 @@ def read_cmd():
     # parser.add_argument('--plot_resolution', default=100, type=int)
     parser.add_argument('--comb_size', default=2, type=int)
     parser.add_argument('--n_trees', default=16, type=int)
-    # parser.add_argument('--resolution', default=100, type=int)
+    parser.add_argument('--resolution', default=100, type=int)
     parser.add_argument('--task_id', default=None, type=str)
     parser.add_argument('--task_id_column', default='dataset', type=str)
     parser.add_argument('--subsample', default=None, type=int)
