@@ -56,7 +56,7 @@ def critical_dist(numModels, numDatasets):
 def nemenyi_plot(df: pd.DataFrame, output_file: str, nemenyi_width: int, nemenyi_textspace: int):
     # nemenyi test
     pivoted = df.pivot(index='task_id', columns='hyperparameter', values='importance_variance')
-    avg_ranks = 1 + pivoted.shape[1] - pivoted.rank(axis=1, method='average').sum(axis=0) / pivoted.shape[0]
+    avg_ranks = pivoted.rank(axis=1, method='average', ascending=False).sum(axis=0) / pivoted.shape[0]
 
     cd = critical_dist(pivoted.shape[1], pivoted.shape[0])
 
