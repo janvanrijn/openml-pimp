@@ -22,7 +22,7 @@ If you find this work useful, please cite:
   title        = {Hyperparameter Importance Across Datasets},
   author       = {van Rijn, Jan N. and Hutter, Frank},
   booktitle    = {Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
-  year         = {2017},
+  year         = {2018},
   organization = {ACM},
   pages        = {2367--2376}
 }
