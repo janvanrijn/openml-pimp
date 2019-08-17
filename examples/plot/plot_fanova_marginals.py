@@ -40,6 +40,9 @@ def read_cmd():
     parser.add_argument('--resolution', default=100, type=int)
     parser.add_argument('--task_id', default=None, type=str)
     parser.add_argument('--task_id_column', default='dataset', type=str)
+    parser.add_argument('--show_legend', action='store_true')
+    parser.add_argument('--tick_size', default=12, type=int)
+    parser.add_argument('--label_size', default=14, type=int)
     parser.add_argument('--subsample', default=None, type=int)
     args_, misc = parser.parse_known_args()
 
@@ -75,15 +78,23 @@ def plot_single_marginal(X: np.array,
                          measure_name: str,
                          n_trees: int,
                          resolution: int,
-                         extension: str):
+                         tick_size: int,
+                         label_size: int,
+                         show_legend: bool,
+                         plot_extension: str):
     evaluator = fanova.fanova.fANOVA(X=X, Y=y, config_space=config_space, n_trees=n_trees)
     visualizer = fanova.visualizer.Visualizer(evaluator, config_space, '/tmp/', y_label=measure_name)
 
     plt.close('all')
     plt.clf()
+    plt.rc('xtick', labelsize=tick_size)
+    plt.rc('ytick', labelsize=tick_size)
+    plt.rc('axes', labelsize=label_size)
     hyperparameter_idx = config_space.get_idx_by_hyperparameter_name(hyperparameter_name)
     os.makedirs(directory, exist_ok=True)
-    outfile_name = os.path.join(directory, '%s__%s.%s' % (name_prefix, hyperparameter_name.replace(os.sep, "_"), extension))
+    outfile_name = os.path.join(directory, '%s__%s.%s' % (name_prefix,
+                                                          hyperparameter_name.replace(os.sep, "_"),
+                                                          plot_extension))
     visualizer.plot_marginal(hyperparameter_idx, resolution=resolution, show=False)
 
     x1, x2, _, _ = plt.axis()
@@ -92,6 +103,8 @@ def plot_single_marginal(X: np.array,
     ax = plt.gca()
     ax.set_xlabel(hyperparameter_name.replace('_', ' ').capitalize())
     ax.set_ylabel(measure_name.replace('_', ' ').capitalize())
+    if not show_legend:
+        ax.get_legend().remove()
 
     plt.tight_layout()
     plt.savefig(outfile_name)
@@ -108,13 +121,19 @@ def plot_pairwise_marginal(X: np.array,
                            measure_name: str,
                            n_trees: int,
                            resolution: int,
-                           extension: str):
+                           tick_size: int,
+                           label_size: int,
+                           show_legend: bool,
+                           plot_extension: str):
     X_prime, config_space_prime = apply_logscale(X, config_space)
     evaluator = fanova.fanova.fANOVA(X=X_prime, Y=y, config_space=config_space_prime, n_trees=n_trees)
     visualizer = fanova.visualizer.Visualizer(evaluator, config_space_prime, '/tmp/', y_label=measure_name)
 
     plt.close('all')
     plt.clf()
+    plt.rc('xtick', labelsize=tick_size)
+    plt.rc('ytick', labelsize=tick_size)
+    plt.rc('axes', labelsize=label_size)
     if len(hyperparameter_names) != 2:
         raise ValueError()
     idx1 = config_space.get_idx_by_hyperparameter_name(hyperparameter_names[0])
@@ -128,7 +147,7 @@ def plot_pairwise_marginal(X: np.array,
         outfile_name = os.path.join(directory, '%s__%s__%s.%s' % (name_prefix,
                                                                   hp1_name.replace(os.sep, "_"),
                                                                   hp2_name.replace(os.sep, "_"),
-                                                                  extension))
+                                                                  plot_extension))
         try:
             visualizer.plot_pairwise_marginal(hp1_hp2, resolution=resolution, show=False,
                                               colormap=matplotlib.cm.viridis, add_colorbar=False)
@@ -141,8 +160,10 @@ def plot_pairwise_marginal(X: np.array,
             ax.set_xlabel(hp1_name.replace('_', ' ').capitalize() + xlabel_log_str)
             ax.set_ylabel(hp2_name.replace('_', ' ').capitalize() + ylabel_log_str)
             ax.set_zlabel(measure_name.replace('_', ' ').capitalize())
-            plt.tight_layout()
-            plt.savefig(outfile_name)
+            if not show_legend and ax.get_legend() is not None:
+                ax.get_legend().remove()
+
+            plt.savefig(outfile_name, bbox_inches='tight')
             logging.info('saved marginal plot (3D) to: %s' % outfile_name)
         except IndexError as e:
             logging.warning('IndexError with hyperparameters %s and %s: %s' % (hp1_name, hp2_name, e))
@@ -208,25 +229,36 @@ def run(args):
 
             if len(hyperparameters) == 1:
                 plot_single_marginal(
-                    X_data, y_data,
-                    config_space, task_id, hyperparameters[0],
-                    os.path.join(args.output_directory, 'marginal_plots'),
-                    None,
-                    args.measure,
-                    args.n_trees,
-                    args.plot_resolution,
-                    args.plot_extension,
+                    X=X_data, y=y_data,
+                    config_space=config_space,
+                    name_prefix=task_id,
+                    hyperparameter_name=hyperparameters[0],
+                    directory=os.path.join(args.output_directory, 'marginal_plots'),
+                    y_range=None,
+                    measure_name=args.measure,
+                    n_trees=args.n_trees,
+                    resolution=args.plot_resolution,
+                    tick_size=args.tick_size,
+                    label_size=args.label_size,
+                    show_legend=args.show_legend,
+                    plot_extension=args.plot_extension,
                 )
             elif len(hyperparameters) == 2:
                 plot_pairwise_marginal(
-                    X_data, y_data,
-                    config_space, task_id, hyperparameters,
-                    os.path.join(args.output_directory, 'marginal_plots'),
-                    None,
-                    args.measure,
-                    args.n_trees,
-                    args.plot_resolution,
-                    args.plot_extension,
+                    X=X_data,
+                    y=y_data,
+                    config_space=config_space,
+                    name_prefix=task_id,
+                    hyperparameter_names=hyperparameters,
+                    directory=os.path.join(args.output_directory, 'marginal_plots'),
+                    z_range=None,
+                    measure_name=args.measure,
+                    n_trees=args.n_trees,
+                    resolution=args.plot_resolution,
+                    tick_size=args.tick_size,
+                    label_size=args.label_size,
+                    show_legend=args.show_legend,
+                    plot_extension=args.plot_extension,
                 )
             else:
                 raise ValueError('No support yet for higher dimensions than 2. Got: %d' % len(hyperparameters))
