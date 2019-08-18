@@ -19,7 +19,7 @@ import typing
 # to plot: <openml_pimp_root>/examples/plot/plot_fanova_aggregates.py
 def read_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', default='../../../hypeCNN/data/12param/resnet.arff', type=str)
+    parser.add_argument('--dataset_path', default='../../DS2019/data/resnet.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--classifier', default='resnet', type=str)
     parser.add_argument('--config_library', default='openmlpimp', type=str)
@@ -103,7 +103,7 @@ def plot_single_marginal(X: np.array,
     ax = plt.gca()
     ax.set_xlabel(hyperparameter_name.replace('_', ' ').capitalize())
     ax.set_ylabel(measure_name.replace('_', ' ').capitalize())
-    if not show_legend:
+    if not show_legend and ax.get_legend() is not None:
         ax.get_legend().remove()
 
     plt.tight_layout()

@@ -10,7 +10,7 @@ import seaborn as sns
 # to plot: <openml_pimp_root>/examples/plot/plot_fanova_aggregates.py
 def read_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', default='../../../hypeCNN/data/12param/fanova-resnet.arff', type=str)
+    parser.add_argument('--dataset_path', default='../../DS2019/data/resnet.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--y_column', default='predictive_accuracy', type=str)
     parser.add_argument('--task_id_column', default='dataset', type=str)
