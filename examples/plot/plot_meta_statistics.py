@@ -31,8 +31,12 @@ def run(args):
     with open(args.dataset_path) as fp:
         arff_dict = arff.load(fp)
     df = openmlcontrib.meta.arff_to_dataframe(arff_dict)
+    # max value for selection column (i.e., max number of epochs per dataset)
+    print(df.groupby('dataset')[args.selection_column].max())
     df = df.loc[df.reset_index().groupby(args.index_columns)[args.selection_column].idxmax()]
-
+    # number of results per dataset based on the selection column
+    print(df.groupby('dataset')[args.y_column].count())
+    # best performance per dataset
     print(df.groupby('dataset')[args.y_column].max())
 
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
