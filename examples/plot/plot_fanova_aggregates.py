@@ -15,12 +15,15 @@ import typing
 def read_cmd():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fanova_result_file',
-                        default=os.path.expanduser('~/experiments/openml-pimp/fanova_text_classification_depth_1.csv'),
+                        default=os.path.expanduser('~/projects/openml-pimp/DS2019/data/fanova.csv'),
                         type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
+    parser.add_argument('--font_size', default=16, type=int)
     parser.add_argument('--n_combi_params', default=3, type=int)
     parser.add_argument('--plot_extension', default='pdf', type=str)
+    parser.add_argument('--log_scale', action='store_true', default=True)
+    parser.add_argument('--plot_nemenyi', action='store_true')
     parser.add_argument('--nemenyi_width', default=8, type=int)
     parser.add_argument('--nemenyi_textspace', default=2, type=int)
     args_, misc = parser.parse_known_args()
@@ -72,29 +75,45 @@ def nemenyi_plot(df: pd.DataFrame, output_file: str, nemenyi_width: int, nemenyi
     logging.info('stored figure to %s' % output_file)
 
 
-def boxplots(df: pd.DataFrame, output_file: str, n_combi_params: int):
+def boxplots_variance_contrib(df: pd.DataFrame, output_file: str, n_combi_params: int, log_scale: bool):
     medians = df.groupby('hyperparameter')['n_hyperparameters', 'importance_variance', 'importance_max_min'].median()
     df = df.join(medians, on='hyperparameter', how='left', rsuffix='_median')
 
     # vanilla boxplots
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-    cutoff_value_variance = calculate_cutoff_value(medians, 'importance_variance', n_combi_params) - 0.000001
+    plt.clf()
+    fig, ax1 = plt.subplots(1, 1, figsize=(8, 6))
+    cutoff_value_variance = calculate_cutoff_value(medians, 'importance_variance', n_combi_params) - 0.000001 if n_combi_params > 0 else 1.0
     sns.boxplot(x='hyperparameter', y='importance_variance',
                 data=df.query(
                     'n_hyperparameters == 1 or importance_variance_median >= %f' % cutoff_value_variance).sort_values(
                     'importance_variance_median'), ax=ax1)
-    ax1.set_title('fanova (variance)')
     ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, ha='right')
-    ax1.set_ylabel('Variance')
+    ax1.set_ylabel('Variance Contribution')
+    ax1.set_xlabel(None)
+    if log_scale:
+        ax1.set_yscale('log')
 
-    cutoff_value_max_min = calculate_cutoff_value(medians, 'importance_max_min', n_combi_params) - 0.000001
+    plt.tight_layout()
+    plt.savefig(output_file)
+    logging.info('stored figure to %s' % output_file)
+
+
+def boxplots_minmax(df: pd.DataFrame, output_file: str, n_combi_params: int, log_scale: bool):
+    medians = df.groupby('hyperparameter')['n_hyperparameters', 'importance_variance', 'importance_max_min'].median()
+    df = df.join(medians, on='hyperparameter', how='left', rsuffix='_median')
+
+    plt.clf()
+    fig, ax2 = plt.subplots(1, 1, figsize=(8, 6))
+    cutoff_value_max_min = calculate_cutoff_value(medians, 'importance_max_min', n_combi_params) - 0.000001 if n_combi_params > 0 else 100.0
     sns.boxplot(x='hyperparameter', y='importance_max_min',
                 data=df.query(
                     'n_hyperparameters == 1 or importance_max_min_median >= %f' % cutoff_value_max_min).sort_values(
                     'importance_max_min_median'), ax=ax2)
-    ax2.set_title('fanova (max-min)')
     ax2.set_xticklabels(ax2.get_xticklabels(), rotation=45, ha='right')
-    ax2.set_ylabel('Importance (max-min)')
+    ax2.set_ylabel('max(marginal) - min(marginal)')
+    ax2.set_xlabel(None)
+    if log_scale:
+        ax2.set_yscale('log')
 
     plt.tight_layout()
     plt.savefig(output_file)
@@ -125,7 +144,7 @@ def run(args):
     matplotlib.rcParams['text.latex.preamble'] = [r"\usepackage{lmodern}"]
     params = {
         'text.usetex': True,
-        'font.size': 11,
+        'font.size': args.font_size,
         'font.family': 'lmodern',
         'text.latex.unicode': True,
     }
@@ -139,11 +158,20 @@ def run(args):
         args.output_directory,
         '%s_nemenyi.%s' % (os.path.basename(args.fanova_result_file), args.plot_extension)
     )
-    output_file_boxplots = os.path.join(args.output_directory,
-                                        '%s_boxplots.%s' % (os.path.basename(args.fanova_result_file),
-                                                            args.plot_extension))
-    nemenyi_plot(df, nemenyi_output_file, args.nemenyi_width, args.nemenyi_textspace)
-    boxplots(df, output_file_boxplots, args.n_combi_params)
+    output_file_variance = os.path.join(args.output_directory,
+                                        'fanova_variancecontrib%s.%s' % (
+                                            '_log' if args.log_scale else '',
+                                            args.plot_extension,
+                                        ))
+    output_file_maxmin = os.path.join(args.output_directory,
+                                      'fanova_maxmin%s.%s' % (
+                                          '_log' if args.log_scale else '',
+                                          args.plot_extension,
+                                      ))
+    boxplots_variance_contrib(df, output_file_variance, args.n_combi_params, args.log_scale)
+    boxplots_minmax(df, output_file_maxmin, args.n_combi_params, args.log_scale)
+    if args.plot_nemenyi:
+        nemenyi_plot(df, nemenyi_output_file, args.nemenyi_width, args.nemenyi_textspace)
 
 
 if __name__ == '__main__':
