@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import logging
 import openmlcontrib
-import openmlpimp
+import openmlpimp.configspaces
 import os
 import sklearnbot
 import typing
@@ -182,6 +182,9 @@ def run(args):
     root = logging.getLogger()
     root.setLevel(logging.INFO)
     logging.info('Start %s: %s' % (os.path.basename(__file__), vars(args)))
+
+    matplotlib.rcParams['mathtext.fontset'] = 'stix'
+    matplotlib.rcParams['font.family'] = 'STIXGeneral'
 
     with open(args.dataset_path, 'r') as fp:
         arff_dataset = arff.load(fp)

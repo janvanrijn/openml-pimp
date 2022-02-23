@@ -1,5 +1,5 @@
 import ConfigSpace
-import openmlpimp
+import openmlpimp.configspaces
 import typing
 
 
@@ -15,7 +15,7 @@ def get_available_config_spaces():
     """
     config_spaces = [
         'adaboost',
-        'libsvm_svc'
+        'libsvm_svc',
         'random_forest',
         'resnet',
         'text_classification',
@@ -42,6 +42,7 @@ def get_config_space(classifier_name: str, seed: typing.Optional[int]) \
     ConfigSpace.ConfigurationSpace
         An instantiation of the ConfigurationSpace
     """
-    if classifier_name not in get_available_config_spaces():
+    possible_spaces = get_available_config_spaces()
+    if classifier_name not in possible_spaces:
         raise ValueError('Classifier search space not implemented: %s' % classifier_name)
     return getattr(openmlpimp.configspaces, classifier_name).get_hyperparameter_search_space(seed)
