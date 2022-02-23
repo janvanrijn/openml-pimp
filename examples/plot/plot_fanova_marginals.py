@@ -19,30 +19,26 @@ import typing
 # to plot: <openml_pimp_root>/examples/plot/plot_fanova_aggregates.py
 def read_cmd():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', default='../../DS2019/data/resnet.arff', type=str)
+    parser.add_argument('--dataset_path', default='../../KDD2018/data/arff/svc.arff', type=str)
     parser.add_argument('--output_directory', default=os.path.expanduser('~/experiments/openml-pimp'), type=str)
-    parser.add_argument('--classifier', default='resnet', type=str)
+    parser.add_argument('--classifier', default='libsvm_svc', type=str)
     parser.add_argument('--config_library', default='openmlpimp', type=str)
     parser.add_argument('--measure', default='predictive_accuracy', type=str)
     parser.add_argument('--plot_marginals', action='store_true', default=True)
     parser.add_argument('--plot_extension', default='pdf', type=str)
-    parser.add_argument('--plot_resolution', default=100, type=int)
+    parser.add_argument('--plot_resolution', default=1000, type=int)
     parser.add_argument('--hyperparameters', nargs='+', default=[
-        'epochs',
-        'momentum',
-        'learning_rate_init',
-        'weight_decay',
-        'epochs__learning_rate_init',
-        'epochs__weight_decay',
-        'learning_rate_init__momentum',
+        'svc__gamma',
+        'svc__C',
+        'svc__gamma____svc__C',
     ])
-    parser.add_argument('--n_trees', default=16, type=int)
+    parser.add_argument('--n_trees', default=64, type=int)
     parser.add_argument('--resolution', default=100, type=int)
-    parser.add_argument('--task_id', default=None, type=str)
-    parser.add_argument('--task_id_column', default='dataset', type=str)
+    parser.add_argument('--task_id', default=6, type=str)
+    parser.add_argument('--task_id_column', default='task_id', type=str)
     parser.add_argument('--show_legend', action='store_true')
     parser.add_argument('--tick_size', default=12, type=int)
-    parser.add_argument('--label_size', default=14, type=int)
+    parser.add_argument('--label_size', default=16, type=int)
     parser.add_argument('--subsample', default=None, type=int)
     args_, misc = parser.parse_known_args()
 
@@ -101,7 +97,8 @@ def plot_single_marginal(X: np.array,
     if y_range:
         plt.axis((x1, x2, y_range[0], y_range[1]))
     ax = plt.gca()
-    ax.set_xlabel(hyperparameter_name.replace('_', ' ').capitalize())
+    name_mapping = {'svc__gamma': 'Gamma', 'svc__C': 'Complexity'}
+    ax.set_xlabel(name_mapping[hyperparameter_name])
     ax.set_ylabel(measure_name.replace('_', ' ').capitalize())
     if not show_legend and ax.get_legend() is not None:
         ax.get_legend().remove()
@@ -212,6 +209,8 @@ def run(args):
     for t_idx, task_id in enumerate(task_ids):
         logging.info('Running fanova on task %s (%d/%d)' % (task_id, t_idx + 1, len(task_ids)))
         data_task = data[data[args.task_id_column] == task_id]
+        data_task = data_task[data_task['svc__kernel'] == 0]
+        print(data_task.head(5))
         del data_task[args.task_id_column]
         # now dataset is gone, and all categoricals are converted, we can convert to float
         data_task = data_task.astype(np.float)
@@ -221,13 +220,14 @@ def run(args):
         logging.info('Dimensions: %s (out of (%s)) %s' % (str(data_task.shape),
                                                           str(data.shape),
                                                           '[Subsampled]' if args.subsample else ''))
+
         assert len(data_task) >= min(100, args.subsample if args.subsample is not None else 100)
         os.makedirs(args.output_directory, exist_ok=True)
         X_data = data_task[config_space.get_hyperparameter_names()].values
         y_data = data_task[args.measure].values
 
         for hyperparameters_str in args.hyperparameters:
-            hyperparameters = hyperparameters_str.split('__')
+            hyperparameters = hyperparameters_str.split('____')
             logging.info('-- Starting with: %s' % hyperparameters)
 
             if len(hyperparameters) == 1:
